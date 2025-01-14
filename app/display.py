@@ -2,6 +2,7 @@ from customObjects import custom_images, custom_text, custom_button
 import random
 import pygame
 import json
+from app import player
 
 # Copyright (C) 2025  Hohenzoler
 #
@@ -45,6 +46,8 @@ class basic_display:
 class game_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
+        self.p = player.Player(self)
+        self.objects.append(self.p)
 
 class map_display(basic_display):
     def __init__(self, game):
