@@ -50,23 +50,15 @@ class map_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
         self.cx, self.cy = 0, 0
-        self.map = [[1, 1, 1, 1, 1, 1],
-                    [1, 0, 0, 0, 1, 1],
-                    [1, 0, 0, 0, 0, 1],
-                    [1, 0, 0, 0, 1, 1],
-                    [1, 0, 0, 0, 1, 1],
-                    [1, 0, 0, 0, 1, 1],
-                    [1, 0, 0, 0, 1, 1],
-                    [1, 1, 1, 1, 1, 1]]
+        self.zoom_level = 1.0
+        self.map = [[0] * 100 for _ in range(100)]
         self.block_width = self.game.width // len(self.map[0])
         self.block_height = self.game.height // len(self.map)
 
-        self.export_button = custom_button.Button(self, "export_map", 10, 10, 100, 50)
-        self.export_button.color = (0, 255, 0)
+        self.export_button = custom_button.Button(self, "export_map", 10, 10, 100, 50, text="Export map", text_color=(0, 255, 0), color=(255, 0, 0), border_radius=0)
 
     def mainloop(self):
         self.delta_time = self.game.delta_time
-        self.handle_mouse_events()
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
             self.cy += 500 * self.delta_time
@@ -83,10 +75,17 @@ class map_display(basic_display):
             for x in range(len(self.map[y])):
                 color = (255, 255, 255) if self.map[y][x] == 1 else (0, 0, 0)
                 pygame.draw.rect(self.screen, color, (x * self.block_width + self.cx, y * self.block_height + self.cy, self.block_width, self.block_height))
+        pygame.draw.rect(self.screen, (155, 0, 0),(self.cx, self.cy, self.block_width*100, self.block_height*100), 2)
         for obj in self.objects:
             obj.render()
 
-    def handle_mouse_events(self):
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        self.handle_mouse_events(event)
+        self.handle_zoom(event)
+
+    def handle_mouse_events(self, event):
         mouse_pressed = pygame.mouse.get_pressed()
         if mouse_pressed[0]:
             self.place_block()
@@ -111,9 +110,27 @@ class map_display(basic_display):
         if 0 <= grid_x < len(self.map[0]) and 0 <= grid_y < len(self.map):
             self.map[grid_y][grid_x] = 0
 
+    def handle_zoom(self, event):
+        if event.type == pygame.MOUSEWHEEL:
+            old_block_width = self.block_width
+            old_block_height = self.block_height
+
+            if event.y > 0:
+                self.zoom_level *= 1.1
+            elif event.y < 0 and self.block_width > 1 and self.block_height > 1:
+                self.zoom_level /= 1.1
+
+            self.block_width = int((self.game.width // len(self.map[0])) * self.zoom_level)
+            self.block_height = int((self.game.height // len(self.map)) * self.zoom_level)
+
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            self.cx -= (mouse_x - self.cx) * (self.block_width / old_block_width - 1)
+            self.cy -= (mouse_y - self.cy) * (self.block_height / old_block_height - 1)
+
     def export_map(self):
         with open('map.json', 'w') as f:
             json.dump(self.map, f)
+        self.export_button.update_text('Exported!')
 
 
 
