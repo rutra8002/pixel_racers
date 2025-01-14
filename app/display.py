@@ -48,8 +48,8 @@ class game_display(basic_display):
 
 class map_display(basic_display):
     def __init__(self, game):
-        self.cx, self.cy = 0, 0
         basic_display.__init__(self, game)
+        self.cx, self.cy = 0, 0
         self.map = [[1, 1, 1, 1, 1, 1],
                     [1, 0, 0, 0, 1, 1],
                     [1, 0, 0, 0, 0, 1],
@@ -61,20 +61,21 @@ class map_display(basic_display):
         self.block_width = self.game.width // len(self.map[0])
         self.block_height = self.game.height // len(self.map)
 
-        self.export_button = custom_button.Button(self.game, self, 10, 10, 100, 50)
+        self.export_button = custom_button.Button(self, "export_map", 10, 10, 100, 50)
         self.export_button.color = (0, 255, 0)
 
     def mainloop(self):
+        self.delta_time = self.game.delta_time
         self.handle_mouse_events()
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
-            self.cy += 5
+            self.cy += 500 * self.delta_time
         if keys[pygame.K_s]:
-            self.cy -= 5
+            self.cy -= 500 * self.delta_time
         if keys[pygame.K_a]:
-            self.cx += 5
+            self.cx += 500 * self.delta_time
         if keys[pygame.K_d]:
-            self.cx -= 5
+            self.cx -= 500 * self.delta_time
 
 
     def render(self):
@@ -82,13 +83,8 @@ class map_display(basic_display):
             for x in range(len(self.map[y])):
                 color = (255, 255, 255) if self.map[y][x] == 1 else (0, 0, 0)
                 pygame.draw.rect(self.screen, color, (x * self.block_width + self.cx, y * self.block_height + self.cy, self.block_width, self.block_height))
-        self.export_button.render()
-
-    def events(self, event):
         for obj in self.objects:
-            obj.events(event)
-        if event.type == pygame.MOUSEBUTTONDOWN and self.export_button.rect.collidepoint(event.pos):
-            self.export_map()
+            obj.render()
 
     def handle_mouse_events(self):
         mouse_pressed = pygame.mouse.get_pressed()
@@ -101,6 +97,7 @@ class map_display(basic_display):
         x, y = pygame.mouse.get_pos()
         x -= self.cx
         y -= self.cy
+        x, y = int(x), int(y)
         grid_x, grid_y = x // self.block_width, y // self.block_height
         if 0 <= grid_x < len(self.map[0]) and 0 <= grid_y < len(self.map):
             self.map[grid_y][grid_x] = 1
@@ -109,6 +106,7 @@ class map_display(basic_display):
         x, y = pygame.mouse.get_pos()
         x -= self.cx
         y -= self.cy
+        x, y = int(x), int(y)
         grid_x, grid_y = x // self.block_width, y // self.block_height
         if 0 <= grid_x < len(self.map[0]) and 0 <= grid_y < len(self.map):
             self.map[grid_y][grid_x] = 0

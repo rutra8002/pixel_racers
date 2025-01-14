@@ -56,7 +56,8 @@ class Button:  # A button class
                 self.display.game.current_display = self.display.game.displays['game_display']
             elif self.action == 'to_map_maker_display':
                 self.display.game.current_display = self.display.game.displays['map_display']
-
+            elif self.action == "export_map":
+                self.display.game.current_display.export_map()
             else:
                 print('No action assigned to this button')
 
