@@ -103,17 +103,17 @@ class ParticleSystem:
         particle_x, particle_y = 0, 0
         if self.movable:
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_RIGHT]:
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 particle_x = - 10
-            if keys[pygame.K_LEFT]:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 particle_x = 10
-            if keys[pygame.K_UP]:
+            if keys[pygame.K_UP] or keys[pygame.K_w]:
                 particle_y = 10
-            if keys[pygame.K_DOWN]:
+            if keys[pygame.K_DOWN] or keys[pygame.K_s]:
                 particle_y = -10
-            if keys[pygame.K_RIGHT] and keys[pygame.K_LEFT]:
+            if keys[pygame.K_RIGHT] and keys[pygame.K_LEFT] or keys[pygame.K_d] and keys[pygame.K_a]:
                 particle_x = 0
-            if keys[pygame.K_UP] and keys[pygame.K_DOWN]:
+            if keys[pygame.K_UP] and keys[pygame.K_DOWN] or keys[pygame.K_w] and keys[pygame.K_s]:
                 particle_y = 0
         for particle in self.particles:
             particle.update(particle_x, particle_y)
