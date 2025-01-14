@@ -55,7 +55,7 @@ class Button:  # A button class
             if self.action == 'to_game_display':
                 self.display.game.current_display = self.display.game.displays['game_display']
             elif self.action == 'to_map_maker_display':
-                raise 'HERE CHANGE SO IT GOES TO MAP MAKER RUTER'
+                self.display.game.current_display = self.display.game.displays['map_display']
 
             else:
                 print('No action assigned to this button')
