@@ -119,6 +119,16 @@ class map_display(basic_display):
 
 
 
+class main_menu_display(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
+        self.title_screen_text = custom_text.Custom_text(self, 500, 300, 'VROOM! VROOM!', text_color='white', font_height=100)
+        self.to_game_button = custom_button.Button(self, 'to_game_display', 123, 543, 250, 67, text='Game goes brrrr',)
+        self.to_map_maker_button = custom_button.Button(self, 'to_map_maker_display', 692, 715, 250, 67, text='Game goes brrrr', )
+
+    def mainloop(self):
+        pass
+
 
 
 

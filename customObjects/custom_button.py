@@ -34,8 +34,8 @@ class Button:  # A button class
             self.display.objects.append(self)  # Adding self to objects of the screen
 
         if text != None:  # if there is text it's put on the button
-            self.text = custom_text.Custom_text(self.display, self.x + self.width / 2, self.y + self.height / 2, None,
-                                    self.height // 2, text, text_color=text_color)
+            self.text = custom_text.Custom_text(self.display, self.x + self.width / 2, self.y + self.height / 2,text,  font=None,
+                                   font_height=self.height // 2, text_color=text_color)
 
         self.outline_color = outline_color
         self.outline_width = outline_width
@@ -52,7 +52,13 @@ class Button:  # A button class
 
     def events(self, event):  # Checks events
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.rect.collidepoint(event.pos):  # Checks if the button has been pressed
-            print('No action assigned to this button')
+            if self.action == 'to_game_display':
+                self.display.game.current_display = self.display.game.displays['game_display']
+            elif self.action == 'to_map_maker_display':
+                raise 'HERE CHANGE SO IT GOES TO MAP MAKER RUTER'
+
+            else:
+                print('No action assigned to this button')
 
     def delete(self):
         self.text.delete()
