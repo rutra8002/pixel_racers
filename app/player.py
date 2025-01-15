@@ -1,18 +1,37 @@
 import pygame
 from pygame import *
+import math as lolino
 
 class Player:
     def __init__(self, display):
         self.display = display
         self.x,self.y, self.playerWidth, self.playerHeight = 500, 500, 25, 50
         self.color = (100, 200, 100)
+        self.acceleration = 0.25
+        self.backceleration = 0.1
+        self.rotationSpeed = 3
+        self.maxSpeed = 8
+        self.naturalSlowdown = 0.08 # when the player doesn't press W or S
+        self.speedCorrection = 0.5 # when the car is going over the speed limit
+
+        self.image_orig = pygame.Surface((self.playerWidth, self.playerHeight))
+        self.image_orig.set_colorkey((0, 0, 0))
+        self.image_orig.fill(self.color)
+        self.rect = self.image_orig.get_rect()
+        self.rect.center = self.x, self.y
+
         self.velUp, self.velLeft = 0, 0
-        self.acceleration = 0.2
         self.w, self.a, self.s, self.d = False, False, False, False
+        self.rotation = 0
 
     def render(self):
-        pygame.draw.rect(self.display.screen, self.color, (self.x, self.y, self.playerWidth, self.playerHeight))
+        self.center = self.rect.center
         self.movement()
+
+        self.newImg = pygame.transform.rotate(self.image_orig, self.rotation)
+        self.rect = self.newImg.get_rect()
+        self.rect.center = self.x, self.y
+        self.display.screen.blit(self.newImg, self.rect)
 
     def events(self, event):
         if event.type == pygame.KEYDOWN:
@@ -34,15 +53,63 @@ class Player:
             if event.key == pygame.K_d:
                 self.d = False
     def movement(self):
+        c, d = self.velLeft, self.velUp
         if self.w:
-            self.velUp += self.acceleration
+            a, b = self.get_acceleration_with_trigonometry(1, self.acceleration)
+            self.velLeft += a
+            self.velUp += b
         if self.s:
-            self.velUp -= self.acceleration
+            a, b = self.get_acceleration_with_trigonometry(-1, self.backceleration)
+            self.velLeft += a
+            self.velUp += b
         if self.a:
-            self.velLeft += self.acceleration
+            self.rotation = (self.rotation + self.rotationSpeed) % 360
         if self.d:
-            self.velLeft -= self.acceleration
+            self.rotation = (self.rotation - self.rotationSpeed) % 360
 
+        if self.velLeft == c and self.velUp == d:
+            if self.velUp > 0:
+                self.velUp -= self.naturalSlowdown
+                if self.velUp < 0:
+                    self.velUp = 0
+            elif self.velUp < 0:
+                self.velUp += self.naturalSlowdown
+                if self.velUp > 0:
+                    self.velUp = 0
+            if self.velLeft > 0:
+                self.velLeft -= self.naturalSlowdown
+                if self.velLeft < 0:
+                    self.velLeft = 0
+            elif self.velLeft < 0:
+                self.velLeft += self.naturalSlowdown
+                if self.velLeft > 0:
+                    self.velLeft = 0
+
+        # self.rect.center = (self.x + self.playerWidth / 2, self.y + self.playerHeight / 2)
+        if self.velUp > self.maxSpeed + self.speedCorrection:
+            self.velUp -= self.speedCorrection
+        elif self.velUp > self.maxSpeed:
+            self.velUp = self.maxSpeed
+        if self.velLeft > self.maxSpeed + self.speedCorrection:
+            self.velLeft -= self.speedCorrection
+        elif self.velLeft  > self.maxSpeed:
+            self.velLeft = self.maxSpeed
+        if self.velUp < -self.maxSpeed -self.speedCorrection:
+            self.velUp += -self.speedCorrection
+        elif self.velUp < -self.maxSpeed:
+            self.velUp = -self.maxSpeed
+        if self.velLeft < -self.maxSpeed -self.speedCorrection:
+            self.velLeft += -self.speedCorrection
+        elif self.velLeft < -self.maxSpeed:
+            self.velLeft = -self.maxSpeed
 
         self.x -= self.velLeft
         self.y -= self.velUp
+
+    def get_acceleration_with_trigonometry(self, direction, acc):
+        r = lolino.radians(self.rotation + 90)
+        x = lolino.cos(r)
+        y = lolino.sin(r)
+        return (x * acc * -direction), (y * acc * direction)
+
+
