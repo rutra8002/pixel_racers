@@ -36,8 +36,8 @@ class Player:
         self.movement()
         # self.display.screen.blit(self.mask_image, self.rect)
         self.nitroAmount += 0.3
-        self.newMask = pygame.transform.rotate(self.mask_image, self.rotation)
-        self.newImg = pygame.transform.rotate(self.image, self.rotation)
+        self.newMask = pygame.transform.rotate(self.mask_image, self.rotation+180)
+        self.newImg = pygame.transform.rotate(self.image, self.rotation+180)
 
         self.rect = self.newImg.get_rect()
         self.rect.center = self.x, self.y
