@@ -2,7 +2,7 @@ from customObjects import custom_images, custom_text, custom_button
 import random
 import pygame
 import json
-from app import player
+from app import player, enemy
 
 class basic_display:
     def __init__(self, game):
@@ -33,6 +33,17 @@ class game_display(basic_display):
         basic_display.__init__(self, game)
         self.p = player.Player(self)
         self.objects.append(self.p)
+        self.enemy1 = enemy.Enemy(self)
+        self.objects.append(self.enemy1)
+        self.enemies = pygame.sprite.Group()
+        self.enemies.add(self.enemy1)
+
+    def render(self):
+        for obj in self.objects:
+            obj.render()
+        # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
+
+
 
 class map_display(basic_display):
     def __init__(self, game):
