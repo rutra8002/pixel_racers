@@ -35,8 +35,6 @@ class game_display(basic_display):
         self.objects.append(self.p)
         self.enemy1 = enemy.Enemy(self)
         self.objects.append(self.enemy1)
-        self.enemies = pygame.sprite.Group()
-        self.enemies.add(self.enemy1)
 
     def render(self):
         for obj in self.objects:

@@ -2,9 +2,8 @@ import pygame
 from pygame import *
 import math as lolino
 
-class Player(pygame.sprite.Sprite):
+class Player:
     def __init__(self, display):
-        pygame.sprite.Sprite.__init__(self)
         self.display = display
         self.x,self.y, self.playerWidth, self.playerHeight = 500, 500, 25, 50
         self.color = (100, 200, 100)
@@ -16,15 +15,16 @@ class Player(pygame.sprite.Sprite):
         self.speedCorrection = 0.5 # when the car is going over the speed limit
         self.nitroPower = 1
 
-        self.image = pygame.Surface((self.playerWidth, self.playerHeight))
+        # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.image = pygame.image.load("images/jeffcar.png").convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.center = self.x, self.y
+
         self.player_mask = pygame.mask.from_surface(self.image)
         self.mask_image = self.player_mask.to_surface()
 
         self.image.set_colorkey((0, 0, 0))
         # self.image.fill(self.color)
-        self.rect = self.image.get_rect()
-        self.rect.center = self.x, self.y
 
         self.velUp, self.velLeft = 0, 0
         self.w, self.a, self.s, self.d, self.boost = False, False, False, False, False
@@ -43,8 +43,12 @@ class Player(pygame.sprite.Sprite):
         self.rect.center = self.x, self.y
         self.display.screen.blit(self.newMask, self.rect)
         self.display.screen.blit(self.newImg, self.rect)
-        if pygame.sprite.spritecollide(self.display.p, self.display.enemies, False):
+        # if pygame.sprite.spritecollide(self.display.p, self.display.enemies, False):
+        #     print("collision", )
+        self.collision_point = self.player_mask.overlap(self.display.enemy1.enemy_mask, (self.x - self.display.enemy1.x, self.y - self.display.enemy1.y))
+        if self.player_mask.overlap(self.display.enemy1.enemy_mask, (self.x - self.display.enemy1.x, self.y - self.display.enemy1.y)):
             print("collision")
+            print("COLLISION POINT: ", self.collision_point)
         print(self.velUp)
     def events(self, event):
         if event.type == pygame.KEYDOWN:
