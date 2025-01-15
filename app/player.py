@@ -13,26 +13,29 @@ class Player:
         self.maxSpeed = 8
         self.naturalSlowdown = 0.08 # when the player doesn't press W or S
         self.speedCorrection = 0.5 # when the car is going over the speed limit
+        self.nitroPower = 1
 
-        self.image_orig = pygame.Surface((self.playerWidth, self.playerHeight))
-        self.image_orig.set_colorkey((0, 0, 0))
-        self.image_orig.fill(self.color)
-        self.rect = self.image_orig.get_rect()
+        self.image = pygame.Surface((self.playerWidth, self.playerHeight))
+        self.image.set_colorkey((0, 0, 0))
+        self.image.fill(self.color)
+        self.rect = self.image.get_rect()
         self.rect.center = self.x, self.y
 
         self.velUp, self.velLeft = 0, 0
-        self.w, self.a, self.s, self.d = False, False, False, False
-        self.rotation = 0
+        self.w, self.a, self.s, self.d, self.boost = False, False, False, False, False
+        self.rotation = 180
+        self.nitroAmount = 0
 
     def render(self):
         self.center = self.rect.center
         self.movement()
+        self.nitroAmount += 0.3
 
-        self.newImg = pygame.transform.rotate(self.image_orig, self.rotation)
+        self.newImg = pygame.transform.rotate(self.image, self.rotation)
         self.rect = self.newImg.get_rect()
         self.rect.center = self.x, self.y
         self.display.screen.blit(self.newImg, self.rect)
-
+        print(self.velUp)
     def events(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_w:
@@ -43,6 +46,8 @@ class Player:
                 self.s = True
             if event.key == pygame.K_d:
                 self.d = True
+            if event.key == pygame.K_SPACE:
+                self.boost = True
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_w:
                 self.w = False
@@ -52,6 +57,8 @@ class Player:
                 self.s = False
             if event.key == pygame.K_d:
                 self.d = False
+            if event.key == pygame.K_SPACE:
+                self.boost = False
     def movement(self):
         c, d = self.velLeft, self.velUp
         if self.w:
@@ -66,6 +73,12 @@ class Player:
             self.rotation = (self.rotation + self.rotationSpeed) % 360
         if self.d:
             self.rotation = (self.rotation - self.rotationSpeed) % 360
+
+        if self.boost and self.nitroAmount >= 1:
+            self.nitroAmount -= 1
+            a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
+            self.velLeft += a
+            self.velUp += b
 
         if self.velLeft == c and self.velUp == d:
             if self.velUp > 0:
@@ -95,13 +108,15 @@ class Player:
         elif self.velLeft  > self.maxSpeed:
             self.velLeft = self.maxSpeed
         if self.velUp < -self.maxSpeed -self.speedCorrection:
-            self.velUp += -self.speedCorrection
+            self.velUp += self.speedCorrection
         elif self.velUp < -self.maxSpeed:
             self.velUp = -self.maxSpeed
         if self.velLeft < -self.maxSpeed -self.speedCorrection:
-            self.velLeft += -self.speedCorrection
+            self.velLeft += self.speedCorrection
         elif self.velLeft < -self.maxSpeed:
             self.velLeft = -self.maxSpeed
+
+
 
         self.x -= self.velLeft
         self.y -= self.velUp
