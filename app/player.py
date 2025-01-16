@@ -113,11 +113,11 @@ class Player:
                 if self.velLeft > 0:
                     self.velLeft = 0
 
-        if not self.boost:
-            magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
-            if magnitude > self.maxSpeed:
-                self.velLeft = (self.velLeft / magnitude) * self.maxSpeed
-                self.velUp = (self.velUp / magnitude) * self.maxSpeed
+        # if not self.boost:
+        #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
+        #     if magnitude > self.maxSpeed:
+        #         self.velLeft = (self.velLeft / magnitude) * self.maxSpeed
+        #         self.velUp = (self.velUp / magnitude) * self.maxSpeed
 
         self.x -= self.velLeft
         self.y -= self.velUp
