@@ -73,6 +73,7 @@ class Player:
                 self.d = False
             if event.key == pygame.K_SPACE:
                 self.boost = False
+
     def movement(self):
         c, d = self.velLeft, self.velUp
         if self.w:
@@ -112,28 +113,11 @@ class Player:
                 if self.velLeft > 0:
                     self.velLeft = 0
 
-        # self.rect.center = (self.x + self.playerWidth / 2, self.y + self.playerHeight / 2)
-        if self.velUp > self.maxSpeed + self.speedCorrection:
-            self.velUp -= self.speedCorrection
-        elif self.velUp > self.maxSpeed:
-            self.velUp = self.maxSpeed
-        if self.velLeft > self.maxSpeed + self.speedCorrection:
-            self.velLeft -= self.speedCorrection
-        elif self.velLeft  > self.maxSpeed:
-            self.velLeft = self.maxSpeed
-        if self.velUp < -self.maxSpeed -self.speedCorrection:
-            self.velUp += self.speedCorrection
-        elif self.velUp < -self.maxSpeed:
-            self.velUp = -self.maxSpeed
-        if self.velLeft < -self.maxSpeed -self.speedCorrection:
-            self.velLeft += self.speedCorrection
-        elif self.velLeft < -self.maxSpeed:
-            self.velLeft = -self.maxSpeed
-
-        magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
-        if magnitude > self.maxSpeed:
-            self.velLeft = (self.velLeft / magnitude) * self.maxSpeed
-            self.velUp = (self.velUp / magnitude) * self.maxSpeed
+        if not self.boost:
+            magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
+            if magnitude > self.maxSpeed:
+                self.velLeft = (self.velLeft / magnitude) * self.maxSpeed
+                self.velUp = (self.velUp / magnitude) * self.maxSpeed
 
         self.x -= self.velLeft
         self.y -= self.velUp
