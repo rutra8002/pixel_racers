@@ -31,6 +31,8 @@ class Player:
         self.rotation = 180
         self.nitroAmount = 0
 
+        self.particle_system = self.display.particle_system
+
     def render(self):
         self.center = self.rect.center
         self.movement()
@@ -50,6 +52,10 @@ class Player:
             print("collision")
             print("COLLISION POINT: ", self.collision_point)
         print(self.velUp)
+
+
+        self.particle_system.add_particle(self.x, self.y, self.velLeft, self.velUp, -0.01*self.velLeft, -0.01*self.velUp, 0, 0, 1, 100, 5, 100, 100, 100, 150, 'square')
+
     def events(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_w:

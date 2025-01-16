@@ -2,7 +2,7 @@ from customObjects import custom_images, custom_text, custom_button
 import random
 import pygame
 import json
-from app import player, enemy
+from app import player, enemy, parkinson
 
 class basic_display:
     def __init__(self, game):
@@ -31,14 +31,22 @@ class basic_display:
 class game_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
+
+        self.particle_system = parkinson.ParticleSystem()
+
         self.p = player.Player(self)
         self.objects.append(self.p)
         self.enemy1 = enemy.Enemy(self)
         self.objects.append(self.enemy1)
 
     def render(self):
+        self.particle_system.draw(self.screen)
         for obj in self.objects:
             obj.render()
+
+
+    def mainloop(self):
+        self.particle_system.update()
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
 

@@ -87,9 +87,8 @@ class Particle:
 
 
 class ParticleSystem:
-    def __init__(self, movable=False):
+    def __init__(self):
         self.particles = []
-        self.movable = movable
 
     def add_particle(self, x, y, vx, vy, dvx, dvy, angle, dangle, speed, lifespan, size, red, green, blue, alpha, shape, gradient=False):
         self.particles.append(
@@ -101,20 +100,6 @@ class ParticleSystem:
 
     def update(self):
         particle_x, particle_y = 0, 0
-        if self.movable:
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-                particle_x = - 10
-            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-                particle_x = 10
-            if keys[pygame.K_UP] or keys[pygame.K_w]:
-                particle_y = 10
-            if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-                particle_y = -10
-            if keys[pygame.K_RIGHT] and keys[pygame.K_LEFT] or keys[pygame.K_d] and keys[pygame.K_a]:
-                particle_x = 0
-            if keys[pygame.K_UP] and keys[pygame.K_DOWN] or keys[pygame.K_w] and keys[pygame.K_s]:
-                particle_y = 0
         for particle in self.particles:
             particle.update(particle_x, particle_y)
             if particle.lifespan <= 0:
