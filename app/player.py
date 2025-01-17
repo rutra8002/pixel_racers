@@ -37,23 +37,21 @@ class Player:
 
     def render(self):
         self.center = self.rect.center
-        self.movement()
         # self.display.screen.blit(self.mask_image, self.rect)
         self.nitroAmount += 0.3
-        self.newMask = pygame.transform.rotate(self.mask_image, self.rotation+90)
-        self.newImg = pygame.transform.rotate(self.image, self.rotation+90)
-
+        self.newImg = pygame.transform.rotate(self.image, self.rotation + 90)
         self.rect = self.newImg.get_rect()
         self.rect.center = self.x, self.y
-        self.display.screen.blit(self.newMask, self.rect)
+        self.player_mask = pygame.mask.from_surface(self.newImg)
+        self.mask_image = self.player_mask.to_surface()
+        # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
         self.display.screen.blit(self.newImg, self.rect)
+
+        pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
         # if pygame.sprite.spritecollide(self.display.p, self.display.enemies, False):
         #     print("collision", )
-        self.collision_point = self.player_mask.overlap(self.display.enemy1.enemy_mask, (self.x - self.display.enemy1.x, self.y - self.display.enemy1.y))
-        if self.player_mask.overlap(self.display.enemy1.enemy_mask, (self.x - self.display.enemy1.x, self.y - self.display.enemy1.y)):
-            print("collision")
-            print("COLLISION POINT: ", self.collision_point)
-        print(self.velUp)
+
+        # print(self.velUp)
 
         back_wheel_offset = self.playerHeight / 2
         angle_rad = lolino.radians(-self.rotation)
@@ -169,5 +167,13 @@ class Player:
         x = lolino.cos(r)
         y = lolino.sin(r)
         return (x * -acc), (y * acc)
+
+    def loop(self):
+        self.movement()
+        self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0], self.display.enemy1.rect.topleft[1])
+
+    def collision_detection(self, mask, x, y):
+        if self.player_mask.overlap(mask, (x - self.rect.topleft[0], y - self.rect.topleft[1])):
+            print('coll')
 
 

@@ -83,7 +83,6 @@ class Game:
             object.render()
 
 
-
     def update(self):
         self.delta_time = self.clock.get_time() / 1000.0
         if self.debug:
