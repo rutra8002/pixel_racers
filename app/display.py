@@ -41,6 +41,7 @@ class game_display(basic_display):
         self.objects.append(self.enemy1)
 
     def render(self):
+        self.game.screen.fill((26, 26, 26))
         self.particle_system.draw(self.screen)
         for obj in self.objects:
             obj.render()
@@ -48,6 +49,7 @@ class game_display(basic_display):
 
     def mainloop(self):
         self.particle_system.update()
+        self.p.loop()
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
 
