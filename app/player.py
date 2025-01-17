@@ -21,7 +21,6 @@ class Player:
         self.rect = self.image.get_rect()
         self.rect.center = self.x, self.y
 
-
         self.player_mask = pygame.mask.from_surface(self.image)
         self.mask_image = self.player_mask.to_surface()
 
@@ -48,7 +47,8 @@ class Player:
         # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
         self.display.screen.blit(self.newImg, self.rect)
 
-        # pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
+        if self.display.game.debug:
+            pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
         # if pygame.sprite.spritecollide(self.display.p, self.display.enemies, False):
         #     print("collision", )
 

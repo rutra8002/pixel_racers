@@ -49,6 +49,10 @@ class Button:  # A button class
                 self.display.game.current_display.export_map()
             elif self.action == 'quit':
                 self.display.game.run = False
+            elif self.action == 'settings':
+                self.display.game.current_display = self.display.game.displays['settings_display']
+            elif self.action == 'to_main_menu':
+                self.display.game.current_display = self.display.game.displays['main_menu_display']
             else:
                 print('No action assigned to this button')
 

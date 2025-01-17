@@ -35,7 +35,7 @@ class Game:
         pygame.display.set_caption(f"{self.title} (v {self.version})")
 
 
-        self.displays = {'template_display': display.basic_display(self), 'game_display': display.game_display(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self)}
+        self.displays = {'template_display': display.basic_display(self), 'game_display': display.game_display(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self)}
         self.current_display = self.displays['main_menu_display']
 
         self.pointing_at = []
