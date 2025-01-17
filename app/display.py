@@ -36,9 +36,11 @@ class game_display(basic_display):
         self.particle_system = parkinson.ParticleSystem()
 
         self.p = player.Player(self)
-        self.objects.append(self.p)
         self.enemy1 = enemy.Enemy(self)
         self.objects.append(self.enemy1)
+        self.objects.append(self.p)
+
+
 
     def render(self):
         self.game.screen.fill((26, 26, 26))
