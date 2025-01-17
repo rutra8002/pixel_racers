@@ -102,9 +102,9 @@ class Player:
                 self.boost = False
 
     def movement(self):
-        if abs(self.velUp) < 0.1:
+        if abs(self.velUp) < 0.05:
             self.velUp = 0
-        if abs(self.velLeft) < 0.1:
+        if abs(self.velLeft) < 0.05:
             self.velLeft = 0
 
         c, d = self.velLeft, self.velUp
