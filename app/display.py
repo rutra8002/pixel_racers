@@ -143,9 +143,15 @@ class map_display(basic_display):
 class main_menu_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
-        self.title_screen_text = custom_text.Custom_text(self, 500, 300, 'VROOM! VROOM!', text_color='white', font_height=100)
-        self.to_game_button = custom_button.Button(self, 'to_game_display', 123, 543, 250, 67, text='Game goes brrrr',)
-        self.to_map_maker_button = custom_button.Button(self, 'to_map_maker_display', 692, 715, 250, 67, text='Game goes brrrr', )
+
+        self.amount_of_buttons = 4
+        self.button_padding = 15
+        self.title_screen_text = custom_text.Custom_text(self, self.game.width/2, self.game.height/3.8, 'VROOM!\n    VROOM!', text_color='white', font_height=95)
+        self.to_game_button = custom_button.Button(self, 'to_game_display', self.button_padding, self.game.height + (- self.button_padding - 80) * self.amount_of_buttons, 350, 80, text='Game goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        self.to_map_maker_button = custom_button.Button(self, '', self.button_padding, self.game.height + (- self.button_padding - 80) * (self.amount_of_buttons - 1), 350, 80, text='Settings', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        self.to_map_maker_button = custom_button.Button(self, 'to_map_maker_display', self.button_padding, self.game.height + (- self.button_padding - 80) * (self.amount_of_buttons - 2), 350, 80, text='Map-maker goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        self.to_map_maker_button = custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - 80) * (self.amount_of_buttons - 3), 350, 80, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+
 
     def mainloop(self):
         pass

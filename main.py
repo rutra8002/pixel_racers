@@ -1,5 +1,5 @@
 from app import game
-
+import sys
 # Copyright (C) 2025  Hohenzoler
 #
 # This program is free software; you can redistribute it and/or modify

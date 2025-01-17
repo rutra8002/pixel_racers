@@ -1,4 +1,4 @@
-import pygame
+import pygame, sys
 from app import config, display
 from customObjects import custom_text, custom_images, custom_button
 
@@ -60,7 +60,8 @@ class Game:
             self.update()
             self.clock.tick(self.fps)
 
-
+        pygame.quit()
+        sys.exit()
 
 
     def events(self):
@@ -94,4 +95,5 @@ class Game:
 
         pygame.display.update()
         pygame.display.flip()
+
 
