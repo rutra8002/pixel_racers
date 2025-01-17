@@ -46,6 +46,13 @@ class game_display(basic_display):
         for obj in self.objects:
             obj.render()
 
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.game.current_display = self.game.displays['pause_display']
+
 
     def mainloop(self):
         self.particle_system.update()
@@ -138,6 +145,7 @@ class map_display(basic_display):
     def export_map(self):
         with open('map.json', 'w') as f:
             json.dump(self.map, f)
+            f.close()
         self.export_button.update_text('Exported!')
 
 
@@ -148,10 +156,10 @@ class main_menu_display(basic_display):
 
         self.amount_of_buttons = 4
         self.button_padding = 15
-        self.title_screen_text = custom_text.Custom_text(self, self.game.width/2, self.game.height/3.8, 'VROOM!\n    VROOM!', text_color='white', font_height=95)
-        self.to_game_button = custom_button.Button(self, 'to_game_display', self.button_padding, self.game.height + (- self.button_padding - 80) * self.amount_of_buttons, 350, 80, text='Game goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-        self.to_map_maker_button = custom_button.Button(self, '', self.button_padding, self.game.height + (- self.button_padding - 80) * (self.amount_of_buttons - 1), 350, 80, text='Settings', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-        self.to_map_maker_button = custom_button.Button(self, 'to_map_maker_display', self.button_padding, self.game.height + (- self.button_padding - 80) * (self.amount_of_buttons - 2), 350, 80, text='Map-maker goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_text.Custom_text(self, self.game.width/2, self.game.height/3.8, 'VROOM!\n    VROOM!', text_color='white', font_height=95)
+        custom_button.Button(self, 'to_game_display', self.button_padding, self.game.height + (- self.button_padding - 80) * self.amount_of_buttons, 350, 80, text='Game goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'settings', self.button_padding, self.game.height + (- self.button_padding - 80) * (self.amount_of_buttons - 1), 350, 80, text='Settings', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'to_map_maker_display', self.button_padding, self.game.height + (- self.button_padding - 80) * (self.amount_of_buttons - 2), 350, 80, text='Map-maker goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
         self.to_map_maker_button = custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - 80) * (self.amount_of_buttons - 3), 350, 80, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
 
@@ -161,3 +169,37 @@ class main_menu_display(basic_display):
 
 
 
+class settings_display(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
+        custom_text.Custom_text(self, self.game.width/2, self.game.height/8, 'SETTINGS', text_color='white', font_height=95)
+        custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
+        custom_button.Button(self, 'to_main_menu', self.game.width/2, self.game.height/2, 350, 80, text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+
+    def mainloop(self):
+        pass
+
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+
+
+
+class pause_display(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
+        custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
+        custom_button.Button(self, 'to_main_menu', self.game.width / 2, self.game.height / 2, 350, 80,
+                             text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
+                             outline_color=(50, 50, 50), outline_width=2)
+
+
+    def mainloop(self):
+        pass
+
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.game.current_display = self.game.displays['game_display']
