@@ -13,7 +13,8 @@ class Player:
         self.maxSpeed = 8
         self.naturalSlowdown = 0.08 # when the player doesn't press W or S
         self.speedCorrection = 0.5 # when the car is going over the speed limit
-        self.nitroPower = 1
+        self.nitroPower = 0.6
+        self.borderForce = 2
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.image = pygame.image.load("images/jeffcar.png").convert_alpha()
@@ -28,7 +29,7 @@ class Player:
 
         self.velUp, self.velLeft = 0, 0
         self.w, self.a, self.s, self.d, self.boost = False, False, False, False, False
-        self.rotation = 180
+        self.rotation = 0
         self.nitroAmount = 0
 
     def render(self):
@@ -36,8 +37,8 @@ class Player:
         self.movement()
         # self.display.screen.blit(self.mask_image, self.rect)
         self.nitroAmount += 0.3
-        self.newMask = pygame.transform.rotate(self.mask_image, self.rotation+180)
-        self.newImg = pygame.transform.rotate(self.image, self.rotation+180)
+        self.newMask = pygame.transform.rotate(self.mask_image, self.rotation+90)
+        self.newImg = pygame.transform.rotate(self.image, self.rotation+90)
 
         self.rect = self.newImg.get_rect()
         self.rect.center = self.x, self.y
@@ -49,7 +50,6 @@ class Player:
         if self.player_mask.overlap(self.display.enemy1.enemy_mask, (self.x - self.display.enemy1.x, self.y - self.display.enemy1.y)):
             print("collision")
             print("COLLISION POINT: ", self.collision_point)
-        print(self.velUp)
     def events(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_w:
@@ -108,13 +108,38 @@ class Player:
         #         self.velLeft = (self.velLeft / magnitude) * self.maxSpeed
         #         self.velUp = (self.velUp / magnitude) * self.maxSpeed
 
+        if self.x < 0:
+            self.velLeft = -self.borderForce
+        if self.x > self.display.screenWidth:
+            self.velLeft = self.borderForce
+        if self.y < 0:
+            self.velUp = -self.borderForce
+        if self.y > self.display.screenHeight:
+            self.velUp = self.borderForce
+
         self.x -= self.velLeft
         self.y -= self.velUp
 
+    def get_rect_dimentions(self):
+        alfa = 90 - self.rotation % 90
+        alfa = lolino.radians(alfa)
+        if self.rotation // 90 in (1, 3):
+            height = self.playerHeight * lolino.sin(alfa) + self.playerWidth * lolino.cos(alfa)
+            width = self.playerWidth * lolino.sin(alfa) + self.playerHeight * lolino.cos(alfa)
+        else:
+            height = self.playerWidth * lolino.sin(alfa) + self.playerHeight * lolino.cos(alfa)
+            width = self.playerHeight * lolino.sin(alfa) + self.playerWidth * lolino.cos(alfa)
+        return (width, height)
+
+
     def get_acceleration_with_trigonometry(self, direction, acc):
-        r = lolino.radians(self.rotation + 90)
+        if direction == 1:
+            r = lolino.radians(self.rotation)
+        else:
+            r = lolino.radians(self.rotation - 180)
+
         x = lolino.cos(r)
         y = lolino.sin(r)
-        return (x * acc * -direction), (y * acc * direction)
+        return (x * -acc), (y * acc)
 
 

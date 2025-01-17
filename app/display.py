@@ -8,6 +8,7 @@ class basic_display:
     def __init__(self, game):
         self.game = game
         self.screen = self.game.screen
+        self.screenWidth, self.screenHeight = self.game.width, self.game.height
         self.objects = []
         self.objects_in_memory = 0
 
