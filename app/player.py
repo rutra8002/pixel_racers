@@ -96,22 +96,11 @@ class Player:
             self.velUp += b
 
         if self.velLeft == c and self.velUp == d:
-            if self.velUp > 0:
-                self.velUp -= self.naturalSlowdown
-                if self.velUp < 0:
-                    self.velUp = 0
-            elif self.velUp < 0:
-                self.velUp += self.naturalSlowdown
-                if self.velUp > 0:
-                    self.velUp = 0
-            if self.velLeft > 0:
-                self.velLeft -= self.naturalSlowdown
-                if self.velLeft < 0:
-                    self.velLeft = 0
-            elif self.velLeft < 0:
-                self.velLeft += self.naturalSlowdown
-                if self.velLeft > 0:
-                    self.velLeft = 0
+            if self.velLeft != 0 or self.velUp != 0:
+                velocity = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
+                slowdown = self.naturalSlowdown / velocity
+                self.velLeft -= self.velLeft * slowdown
+                self.velUp -= self.velUp * slowdown
 
         # if not self.boost:
         #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
