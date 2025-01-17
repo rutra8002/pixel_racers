@@ -33,6 +33,7 @@ class Player:
         self.nitroAmount = 0
 
         self.particle_system = self.display.particle_system
+        self.particle_counter = 0
 
     def render(self):
         self.center = self.rect.center
@@ -54,8 +55,27 @@ class Player:
             print("COLLISION POINT: ", self.collision_point)
         print(self.velUp)
 
+        back_wheel_offset = self.playerHeight / 2
+        angle_rad = lolino.radians(-self.rotation)
+        back_wheel_x_offset = lolino.cos(angle_rad) * back_wheel_offset
+        back_wheel_y_offset = lolino.sin(angle_rad) * back_wheel_offset
 
-        self.particle_system.add_particle(self.x, self.y, self.velLeft, self.velUp, -0.01*self.velLeft, -0.01*self.velUp, 0, 0, 1, 100, 5, 100, 100, 100, 150, 'square')
+        back_wheel1_x = self.x - back_wheel_x_offset - lolino.sin(angle_rad) * (self.playerWidth / 2)
+        back_wheel1_y = self.y - back_wheel_y_offset + lolino.cos(angle_rad) * (self.playerWidth / 2)
+        back_wheel2_x = self.x - back_wheel_x_offset + lolino.sin(angle_rad) * (self.playerWidth / 2)
+        back_wheel2_y = self.y - back_wheel_y_offset - lolino.cos(angle_rad) * (self.playerWidth / 2)
+
+        self.particle_counter += 1
+
+        if self.particle_counter % 3 == 0:
+            self.particle_system.add_particle(back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp, -0.01 * self.velLeft, -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square')
+            self.particle_system.add_particle(back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp, -0.01 * self.velLeft, -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square')
+
+        if self.boost:
+            nitro_x = self.x - back_wheel_x_offset
+            nitro_y = self.y - back_wheel_y_offset
+            self.particle_system.add_particle(nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100, 30, 150, 'circle', True)
+
 
     def events(self, event):
         if event.type == pygame.KEYDOWN:
@@ -82,6 +102,11 @@ class Player:
                 self.boost = False
 
     def movement(self):
+        if abs(self.velUp) < 0.1:
+            self.velUp = 0
+        if abs(self.velLeft) < 0.1:
+            self.velLeft = 0
+
         c, d = self.velLeft, self.velUp
         if self.w:
             a, b = self.get_acceleration_with_trigonometry(1, self.acceleration)
