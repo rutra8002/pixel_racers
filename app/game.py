@@ -18,8 +18,6 @@ class Game:
         self.fullscreen = int(self.cfg['full-screen'])
         self.enable_debug = int(self.cfg['enable_debug'])
 
-        print(f'PYGAME-STARTING-PROJECT, Copyright (C) 2024 Hohenzoler\nPYGAME-STARTING-PROJECT comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it under certain conditions; Go to License.md for more info.')
-
         self.objects_in_memory = 0
         self.clock = pygame.time.Clock()
         self.font = None
