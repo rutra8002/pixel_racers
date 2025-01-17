@@ -7,19 +7,20 @@ class Player:
         self.display = display
         self.x,self.y, self.playerWidth, self.playerHeight = 500, 500, 25, 50
         self.color = (100, 200, 100)
-        self.acceleration = 0.25
+        self.acceleration = 0.2
         self.backceleration = 0.1
         self.rotationSpeed = 3
         self.maxSpeed = 8
         self.naturalSlowdown = 0.08 # when the player doesn't press W or S
         self.speedCorrection = 0.5 # when the car is going over the speed limit
-        self.nitroPower = 0.6
+        self.nitroPower = 0.5
         self.borderForce = 2
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.image = pygame.image.load("images/jeffcar.png").convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.center = self.x, self.y
+
 
         self.player_mask = pygame.mask.from_surface(self.image)
         self.mask_image = self.player_mask.to_surface()
@@ -47,7 +48,7 @@ class Player:
         # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
         self.display.screen.blit(self.newImg, self.rect)
 
-        pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
+        # pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
         # if pygame.sprite.spritecollide(self.display.p, self.display.enemies, False):
         #     print("collision", )
 
@@ -174,6 +175,9 @@ class Player:
 
     def collision_detection(self, mask, x, y):
         if self.player_mask.overlap(mask, (x - self.rect.topleft[0], y - self.rect.topleft[1])):
-            print('coll')
+            sharedMask = self.player_mask.overlap_mask(mask, (x - self.rect.topleft[0], y - self.rect.topleft[1]))
+            sharedSurface = sharedMask.to_surface()
+            print(sharedSurface)
+            self.display.screen.blit(sharedSurface, self.rect)
 
 
