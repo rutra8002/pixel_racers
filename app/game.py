@@ -40,14 +40,19 @@ class Game:
         for debug_item in self.debug_items:
             debug_item.hidden = True
 
-    def fade(self, fade_in=True):
+    def fade(self, fade_in=True, duration=0.3):
         fade_surface = pygame.Surface((self.width, self.height))
         fade_surface.fill((0, 0, 0))
-        for alpha in range(0, 255, 5):
-            fade_surface.set_alpha(alpha if fade_in else 255 - alpha)
+        alpha = 0 if fade_in else 255
+        increment = 255 / duration
+
+        while (fade_in and alpha < 255) or (not fade_in and alpha > 0):
+            fade_surface.set_alpha(alpha)
             self.render()
             self.screen.blit(fade_surface, (0, 0))
             pygame.display.update()
+            self.delta_time = self.clock.tick(self.fps) / 1000.0
+            alpha += increment * self.delta_time if fade_in else -increment * self.delta_time
 
     def change_display(self, new_display):
         self.fade(fade_in=True)
