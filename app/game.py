@@ -1,4 +1,4 @@
-import pygame, sys
+import pygame, sys, time
 from app import config, display
 from customObjects import custom_text, custom_images, custom_button
 
@@ -17,6 +17,7 @@ class Game:
         self.run = True
 
         self.delta_time = 0
+        self.prev_time = time.time()
 
         self.objects = []
 
@@ -55,6 +56,10 @@ class Game:
 
     def mainloop(self):
         while self.run:
+            now = time.time()
+            self.delta_time = now - self.prev_time
+            print(self.delta_time)
+            self.prev_time = now
             self.current_display.mainloop()
             self.events()
             self.render()
