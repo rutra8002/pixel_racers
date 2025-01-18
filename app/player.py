@@ -104,11 +104,11 @@ class Player:
 
         c, d = self.velLeft, self.velUp
         if self.w:
-            a, b = self.get_acceleration_with_trigonometry(1, self.acceleration)
+            a, b = self.get_acceleration_with_trigonometry(1, self.acceleration * self.display.game.delta_time * self.display.game.calibration/2)
             self.velLeft += a
             self.velUp += b
         if self.s:
-            a, b = self.get_acceleration_with_trigonometry(-1, self.backceleration)
+            a, b = self.get_acceleration_with_trigonometry(-1, self.backceleration * self.display.game.delta_time * self.display.game.calibration/2)
             self.velLeft += a
             self.velUp += b
         if self.a:
@@ -119,15 +119,15 @@ class Player:
         if self.boost and self.nitroAmount >= 1:
             self.nitroAmount -= 1
             a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
-            self.velLeft += a
-            self.velUp += b
+            self.velLeft += a * self.display.game.delta_time * self.display.game.calibration
+            self.velUp += b * self.display.game.delta_time * self.display.game.calibration
 
         if self.velLeft == c and self.velUp == d:
             if self.velLeft != 0 or self.velUp != 0:
                 velocity = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
                 slowdown = self.naturalSlowdown / velocity
-                self.velLeft -= self.velLeft * slowdown
-                self.velUp -= self.velUp * slowdown
+                self.velLeft -= self.velLeft * slowdown * self.display.game.delta_time * self.display.game.calibration
+                self.velUp -= self.velUp * slowdown * self.display.game.delta_time * self.display.game.calibration
 
         # if not self.boost:
         #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)

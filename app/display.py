@@ -58,20 +58,23 @@ class game_display(basic_display):
 
     def render(self):
         self.game.screen.fill((26, 26, 26))
-        for y in range(len(self.map)):
-            for x in range(len(self.map[y])):
-                if self.map[y][x] == 1:
-                    color = (255, 255, 255)
-                    pygame.draw.rect(self.screen, color,
-                                     (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
-                elif self.map[y][x] == 2:
-                    color = (0, 0, 0)
-                    pygame.draw.rect(self.screen, color,
-                                     (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
-                elif self.map[y][x] == 3:
-                    color = (128, 128, 128)
-                    pygame.draw.rect(self.screen, color,
-                                     (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
+        # for y in range(len(self.map)):
+        #     for x in range(len(self.map[y])):
+        #         if self.map[y][x] == 0:
+        #             continue
+        #         elif self.map[y][x] == 1:
+        #
+        #             color = (255, 255, 255)
+        #             pygame.draw.rect(self.screen, color,
+        #                              (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
+        #         elif self.map[y][x] == 2:
+        #             color = (0, 0, 0)
+        #             pygame.draw.rect(self.screen, color,
+        #                              (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
+        #         elif self.map[y][x] == 3:
+        #             color = (128, 128, 128)
+        #             pygame.draw.rect(self.screen, color,
+        #                              (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
         self.particle_system.draw(self.screen)
         for obj in self.objects:
             obj.render()
