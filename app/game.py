@@ -17,6 +17,7 @@ class Game:
         self.run = True
 
         self.delta_time = 0
+        self.calibration = 60
         self.prev_time = time.time()
 
         self.objects = []

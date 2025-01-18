@@ -7,14 +7,14 @@ class Player:
         self.display = display
         self.x,self.y, self.playerWidth, self.playerHeight = 500, 500, 25, 50
         self.color = (100, 200, 100)
-        self.acceleration = 0.2
-        self.backceleration = 0.1
-        self.rotationSpeed = 3
-        self.maxSpeed = 8
-        self.naturalSlowdown = 0.08 # when the player doesn't press W or S
-        self.speedCorrection = 0.5 # when the car is going over the speed limit
-        self.nitroPower = 0.5
-        self.borderForce = 2
+        self.acceleration = 0.2 * self.display.game.calibration
+        self.backceleration = 0.1 * self.display.game.calibration
+        self.rotationSpeed = 3 * self.display.game.calibration
+        self.maxSpeed = 8 * self.display.game.calibration
+        self.naturalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
+        self.speedCorrection = 0.5 * self.display.game.calibration # when the car is going over the speed limit
+        self.nitroPower = 0.5 * self.display.game.calibration
+        self.borderForce = 2 * self.display.game.calibration
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.image = pygame.image.load("images/jeffcar.png").convert_alpha()
@@ -112,9 +112,9 @@ class Player:
             self.velLeft += a
             self.velUp += b
         if self.a:
-            self.rotation = (self.rotation + self.rotationSpeed) % 360
+            self.rotation = (self.rotation + self.rotationSpeed * self.display.game.delta_time) % 360
         if self.d:
-            self.rotation = (self.rotation - self.rotationSpeed) % 360
+            self.rotation = (self.rotation - self.rotationSpeed * self.display.game.delta_time) % 360
 
         if self.boost and self.nitroAmount >= 1:
             self.nitroAmount -= 1
@@ -144,8 +144,8 @@ class Player:
         if self.y > self.display.screenHeight:
             self.velUp = self.borderForce
 
-        self.x -= self.velLeft
-        self.y -= self.velUp
+        self.x -= self.velLeft * self.display.game.delta_time
+        self.y -= self.velUp * self.display.game.delta_time
 
     def get_rect_dimentions(self):
         alfa = 90 - self.rotation % 90
