@@ -53,7 +53,7 @@ class game_display(basic_display):
             obj.events(event)
 
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self.game.current_display = self.game.displays['pause_display']
+            self.game.change_display('pause_display')
 
 
     def mainloop(self):
@@ -204,4 +204,4 @@ class pause_display(basic_display):
             obj.events(event)
 
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self.game.current_display = self.game.displays['game_display']
+            self.game.change_display('game_display')

@@ -42,17 +42,17 @@ class Button:  # A button class
     def events(self, event):  # Checks events
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.rect.collidepoint(event.pos):  # Checks if the button has been pressed
             if self.action == 'to_game_display':
-                self.display.game.current_display = self.display.game.displays['game_display']
+                self.display.game.change_display('game_display')
             elif self.action == 'to_map_maker_display':
-                self.display.game.current_display = self.display.game.displays['map_display']
+                self.display.game.change_display('map_display')
             elif self.action == "export_map":
                 self.display.game.current_display.export_map()
             elif self.action == 'quit':
                 self.display.game.run = False
             elif self.action == 'settings':
-                self.display.game.current_display = self.display.game.displays['settings_display']
+                self.display.game.change_display('settings_display')
             elif self.action == 'to_main_menu':
-                self.display.game.current_display = self.display.game.displays['main_menu_display']
+                self.display.game.change_display('main_menu_display')
             else:
                 print('No action assigned to this button')
 
