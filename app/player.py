@@ -177,7 +177,7 @@ class Player:
         if self.player_mask.overlap(mask, (x - self.rect.topleft[0], y - self.rect.topleft[1])):
             sharedMask = self.player_mask.overlap_mask(mask, (x - self.rect.topleft[0], y - self.rect.topleft[1]))
             sharedSurface = sharedMask.to_surface()
-            print(sharedSurface)
+            # print(sharedSurface)
             self.display.screen.blit(sharedSurface, self.rect)
 
 
