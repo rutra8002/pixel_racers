@@ -8,20 +8,11 @@ class Game:
 
         config.set_config()
 
-        self.cfg = config.read_config()
-
-        self.version = self.cfg['version']
-        self.width = int(self.cfg['width'])
-        self.height = int(self.cfg['height'])
-        self.fps = float(self.cfg['fps'])
-        self.title = self.cfg['title']
-        self.fullscreen = int(self.cfg['full-screen'])
-        self.enable_debug = int(self.cfg['enable_debug'])
+        self.update_settings()
 
         self.objects_in_memory = 0
         self.clock = pygame.time.Clock()
         self.font = None
-
 
         self.run = True
 
@@ -29,10 +20,6 @@ class Game:
 
         self.objects = []
 
-        self.screen = pygame.display.set_mode((self.width, self.height))
-        if self.fullscreen:
-            pygame.display.toggle_fullscreen()
-        pygame.display.set_caption(f"{self.title} (v {self.version})")
 
 
         self.displays = {'template_display': display.basic_display(self), 'game_display': display.game_display(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self)}
@@ -108,5 +95,21 @@ class Game:
 
         pygame.display.update()
         pygame.display.flip()
+
+    def update_settings(self):
+        self.cfg = config.read_config()
+
+        self.version = self.cfg['version']
+        self.width = int(self.cfg['width'])
+        self.height = int(self.cfg['height'])
+        self.fps = float(self.cfg['fps'])
+        self.title = self.cfg['title']
+        self.fullscreen = int(self.cfg['full-screen'])
+        self.enable_debug = int(self.cfg['enable_debug'])
+
+        self.screen = pygame.display.set_mode((self.width, self.height))
+        if self.fullscreen:
+            pygame.display.toggle_fullscreen()
+        pygame.display.set_caption(f"{self.title} (v {self.version})")
 
 

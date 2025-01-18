@@ -158,12 +158,17 @@ class main_menu_display(basic_display):
         basic_display.__init__(self, game)
 
         self.amount_of_buttons = 4
-        self.button_padding = 15
-        custom_text.Custom_text(self, self.game.width/2, self.game.height/3.8, 'VROOM!\n    VROOM!', text_color='white', font_height=95)
-        custom_button.Button(self, 'to_game_display', self.button_padding, self.game.height + (- self.button_padding - 80) * self.amount_of_buttons, 350, 80, text='Game goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-        custom_button.Button(self, 'settings', self.button_padding, self.game.height + (- self.button_padding - 80) * (self.amount_of_buttons - 1), 350, 80, text='Settings', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-        custom_button.Button(self, 'to_map_maker_display', self.button_padding, self.game.height + (- self.button_padding - 80) * (self.amount_of_buttons - 2), 350, 80, text='Map-maker goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-        self.to_map_maker_button = custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - 80) * (self.amount_of_buttons - 3), 350, 80, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        self.button_padding = self.game.height * (1/96)
+        self.button_width_modifier = 45.5/256
+        self.button_heigh_modifier = 10.4/144
+        self.button_width = self.game.width*self.button_width_modifier
+        self.button_height = self.game.height*self.button_heigh_modifier
+
+        custom_text.Custom_text(self, self.game.width/2, self.game.height/5, 'VROOM!\n    VROOM!', text_color='white', font_height=int(self.game.height*(19/216)))
+        custom_button.Button(self, 'to_game_display', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * self.amount_of_buttons, self.button_width, self.button_height, text='Game goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'settings', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 1), self.button_width, self.button_height, text='Settings', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'to_map_maker_display', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 2), self.button_width, self.button_height, text='Map-maker goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 3), self.button_width, self.button_height, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
 
     def mainloop(self):
@@ -175,9 +180,15 @@ class main_menu_display(basic_display):
 class settings_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
-        custom_text.Custom_text(self, self.game.width/2, self.game.height/8, 'SETTINGS', text_color='white', font_height=95)
+
+        self.button_width_modifier = 45.5 / 256
+        self.button_heigh_modifier = 10.4 / 144
+        self.button_width = self.game.width * self.button_width_modifier
+        self.button_height = self.game.height * self.button_heigh_modifier
+
+        custom_text.Custom_text(self, self.game.width/2, self.game.height/8, 'SETTINGS', text_color='white', font_height=int(self.game.height*(19/216)))
         custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
-        custom_button.Button(self, 'to_main_menu', self.game.width/2, self.game.height/2, 350, 80, text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'to_main_menu', self.game.width/2, self.game.height/2, self.button_width, self.button_height, text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
     def mainloop(self):
         pass
