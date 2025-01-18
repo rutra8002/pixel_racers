@@ -2,7 +2,8 @@ from customObjects import custom_images, custom_text, custom_button
 import random
 import pygame
 import json
-from app import player, enemy, parkinson
+from app import player, enemy
+from particle_system import ParticleSystem
 
 class basic_display:
     def __init__(self, game):
@@ -33,7 +34,7 @@ class game_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
 
-        self.particle_system = parkinson.ParticleSystem()
+        self.particle_system = ParticleSystem()
 
         self.p = player.Player(self)
         self.enemy1 = enemy.Enemy(self)
