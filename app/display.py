@@ -43,6 +43,8 @@ class game_display(basic_display):
         self.enemy1 = enemy.Enemy(self)
         self.objects.append(self.enemy1)
         self.objects.append(self.p)
+        self.map_surface = pygame.Surface((self.game.width, self.game.height))
+        self.draw_map()
         # for y in range(len(self.map)):
         #     for x in range(len(self.map[y])):
         #         if self.map[y][x] == 1:
@@ -55,26 +57,25 @@ class game_display(basic_display):
         #             color = (26, 26, 26)
 
 
+    def draw_map(self):
+        self.map_surface.fill((26, 26, 26))
+        for y in range(len(self.map)):
+            for x in range(len(self.map[y])):
+                if self.map[y][x] == 0:
+                    color = (26, 26, 26)
+                elif self.map[y][x] == 1:
+                    color = (255, 255, 255)
+                elif self.map[y][x] == 2:
+                    color = (0, 0, 0)
+                elif self.map[y][x] == 3:
+                    color = (128, 128, 128)
+                pygame.draw.rect(self.map_surface, color,
+                                 (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
+
+
 
     def render(self):
-        self.game.screen.fill((26, 26, 26))
-        # for y in range(len(self.map)):
-        #     for x in range(len(self.map[y])):
-        #         if self.map[y][x] == 0:
-        #             continue
-        #         elif self.map[y][x] == 1:
-        #
-        #             color = (255, 255, 255)
-        #             pygame.draw.rect(self.screen, color,
-        #                              (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
-        #         elif self.map[y][x] == 2:
-        #             color = (0, 0, 0)
-        #             pygame.draw.rect(self.screen, color,
-        #                              (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
-        #         elif self.map[y][x] == 3:
-        #             color = (128, 128, 128)
-        #             pygame.draw.rect(self.screen, color,
-        #                              (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
+        self.screen.blit(self.map_surface, (0, 0))
         self.particle_system.draw(self.screen)
         for obj in self.objects:
             obj.render()
