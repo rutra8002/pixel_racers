@@ -89,7 +89,7 @@ class game_display(basic_display):
 
 
     def mainloop(self):
-        self.particle_system.update()
+        self.particle_system.update(self.game.delta_time)
         self.p.loop()
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 

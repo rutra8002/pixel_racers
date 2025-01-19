@@ -67,13 +67,13 @@ class Player:
         self.particle_counter += 1
 
         if self.particle_counter % 3 == 0:
-            self.particle_system.add_particle(back_wheel1_x, back_wheel1_y, self.velLeft * self.display.game.delta_time, self.velUp * self.display.game.delta_time, -0.01 * self.velLeft * self.display.game.delta_time, -0.01 * self.velUp * self.display.game.delta_time, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square')
-            self.particle_system.add_particle(back_wheel2_x, back_wheel2_y, self.velLeft * self.display.game.delta_time, self.velUp * self.display.game.delta_time, -0.01 * self.velLeft * self.display.game.delta_time, -0.01 * self.velUp * self.display.game.delta_time, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square')
+            self.particle_system.add_particle(back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp, -0.01 * self.velLeft, -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square')
+            self.particle_system.add_particle(back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp, -0.01 * self.velLeft, -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square')
 
         if self.boost:
             nitro_x = self.x - back_wheel_x_offset
             nitro_y = self.y - back_wheel_y_offset
-            self.particle_system.add_particle(nitro_x, nitro_y, self.velLeft * self.display.game.delta_time, self.velUp * self.display.game.delta_time, 0, 0, 0, 0, 1, 200, 10, 200, 100, 30, 150, 'circle', True)
+            self.particle_system.add_particle(nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100, 30, 150, 'circle', True)
 
 
     def events(self, event):
