@@ -1,3 +1,5 @@
+from json.decoder import WHITESPACE
+
 import pygame
 from pygame import *
 import math as lolino
@@ -63,7 +65,6 @@ class Player:
         back_wheel1_y = self.y - back_wheel_y_offset + lolino.cos(angle_rad) * (self.playerWidth / 2)
         back_wheel2_x = self.x - back_wheel_x_offset + lolino.sin(angle_rad) * (self.playerWidth / 2)
         back_wheel2_y = self.y - back_wheel_y_offset - lolino.cos(angle_rad) * (self.playerWidth / 2)
-
         self.particle_counter += 1
 
         if self.particle_counter % 3 == 0:
@@ -172,12 +173,13 @@ class Player:
     def loop(self):
         self.movement()
         self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0], self.display.enemy1.rect.topleft[1])
+        self.collision_detection(self.display.mapMask, 0, 0)
 
     def collision_detection(self, mask, x, y):
         if self.player_mask.overlap(mask, (x - self.rect.topleft[0], y - self.rect.topleft[1])):
             sharedMask = self.player_mask.overlap_mask(mask, (x - self.rect.topleft[0], y - self.rect.topleft[1]))
-            sharedSurface = sharedMask.to_surface()
-            # print(sharedSurface)
+            sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
+            sharedSurface.set_colorkey((0, 0, 0))
             self.display.screen.blit(sharedSurface, self.rect)
-
+            pygame.display.update()
 

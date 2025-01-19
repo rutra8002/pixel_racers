@@ -48,6 +48,18 @@ class game_display(basic_display):
         self.objects.append(self.p)
         self.map_surface = pygame.Surface((self.game.width, self.game.height))
         self.draw_map()
+        self.map_surface.set_colorkey((26, 26, 26))
+        self.mapMask = pygame.mask.from_surface(self.map_surface)
+        # for y in range(len(self.map)):
+        #     for x in range(len(self.map[y])):
+        #         if self.map[y][x] == 1:
+        #             color = (255, 255, 255)
+        #         elif self.map[y][x] == 2:
+        #             color = (0, 0, 0)
+        #         elif self.map[y][x] == 3:
+        #             color = (128, 128, 128)
+        #         else:
+        #             color = (26, 26, 26)
 
 
     def draw_map(self):
