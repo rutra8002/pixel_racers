@@ -41,8 +41,8 @@ class Button:  # A button class
 
     def events(self, event):  # Checks events
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.rect.collidepoint(event.pos):  # Checks if the button has been pressed
-            if self.action == 'to_game_display':
-                self.display.game.change_display('game_display')
+            if self.action == 'to_level_selector':
+                self.display.game.change_display('level_selector')
             elif self.action == 'to_map_maker_display':
                 self.display.game.change_display('map_display')
             elif self.action == "export_map":
@@ -53,6 +53,23 @@ class Button:  # A button class
                 self.display.game.change_display('settings_display')
             elif self.action == 'to_main_menu':
                 self.display.game.change_display('main_menu_display')
+            elif self.action == 'play_course':
+                course_to_play = self.display.game.displays['level_selector'].currently_selected
+                print(list(self.display.game.displays['level_selector'].levels.keys()))
+                self.display.game.change_display(list(self.display.game.displays['level_selector'].levels.keys())[course_to_play])
+            elif self.action == 'back_to_level_selector':
+                self.display.game.displays['level_selector'].reload_maps()
+                self.display.game.change_display('level_selector')
+            elif self.action == 'move_selection_to_left':
+                lvl_display = self.display.game.displays['level_selector']
+                if lvl_display.currently_selected > 0:
+                    lvl_display.currently_selected -= 1
+                    lvl_display.update_surfaces(-1)
+            elif self.action == 'move_selection_to_right':
+                lvl_display = self.display.game.displays['level_selector']
+                if lvl_display.currently_selected < len(list(lvl_display.levels.values())) - 1:
+                    lvl_display.currently_selected += 1
+                    lvl_display.update_surfaces(1)
             else:
                 print('No action assigned to this button')
 

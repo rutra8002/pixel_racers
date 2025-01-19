@@ -23,8 +23,10 @@ class Game:
 
 
 
-        self.displays = {'template_display': display.basic_display(self), 'game_display': display.game_display(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self)}
+        self.displays = {'template_display': display.basic_display(self), 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'easy_level_display': display.game_display(self, 'easy'), 'medium_level_display': display.game_display(self, 'medium'), 'hard_level_display': display.game_display(self, 'hard') }
         self.current_display = self.displays['main_menu_display']
+
+        self.displays['level_selector'].get_levels(['easy_level_display', 'medium_level_display', 'hard_level_display'])
 
         self.pointing_at = []
 
@@ -56,7 +58,10 @@ class Game:
 
     def change_display(self, new_display):
         self.fade(fade_in=True)
-        self.current_display = self.displays[new_display]
+        try:
+            self.current_display = self.displays[new_display]
+        except Exception as e:
+            print(e)
         self.fade(fade_in=False)
 
     def mainloop(self):
