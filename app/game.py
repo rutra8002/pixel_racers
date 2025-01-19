@@ -52,7 +52,7 @@ class Game:
             fade_surface.set_alpha(alpha)
             self.render()
             self.screen.blit(fade_surface, (0, 0))
-            pygame.display.update()
+            pygame.display.flip()
             self.delta_time = self.clock.tick(self.fps) / 1000.0
             alpha += increment * self.delta_time if fade_in else -increment * self.delta_time
 
@@ -103,8 +103,6 @@ class Game:
             self.debug_items[4].update_text(f'Objects in memory: {self.current_display.objects_in_memory}')
             self.debug_items[5].update_text(f'Current display: {type(self.current_display)}')
 
-
-        pygame.display.update()
         pygame.display.flip()
 
     def update_settings(self):
