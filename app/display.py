@@ -117,7 +117,7 @@ class map_display(basic_display):
         # self.block_width = self.game.width // len(self.map[0])
         # self.block_height = self.game.height // len(self.map)
 
-        self.export_button = custom_button.Button(self, "export_map", 10, 10, self.temp_width, self.temp_height, text="Export map", text_color=(0, 255, 0), color=(255, 0, 0), border_radius=0)
+        self.export_button = custom_button.Button(self, "export_map", 10, 10, 100, 50, text="Export map", text_color=(0, 255, 0), color=(255, 0, 0), border_radius=0)
 
     def mainloop(self):
         self.delta_time = self.game.delta_time
