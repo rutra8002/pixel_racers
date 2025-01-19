@@ -1,7 +1,4 @@
-from json.decoder import WHITESPACE
-
 import pygame
-from pygame import *
 import math as lolino
 
 class Player:
@@ -76,6 +73,11 @@ class Player:
             nitro_y = self.y - back_wheel_y_offset
             self.particle_system.add_particle(nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100, 30, 150, 'circle', True)
 
+        if self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1]):
+            self.collision_render(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1])
+
+        if self.collision_detection(self.display.mapMask, 0, 0):
+            self.collision_render(self.display.mapMask, 0, 0)
 
     def events(self, event):
         if event.type == pygame.KEYDOWN:
@@ -176,10 +178,12 @@ class Player:
         self.collision_detection(self.display.mapMask, 0, 0)
 
     def collision_detection(self, mask, x, y):
-        if self.player_mask.overlap(mask, (x - self.rect.topleft[0], y - self.rect.topleft[1])):
-            sharedMask = self.player_mask.overlap_mask(mask, (x - self.rect.topleft[0], y - self.rect.topleft[1]))
-            sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
-            sharedSurface.set_colorkey((0, 0, 0))
-            self.display.screen.blit(sharedSurface, self.rect)
-            pygame.display.update()
+        offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
+        return self.player_mask.overlap(mask, offset)
 
+    def collision_render(self, mask, x, y):
+        offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
+        sharedMask = self.player_mask.overlap_mask(mask, offset)
+        sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
+        sharedSurface.set_colorkey((0, 0, 0))
+        self.display.screen.blit(sharedSurface, self.rect)
