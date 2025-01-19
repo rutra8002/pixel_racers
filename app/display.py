@@ -106,11 +106,12 @@ class map_display(basic_display):
         self.cx, self.cy = 0, 0
         self.zoom_level = 1.0
         self.tool = 1
-        self.gcd = lolekszcz.gcd(self.game.width, self.game.height)
+        self.gcd = 5
         self.temp_width = self.game.width // self.gcd
         self.temp_height = self.game.height // self.gcd
         # print(self.game.width // self.gcd, self.game.height // self.gcd)
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
+        print(self.gcd)
         self.block_width = self.gcd
         self.block_height = self.gcd
         # self.block_width = self.game.width // len(self.map[0])

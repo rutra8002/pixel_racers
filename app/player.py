@@ -112,6 +112,7 @@ class Player:
             self.velUp += b
         if self.s:
             a, b = self.get_acceleration_with_trigonometry(-1, self.backceleration * self.display.game.delta_time * self.display.game.calibration/2)
+            # print(self.velUp, self.velLeft)
             self.velLeft += a
             self.velUp += b
         if self.a:
