@@ -114,6 +114,11 @@ class map_display(basic_display):
         print(self.gcd)
         self.block_width = self.gcd
         self.block_height = self.gcd
+
+        self.brush_size = 1
+
+        self.brushtext = custom_text.Custom_text(self, 10, 70, f'Brush size: {self.brush_size}', text_color='white', font_height=30, center=False)
+        self.tooltext = custom_text.Custom_text(self, 10, 100, f'Tool: {self.tool}', text_color='white', font_height=30, center=False)
         # self.block_width = self.game.width // len(self.map[0])
         # self.block_height = self.game.height // len(self.map)
 
@@ -130,6 +135,8 @@ class map_display(basic_display):
             self.cx += 500 * self.delta_time
         if keys[pygame.K_d]:
             self.cx -= 500 * self.delta_time
+        self.brushtext.update_text(f'Brush size: {self.brush_size}')
+        self.tooltext.update_text(f'Tool: {self.tool}')
 
 
     def render(self):
@@ -145,47 +152,39 @@ class map_display(basic_display):
                     color = (26, 26, 26)
                 pygame.draw.rect(self.screen, color, (x * self.block_width + self.cx, y * self.block_height + self.cy, self.block_width, self.block_height))
         pygame.draw.rect(self.screen, (155, 0, 0),(self.cx, self.cy, self.block_width*self.temp_width, self.block_height*self.temp_height), 2)
+
+
         for obj in self.objects:
             obj.render()
 
     def events(self, event):
         for obj in self.objects:
             obj.events(event)
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_1:
-            self.tool = 1
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_2:
-            self.tool = 2
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_3:
-            self.tool = 3
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_0:
-            self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1:
+                self.tool = 1
+            elif event.key == pygame.K_2:
+                self.tool = 2
+            elif event.key == pygame.K_3:
+                self.tool = 3
+            elif event.key == pygame.K_0:
+                self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
+            elif event.key == pygame.K_PLUS or event.key == pygame.K_EQUALS:  # Increase brush size
+                self.brush_size = min(self.brush_size + 1, max(self.temp_width, self.temp_height))
+            elif event.key == pygame.K_MINUS:  # Decrease brush size
+                self.brush_size = max(self.brush_size - 1, 1)
         self.handle_mouse_events(event)
         self.handle_zoom(event)
 
     def handle_mouse_events(self, event):
-        mouse_pressed = pygame.mouse.get_pressed()
-        if mouse_pressed[0]:
-            self.place_block()
-        elif mouse_pressed[2]:
-            self.remove_block()
-
-    def place_block(self):
-        x, y = pygame.mouse.get_pos()
-        x -= self.cx
-        y -= self.cy
-        x, y = int(x), int(y)
-        grid_x, grid_y = x // self.block_width, y // self.block_height
-        if 0 <= grid_x < len(self.map[0]) and 0 <= grid_y < len(self.map):
-            self.map[grid_y][grid_x] = self.tool
-
-    def remove_block(self):
-        x, y = pygame.mouse.get_pos()
-        x -= self.cx
-        y -= self.cy
-        x, y = int(x), int(y)
-        grid_x, grid_y = x // self.block_width, y // self.block_height
-        if 0 <= grid_x < len(self.map[0]) and 0 <= grid_y < len(self.map):
-            self.map[grid_y][grid_x] = 0
+        if event.type == pygame.MOUSEBUTTONDOWN or (event.type == pygame.MOUSEMOTION and event.buttons[0]):
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            grid_x = (mouse_x - self.cx) // self.block_width
+            grid_y = (mouse_y - self.cy) // self.block_height
+            for dy in range(-self.brush_size // 2, self.brush_size // 2 + 1):
+                for dx in range(-self.brush_size // 2, self.brush_size // 2 + 1):
+                    if 0 <= grid_x + dx < self.temp_width and 0 <= grid_y + dy < self.temp_height:
+                        self.map[grid_y + dy][grid_x + dx] = self.tool
 
     def handle_zoom(self, event):
         if event.type == pygame.MOUSEWHEEL:
