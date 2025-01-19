@@ -55,7 +55,6 @@ class Button:  # A button class
                 self.display.game.change_display('main_menu_display')
             elif self.action == 'play_course':
                 course_to_play = self.display.game.displays['level_selector'].currently_selected
-                print(list(self.display.game.displays['level_selector'].levels.keys()))
                 self.display.game.change_display(list(self.display.game.displays['level_selector'].levels.keys())[course_to_play])
             elif self.action == 'back_to_level_selector':
                 self.display.game.displays['level_selector'].reload_maps()
