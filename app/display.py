@@ -15,6 +15,7 @@ class basic_display:
         self.screenWidth, self.screenHeight = self.game.width, self.game.height
         self.objects = []
         self.objects_in_memory = 0
+        self.bgColor = (200, 100, 100)
 
 
         self.loading_error = custom_text.Custom_text(self, self.game.width/2, self.game.height/2, 'Error, no display found!', text_color='white')
@@ -42,6 +43,8 @@ class game_display(basic_display):
             self.map = self.levels['aaa.json']
         elif self.difficulty == 'medium':
             self.map = self.levels['niegrzyb.json']
+        elif self.difficulty == 's4':
+            self.map = self.levels['map_2025-01-20_13-26-06.json']
         else:
             self.map = self.levels['grzyb.json']
         self.particle_system = ParticleSystem()
@@ -93,6 +96,7 @@ class game_display(basic_display):
 
 
     def render(self):
+        self.screen.fill(self.bgColor)
         self.screen.blit(self.map_surface, (0, 0))
         self.particle_system.draw(self.screen)
         for obj in self.objects:

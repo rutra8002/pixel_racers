@@ -12,7 +12,7 @@ class Player:
         self.maxSpeed = 8 * self.display.game.calibration
         self.naturalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
         self.speedCorrection = 0.5 * self.display.game.calibration # when the car is going over the speed limit
-        self.nitroPower = 0.5 * self.display.game.calibration
+        self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
@@ -23,7 +23,7 @@ class Player:
         self.player_mask = pygame.mask.from_surface(self.image)
         self.mask_image = self.player_mask.to_surface()
 
-        self.image.set_colorkey((0, 0, 0))
+        # self.image.set_colorkey((0, 0, 0))
         # self.image.fill(self.color)
 
         self.velUp, self.velLeft = 0, 0
@@ -187,4 +187,13 @@ class Player:
         sharedMask = self.player_mask.overlap_mask(mask, offset)
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
+        surf_w, surf_h = sharedSurface.get_size()
+        for x in range(surf_w):
+            for y in range(surf_h):
+                print(sharedSurface.get_at((x, y)))
+                if sharedSurface.get_at((x, y))[1] == 200:
+                    # sharedSurface.set_at((x,y), (0, 0, 200))
+                    pygame.draw.rect(self.display.screen, (0, 0, 200), (x, y, 1, 1))
+        print(surf_h, surf_w)
+
         self.display.screen.blit(sharedSurface, self.rect)
