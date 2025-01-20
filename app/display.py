@@ -43,9 +43,7 @@ class game_display(basic_display):
             self.map = self.levels['aaa.json']
         elif self.difficulty == 'medium':
             self.map = self.levels['niegrzyb.json']
-        elif self.difficulty == 's4':
-            self.map = self.levels['map_2025-01-20_13-26-06.json']
-        else:
+        elif self.difficulty == 'hard':
             self.map = self.levels['grzyb.json']
         self.particle_system = ParticleSystem()
         self.block_width = self.game.width // len(self.map[0])

@@ -23,10 +23,10 @@ class Game:
 
 
 
-        self.displays = {'template_display': display.basic_display(self), 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'easy_level_display': display.game_display(self, 'easy'), 'medium_level_display': display.game_display(self, 'medium'), 'hard_level_display': display.game_display(self, 'hard'), 's4': display.game_display(self, 's4') }
+        self.displays = {'template_display': display.basic_display(self), 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'easy_level_display': display.game_display(self, 'easy'), 'medium_level_display': display.game_display(self, 'medium'), 'hard_level_display': display.game_display(self, 'hard')}
         self.current_display = self.displays['main_menu_display']
 
-        self.displays['level_selector'].get_levels(['easy_level_display', 'medium_level_display', 'hard_level_display', 's4'])
+        self.displays['level_selector'].get_levels(['easy_level_display', 'medium_level_display', 'hard_level_display'])
 
         self.pointing_at = []
 
