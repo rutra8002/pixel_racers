@@ -177,10 +177,10 @@ class map_display(basic_display):
         self.handle_zoom(event)
 
     def handle_mouse_events(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN or (event.type == pygame.MOUSEMOTION and event.buttons[0]):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button==pygame.BUTTON_LEFT or (event.type == pygame.MOUSEMOTION and event.buttons[0]):
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            grid_x = (mouse_x - self.cx) // self.block_width
-            grid_y = (mouse_y - self.cy) // self.block_height
+            grid_x = int((mouse_x - self.cx) // self.block_width)
+            grid_y = int((mouse_y - self.cy) // self.block_height)
             for dy in range(-self.brush_size // 2, self.brush_size // 2 + 1):
                 for dx in range(-self.brush_size // 2, self.brush_size // 2 + 1):
                     if 0 <= grid_x + dx < self.temp_width and 0 <= grid_y + dy < self.temp_height:
