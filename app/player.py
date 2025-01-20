@@ -187,13 +187,8 @@ class Player:
         sharedMask = self.player_mask.overlap_mask(mask, offset)
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
-        surf_w, surf_h = sharedSurface.get_size()
-        for x in range(surf_w):
-            for y in range(surf_h):
-                print(sharedSurface.get_at((x, y)))
-                if sharedSurface.get_at((x, y))[1] == 200:
-                    # sharedSurface.set_at((x,y), (0, 0, 200))
-                    pygame.draw.rect(self.display.screen, (0, 0, 200), (x, y, 1, 1))
-        print(surf_h, surf_w)
-
         self.display.screen.blit(sharedSurface, self.rect)
+
+        blue_surface = sharedMask.to_surface(setcolor=(0, 0, 200))
+        blue_surface.set_colorkey((0, 0, 0))
+        self.display.screen.blit(blue_surface, (0, 0))
