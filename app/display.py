@@ -113,8 +113,6 @@ class game_display(basic_display):
         self.p.loop()
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
-
-
 class map_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
