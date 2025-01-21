@@ -4,17 +4,28 @@ import math as lolino
 class Player:
     def __init__(self, display):
         self.display = display
-        self.x,self.y, self.playerWidth, self.playerHeight = 500, 500, 25, 50
+        self.playerWidth, self.playerHeight = 25, 50
         self.color = (100, 200, 100)
-        self.acceleration = 0.2 * self.display.game.calibration
-        self.backceleration = 0.1 * self.display.game.calibration
-        self.rotationSpeed = 3 * self.display.game.calibration
-        self.maxSpeed = 8 * self.display.game.calibration
+
+        self.normalAcceleration = 0.2 * self.display.game.calibration
+        self.normalBackceleration = 0.1 * self.display.game.calibration
+        self.olejAcceleration = 0 * self.display.game.calibration
+        self.normalRotationSpeed = 3 * self.display.game.calibration
+
+        self.normalMaxSpeed = 8 * self.display.game.calibration
         self.naturalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
         self.speedCorrection = 0.5 * self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
-        self.borderBounce = False # whether the bounce from borders depends on the player's velocity
+
+
+        self.x, self.y = 500, 500
+        self.currentAcceleration = self.normalAcceleration
+        self.currentBackceleration = self.normalBackceleration
+        self.currentMaxSpeed = self.normalMaxSpeed
+        self.currentRotationSpeed = self.normalRotationSpeed
+
+        self.borderBounce = True # whether the bounce from borders depends on the player's velocity
         self.borderBounciness = 0.9
         self.WASD_steering = False # For debug only
 
@@ -108,28 +119,28 @@ class Player:
         c, d = self.velLeft, self.velUp
         if self.w:
             if self.WASD_steering:
-                self.velUp += self.acceleration
+                self.velUp += self.CurrentAcceleration
             else:
-                a, b = self.get_acceleration_with_trigonometry(1, self.acceleration * self.display.game.delta_time * self.display.game.calibration/2)
+                a, b = self.get_acceleration_with_trigonometry(1, self.CurrentAcceleration * self.display.game.delta_time * self.display.game.calibration / 2)
                 self.velLeft += a
                 self.velUp += b
         if self.s:
             if self.WASD_steering:
-                self.velUp -= self.acceleration
+                self.velUp -= self.CurrentAcceleration
             else:
-                a, b = self.get_acceleration_with_trigonometry(-1, self.backceleration * self.display.game.delta_time * self.display.game.calibration/2)
+                a, b = self.get_acceleration_with_trigonometry(-1, self.currentBackceleration * self.display.game.delta_time * self.display.game.calibration / 2)
                 self.velLeft += a
                 self.velUp += b
         if self.a:
             if self.WASD_steering:
-                self.velLeft += self.acceleration
+                self.velLeft += self.CurrentAcceleration
             else:
-                self.rotation = (self.rotation + self.rotationSpeed * self.display.game.delta_time) % 360
+                self.rotation = (self.rotation + self.currentRotationSpeed * self.display.game.delta_time) % 360
         if self.d:
             if self.WASD_steering:
-                self.velLeft -= self.acceleration
+                self.velLeft -= self.CurrentAcceleration
             else:
-                self.rotation = (self.rotation - self.rotationSpeed * self.display.game.delta_time) % 360
+                self.rotation = (self.rotation - self.currentRotationSpeed * self.display.game.delta_time) % 360
 
         if self.boost and self.nitroAmount >= 1:
             self.nitroAmount -= 1
@@ -146,9 +157,9 @@ class Player:
 
         # if not self.boost:
         #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
-        #     if magnitude > self.maxSpeed:
-        #         self.velLeft = (self.velLeft / magnitude) * self.maxSpeed
-        #         self.velUp = (self.velUp / magnitude) * self.maxSpeed
+        #     if magnitude > self.currentMaxSpeed:
+        #         self.velLeft = (self.velLeft / magnitude) * self.currentMaxSpeed
+        #         self.velUp = (self.velUp / magnitude) * self.currentMaxSpeed
 
         if self.borderBounce:
             if self.x < 0:
