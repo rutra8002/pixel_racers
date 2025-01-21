@@ -45,7 +45,7 @@ class Player:
         self.rotation = 0
 
         self.steer_rotation = 0
-        self.delta_rotation = 0.1 * self.display.game.calibration
+        self.delta_rotation = 0.01 * self.display.game.calibration
         self.max_steer_rotation = 15
         self.min_steer_rotation = -15
 
@@ -125,28 +125,28 @@ class Player:
         c, d = self.velLeft, self.velUp
         if self.w:
             if self.WASD_steering:
-                self.velUp += self.CurrentAcceleration
+                self.velUp += self.currentAcceleration
             else:
-                a, b = self.get_acceleration_with_trigonometry(1, self.CurrentAcceleration * self.display.game.delta_time * self.display.game.calibration / 2)
+                a, b = self.get_acceleration_with_trigonometry(1, self.currentAcceleration * self.display.game.delta_time * self.display.game.calibration / 2)
                 self.velLeft += a
                 self.velUp += b
         if self.s:
             if self.WASD_steering:
-                self.velUp -= self.CurrentAcceleration
+                self.velUp -= self.currentAcceleration
             else:
                 a, b = self.get_acceleration_with_trigonometry(-1, self.currentBackceleration * self.display.game.delta_time * self.display.game.calibration / 2)
                 self.velLeft += a
                 self.velUp += b
         if self.a:
             if self.WASD_steering:
-                self.velLeft += self.CurrentAcceleration
+                self.velLeft += self.currentAcceleration
             else:
-                self.steer_rotation += self.rotationSpeed * self.display.game.delta_time
+                self.steer_rotation += self.currentRotationSpeed * self.display.game.delta_time
         if self.d:
             if self.WASD_steering:
-                self.velLeft -= self.CurrentAcceleration
+                self.velLeft -= self.currentAcceleration
             else:
-                self.steer_rotation += -self.rotationSpeed * self.display.game.delta_time
+                self.steer_rotation += -self.currentRotationSpeed * self.display.game.delta_time
 
 
         self.steer_rotation = max(self.min_steer_rotation, min(self.steer_rotation, self.max_steer_rotation))
