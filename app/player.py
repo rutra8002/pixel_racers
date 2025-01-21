@@ -214,7 +214,6 @@ class Player:
     def check_color(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
         sharedMask = self.player_mask.overlap_mask(mask, offset)
-        mapSurface = mask.to_surface()
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
         size = sharedSurface.get_size()
