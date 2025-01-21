@@ -1,4 +1,4 @@
-import pygame, sys
+import pygame, sys, threading, code
 from app import config, display
 from customObjects import custom_text, custom_images, custom_button
 
@@ -41,6 +41,23 @@ class Game:
 
         for debug_item in self.debug_items:
             debug_item.hidden = True
+
+        custom_locals = {
+            'self': self,
+            'pygame': pygame,
+            'config': config,
+            'display': display,
+            'custom_text': custom_text,
+            'custom_images': custom_images,
+            'custom_button': custom_button
+        }
+
+        console_thread = threading.Thread(target=self.start_console, args=(custom_locals,))
+        console_thread.start()
+
+    def start_console(self, locals):
+        console = code.InteractiveConsole(locals=locals)
+        console.interact()
 
     def fade(self, fade_in=True, duration=0.3):
         fade_surface = pygame.Surface((self.width, self.height))
