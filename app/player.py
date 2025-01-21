@@ -4,18 +4,30 @@ import math as lolino
 class Player:
     def __init__(self, display):
         self.display = display
-        self.x,self.y, self.playerWidth, self.playerHeight = 500, 500, 25, 50
+        self.playerWidth, self.playerHeight = 25, 50
         self.color = (100, 200, 100)
-        self.acceleration = 0.2 * self.display.game.calibration
-        self.backceleration = 0.1 * self.display.game.calibration
-        self.rotationSpeed = 3 * self.display.game.calibration
-        self.maxSpeed = 8 * self.display.game.calibration
+
+        self.normalAcceleration = 0.2 * self.display.game.calibration
+        self.normalBackceleration = 0.1 * self.display.game.calibration
+        self.olejAcceleration = 0 * self.display.game.calibration
+        self.normalRotationSpeed = 3 * self.display.game.calibration
+
+        self.normalMaxSpeed = 8 * self.display.game.calibration
         self.naturalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
         self.speedCorrection = 0.5 * self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
+
+
+        self.x, self.y = 500, 500
+        self.currentAcceleration = self.normalAcceleration
+        self.currentBackceleration = self.normalBackceleration
+        self.currentMaxSpeed = self.normalMaxSpeed
+        self.currentRotationSpeed = self.normalRotationSpeed
+
         self.borderBounce = True # whether the bounce from borders depends on the player's velocity
         self.borderBounciness = 0.9
+        self.WASD_steering = False # For debug only
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.image = pygame.image.load("images/jeffcar.png").convert_alpha()
@@ -56,10 +68,6 @@ class Player:
 
         if self.display.game.debug:
             pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
-        # if pygame.sprite.spritecollide(self.display.p, self.display.enemies, False):
-        #     print("collision", )
-
-        # print(self.velUp)
 
         back_wheel_offset = self.playerHeight / 2
         angle_rad = lolino.radians(-self.rotation)
@@ -116,18 +124,30 @@ class Player:
 
         c, d = self.velLeft, self.velUp
         if self.w:
-            a, b = self.get_acceleration_with_trigonometry(1, self.acceleration * self.display.game.delta_time * self.display.game.calibration/2)
-            self.velLeft += a
-            self.velUp += b
+            if self.WASD_steering:
+                self.velUp += self.CurrentAcceleration
+            else:
+                a, b = self.get_acceleration_with_trigonometry(1, self.CurrentAcceleration * self.display.game.delta_time * self.display.game.calibration / 2)
+                self.velLeft += a
+                self.velUp += b
         if self.s:
-            a, b = self.get_acceleration_with_trigonometry(-1, self.backceleration * self.display.game.delta_time * self.display.game.calibration/2)
-            # print(self.velUp, self.velLeft)
-            self.velLeft += a
-            self.velUp += b
+            if self.WASD_steering:
+                self.velUp -= self.CurrentAcceleration
+            else:
+                a, b = self.get_acceleration_with_trigonometry(-1, self.currentBackceleration * self.display.game.delta_time * self.display.game.calibration / 2)
+                self.velLeft += a
+                self.velUp += b
         if self.a:
-            self.steer_rotation += self.rotationSpeed * self.display.game.delta_time
+            if self.WASD_steering:
+                self.velLeft += self.CurrentAcceleration
+            else:
+                self.steer_rotation += self.rotationSpeed * self.display.game.delta_time
         if self.d:
-            self.steer_rotation += -self.rotationSpeed * self.display.game.delta_time
+            if self.WASD_steering:
+                self.velLeft -= self.CurrentAcceleration
+            else:
+                self.steer_rotation += -self.rotationSpeed * self.display.game.delta_time
+
 
         self.steer_rotation = max(self.min_steer_rotation, min(self.steer_rotation, self.max_steer_rotation))
 
@@ -157,9 +177,9 @@ class Player:
 
         # if not self.boost:
         #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
-        #     if magnitude > self.maxSpeed:
-        #         self.velLeft = (self.velLeft / magnitude) * self.maxSpeed
-        #         self.velUp = (self.velUp / magnitude) * self.maxSpeed
+        #     if magnitude > self.currentMaxSpeed:
+        #         self.velLeft = (self.velLeft / magnitude) * self.currentMaxSpeed
+        #         self.velUp = (self.velUp / magnitude) * self.currentMaxSpeed
 
         if self.borderBounce:
             if self.x < 0:
@@ -208,6 +228,8 @@ class Player:
 
         x = lolino.cos(r)
         y = lolino.sin(r)
+        if self.WASD_steering:
+            return self.velLeft, self.velUp
         return (x * -acc), (y * acc)
 
     def loop(self):

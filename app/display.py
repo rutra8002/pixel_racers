@@ -15,7 +15,12 @@ class basic_display:
         self.screenWidth, self.screenHeight = self.game.width, self.game.height
         self.objects = []
         self.objects_in_memory = 0
-        self.bgColor = (200, 100, 100)
+        self.bgColor = (26,26,26)
+        self.gravel_color = (128, 128, 128)
+        self.oil_color = (235, 180, 3)
+        self.asphalt_color = (26,26,26)
+        self.wall_color = (255, 255, 255)
+        self.ice_color = (63, 208, 212)
 
 
         self.loading_error = custom_text.Custom_text(self, self.game.width/2, self.game.height/2, 'Error, no display found!', text_color='white')
@@ -37,10 +42,6 @@ class basic_display:
 class game_display(basic_display):
     def __init__(self, game, difficulty):
         basic_display.__init__(self, game)
-        self.gravel_color = (128, 128, 128)
-        self.oil_color = (0, 0, 0)
-        self.asphalt_color = (26, 26, 26)
-        self.wall_color = (255, 255, 255)
         self.difficulty = difficulty
         self.import_maps()
         if self.difficulty == 'easy':
@@ -58,7 +59,7 @@ class game_display(basic_display):
         self.objects.append(self.p)
         self.map_surface = pygame.Surface((self.game.width, self.game.height))
         self.draw_map()
-        self.map_surface.set_colorkey((26, 26, 26))
+        self.map_surface.set_colorkey(self.bgColor)
         self.mapMask = pygame.mask.from_surface(self.map_surface)
         # for y in range(len(self.map)):
         #     for x in range(len(self.map[y])):
@@ -73,7 +74,7 @@ class game_display(basic_display):
 
 
     def draw_map(self):
-        self.map_surface.fill(self.asphalt_color)
+        self.map_surface.fill(self.bgColor)
         for y in range(len(self.map)):
             for x in range(len(self.map[y])):
                 if self.map[y][x] == 0:
@@ -120,10 +121,6 @@ class game_display(basic_display):
 class map_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
-        self.gravel_color = (128, 128, 128)
-        self.oil_color = (0, 0, 0)
-        self.asphalt_color = (26, 26, 26)
-        self.wall_color = (255, 255, 255)
         self.cx, self.cy = 0, 0
         self.zoom_level = 1.0
         self.tool = 1
@@ -146,6 +143,7 @@ class map_display(basic_display):
         self.export_button = custom_button.Button(self, "export_map", 10, 10, 100, 50, text="Export map", text_color=(0, 255, 0), color=(255, 0, 0), border_radius=0)
 
     def mainloop(self):
+
         self.delta_time = self.game.delta_time
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
