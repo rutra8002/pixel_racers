@@ -80,6 +80,7 @@ class Player:
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.collision_render(self.display.mapMask, 0, 0)
+            self.check_color(self.display.mapMask, 0, 0)
 
     def events(self, event):
         if event.type == pygame.KEYDOWN:
@@ -209,3 +210,14 @@ class Player:
         blue_surface = sharedMask.to_surface(setcolor=(0, 0, 200))
         blue_surface.set_colorkey((0, 0, 0))
         self.display.screen.blit(blue_surface, (0, 0))
+
+    def check_color(self, mask, x, y):
+        offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
+        sharedMask = self.player_mask.overlap_mask(mask, offset)
+        sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
+        sharedSurface.set_colorkey((0, 0, 0))
+        size = sharedSurface.get_size()
+        for x in range(size[0]):
+            for y in range(size[1]):
+                if sharedSurface.get_at((x, y))[1] == 200:
+                    print(self.display.map[(self.rect.topleft[1] + y) // self.display.block_height][(self.rect.topleft[0] + x) // self.display.block_width])

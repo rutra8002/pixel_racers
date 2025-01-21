@@ -37,6 +37,10 @@ class basic_display:
 class game_display(basic_display):
     def __init__(self, game, difficulty):
         basic_display.__init__(self, game)
+        self.gravel_color = (128, 128, 128)
+        self.oil_color = (0, 0, 0)
+        self.asphalt_color = (26, 26, 26)
+        self.wall_color = (255, 255, 255)
         self.difficulty = difficulty
         self.import_maps()
         if self.difficulty == 'easy':
@@ -69,17 +73,17 @@ class game_display(basic_display):
 
 
     def draw_map(self):
-        self.map_surface.fill((26, 26, 26))
+        self.map_surface.fill(self.asphalt_color)
         for y in range(len(self.map)):
             for x in range(len(self.map[y])):
                 if self.map[y][x] == 0:
                     continue
                 elif self.map[y][x] == 1:
-                    color = (255, 255, 255)
+                    color = self.wall_color
                 elif self.map[y][x] == 2:
-                    color = (0, 0, 0)
+                    color = self.oil_color
                 elif self.map[y][x] == 3:
-                    color = (128, 128, 128)
+                    color = self.gravel_color
                 pygame.draw.rect(self.map_surface, color,
                                  (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
     def import_maps(self):
@@ -113,11 +117,13 @@ class game_display(basic_display):
         self.p.loop()
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
-
-
 class map_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
+        self.gravel_color = (128, 128, 128)
+        self.oil_color = (0, 0, 0)
+        self.asphalt_color = (26, 26, 26)
+        self.wall_color = (255, 255, 255)
         self.cx, self.cy = 0, 0
         self.zoom_level = 1.0
         self.tool = 1
@@ -158,13 +164,13 @@ class map_display(basic_display):
         for y in range(len(self.map)):
             for x in range(len(self.map[y])):
                 if self.map[y][x] == 1:
-                    color = (255, 255, 255)
+                    color = self.wall_color
                 elif self.map[y][x] == 2:
-                    color = (0, 0, 0)
+                    color = self.oil_color
                 elif self.map[y][x] == 3:
-                    color = (128, 128, 128)
+                    color = self.gravel_color
                 else:
-                    color = (26, 26, 26)
+                    color = self.asphalt_color
                 pygame.draw.rect(self.screen, color, (x * self.block_width + self.cx, y * self.block_height + self.cy, self.block_width, self.block_height))
         pygame.draw.rect(self.screen, (155, 0, 0),(self.cx, self.cy, self.block_width*self.temp_width, self.block_height*self.temp_height), 2)
 
