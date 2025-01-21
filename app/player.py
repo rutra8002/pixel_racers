@@ -31,6 +31,12 @@ class Player:
         self.velUp, self.velLeft = 0, 0
         self.w, self.a, self.s, self.d, self.boost = False, False, False, False, False
         self.rotation = 0
+
+        self.steer_rotation = 0
+        self.delta_rotation = 0.1 * self.display.game.calibration
+        self.max_steer_rotation = 15
+        self.min_steer_rotation = -15
+
         self.nitroAmount = 0
 
         self.particle_system = self.display.particle_system
@@ -119,9 +125,22 @@ class Player:
             self.velLeft += a
             self.velUp += b
         if self.a:
-            self.rotation = (self.rotation + self.rotationSpeed * self.display.game.delta_time) % 360
+            self.steer_rotation += self.rotationSpeed * self.display.game.delta_time
         if self.d:
-            self.rotation = (self.rotation - self.rotationSpeed * self.display.game.delta_time) % 360
+            self.steer_rotation += -self.rotationSpeed * self.display.game.delta_time
+
+        self.steer_rotation = max(self.min_steer_rotation, min(self.steer_rotation, self.max_steer_rotation))
+
+
+        if self.w or self.s:
+            if self.steer_rotation > 0:
+                self.rotation += self.delta_rotation
+                self.steer_rotation -= self.delta_rotation
+            elif self.steer_rotation < 0:
+                self.rotation -= self.delta_rotation
+                self.steer_rotation += self.delta_rotation
+
+        print(self.steer_rotation)
 
         if self.boost and self.nitroAmount >= 1:
             self.nitroAmount -= 1
@@ -220,4 +239,4 @@ class Player:
         for x in range(size[0]):
             for y in range(size[1]):
                 if sharedSurface.get_at((x, y))[1] == 200:
-                    print(self.display.map[(self.rect.topleft[1] + y) // self.display.block_height][(self.rect.topleft[0] + x) // self.display.block_width])
+                    pass
