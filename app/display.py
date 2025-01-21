@@ -124,6 +124,11 @@ class map_display(basic_display):
         self.cx, self.cy = 0, 0
         self.zoom_level = 1.0
         self.tool = 1
+
+        self.player_position = None
+        self.player_width = 6
+        self.player_height = 4
+
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
         self.temp_height = self.game.height // self.gcd
@@ -170,6 +175,8 @@ class map_display(basic_display):
                 else:
                     color = self.asphalt_color
                 pygame.draw.rect(self.screen, color, (x * self.block_width + self.cx, y * self.block_height + self.cy, self.block_width, self.block_height))
+        if self.player_position:
+            pygame.draw.rect(self.screen, (255, 0, 0), (self.player_position[0] * self.block_width + self.cx, self.player_position[1] * self.block_height + self.cy, self.player_width, self.player_height))
         pygame.draw.rect(self.screen, (155, 0, 0),(self.cx, self.cy, self.block_width*self.temp_width, self.block_height*self.temp_height), 2)
 
 
@@ -186,6 +193,8 @@ class map_display(basic_display):
                 self.tool = 2
             elif event.key == pygame.K_3:
                 self.tool = 3
+            elif event.key == pygame.K_p:
+                self.tool = 'p'
             elif event.key == pygame.K_0:
                 self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
             elif event.key == pygame.K_PLUS or event.key == pygame.K_EQUALS:  # Increase brush size
@@ -196,15 +205,18 @@ class map_display(basic_display):
         self.handle_zoom(event)
 
     def handle_mouse_events(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button==pygame.BUTTON_LEFT or (event.type == pygame.MOUSEMOTION and event.buttons[0]):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT  or (event.type == pygame.MOUSEMOTION and event.buttons[0]):
             mouse_x, mouse_y = pygame.mouse.get_pos()
             grid_x = int((mouse_x - self.cx) // self.block_width)
             grid_y = int((mouse_y - self.cy) // self.block_height)
-            for dy in range(-self.brush_size // 2, self.brush_size // 2 + 1):
-                for dx in range(-self.brush_size // 2, self.brush_size // 2 + 1):
-                    if 0 <= grid_x + dx < self.temp_width and 0 <= grid_y + dy < self.temp_height:
-                        self.map[grid_y + dy][grid_x + dx] = self.tool
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button==pygame.BUTTON_RIGHT or (event.type == pygame.MOUSEMOTION and event.buttons[2]):
+            if self.tool == 'p':
+                self.player_position = (grid_x, grid_y)
+            else:
+                for dy in range(-self.brush_size // 2, self.brush_size // 2 + 1):
+                    for dx in range(-self.brush_size // 2, self.brush_size // 2 + 1):
+                        if 0 <= grid_x + dx < self.temp_width and 0 <= grid_y + dy < self.temp_height:
+                            self.map[grid_y + dy][grid_x + dx] = self.tool
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT or (event.type == pygame.MOUSEMOTION and event.buttons[2]):
             mouse_x, mouse_y = pygame.mouse.get_pos()
             grid_x = int((mouse_x - self.cx) // self.block_width)
             grid_y = int((mouse_y - self.cy) // self.block_height)
@@ -233,8 +245,12 @@ class map_display(basic_display):
             os.makedirs('maps')
         current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         filename = f'maps/map_{current_time}.json'
+        map_data = {
+            'map': self.map,
+            'player_position': self.player_position
+        }
         with open(filename, 'w') as f:
-            json.dump(self.map, f)
+            json.dump(map_data, f)
         self.export_button.update_text('Exported!')
 
 
