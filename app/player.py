@@ -14,6 +14,8 @@ class Player:
         self.speedCorrection = 0.5 * self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
+        self.borderBounce = True # whether the bounce from borders depends on the player's velocity
+        self.borderBounciness = 0.9
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.image = pygame.image.load("images/jeffcar.png").convert_alpha()
@@ -139,14 +141,29 @@ class Player:
         #         self.velLeft = (self.velLeft / magnitude) * self.maxSpeed
         #         self.velUp = (self.velUp / magnitude) * self.maxSpeed
 
-        if self.x < 0:
-            self.velLeft = -self.borderForce
-        if self.x > self.display.screenWidth:
-            self.velLeft = self.borderForce
-        if self.y < 0:
-            self.velUp = -self.borderForce
-        if self.y > self.display.screenHeight:
-            self.velUp = self.borderForce
+        if self.borderBounce:
+            if self.x < 0:
+                self.velLeft *= -self.borderBounciness
+                self.x += 1
+            if self.x > self.display.screenWidth:
+                self.velLeft *= -self.borderBounciness
+                self.x -= 1
+            if self.y < 0:
+                self.velUp *= -self.borderBounciness
+                self.y += 1
+            if self.y > self.display.screenHeight:
+                self.velUp *= -self.borderBounciness
+                self.y -= 1
+
+        else:
+            if self.x < 0:
+                self.velLeft = -self.borderForce
+            if self.x > self.display.screenWidth:
+                self.velLeft = self.borderForce
+            if self.y < 0:
+                self.velUp = -self.borderForce
+            if self.y > self.display.screenHeight:
+                self.velUp = self.borderForce
 
         self.x -= self.velLeft * self.display.game.delta_time
         self.y -= self.velUp * self.display.game.delta_time
