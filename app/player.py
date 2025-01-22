@@ -9,12 +9,14 @@ class Player:
 
         self.normalAcceleration = 0.2 * self.display.game.calibration
         self.normalBackceleration = 0.1 * self.display.game.calibration
-        self.olejAcceleration = 0 * self.display.game.calibration
+        self.iceAcceleration = 0 * self.display.game.calibration
+        self.iceBackceleration = 0 * self.display.game.calibration
         self.normalRotationSpeed = 3 * self.display.game.calibration
+        self.normalMaxSpeed = 10 * self.display.game.calibration
+        self.gravelMaxSpeed = 2 * self.display.game.calibration
 
-        self.normalMaxSpeed = 8 * self.display.game.calibration
         self.naturalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
-        self.speedCorrection = 0.5 * self.display.game.calibration # when the car is going over the speed limit
+        self.speedCorrection = 1.5 * self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
 
@@ -45,9 +47,9 @@ class Player:
         self.rotation = 0
 
         self.steer_rotation = 0
-        self.delta_rotation = 0.01 * self.display.game.calibration
-        self.max_steer_rotation = 15
-        self.min_steer_rotation = -15
+        self.delta_rotation = 0.1 * self.display.game.calibration
+        self.max_steer_rotation = 0.01
+        self.min_steer_rotation = -self.max_steer_rotation
 
         self.nitroAmount = 0
 
@@ -91,6 +93,9 @@ class Player:
 
         if self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1]):
             self.collision_render(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1])
+        else:
+            self.currentMaxSpeed = self.normalMaxSpeed
+            self.currentAcceleration = self.normalAcceleration
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.collision_render(self.display.mapMask, 0, 0)
@@ -168,12 +173,12 @@ class Player:
             self.velLeft += a * self.display.game.delta_time * self.display.game.calibration
             self.velUp += b * self.display.game.delta_time * self.display.game.calibration
 
-        if self.velLeft == c and self.velUp == d:
+        magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
+        if magnitude > self.currentMaxSpeed:
+            self.slow_down(self.speedCorrection / magnitude)
+        elif self.velLeft == c and self.velUp == d:
             if self.velLeft != 0 or self.velUp != 0:
-                velocity = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
-                slowdown = self.naturalSlowdown / velocity
-                self.velLeft -= self.velLeft * slowdown * self.display.game.delta_time * self.display.game.calibration
-                self.velUp -= self.velUp * slowdown * self.display.game.delta_time * self.display.game.calibration
+                self.slow_down(self.naturalSlowdown / magnitude)
 
         # if not self.boost:
         #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
@@ -207,6 +212,11 @@ class Player:
 
         self.x -= self.velLeft * self.display.game.delta_time
         self.y -= self.velUp * self.display.game.delta_time
+
+
+    def slow_down(self, slowdown):
+        self.velLeft -= self.velLeft * slowdown * self.display.game.delta_time * self.display.game.calibration
+        self.velUp -= self.velUp * slowdown * self.display.game.delta_time * self.display.game.calibration
 
     def get_rect_dimentions(self):
         alfa = 90 - self.rotation % 90
@@ -258,7 +268,13 @@ class Player:
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
         size = sharedSurface.get_size()
+        self.currentMaxSpeed = self.normalMaxSpeed
+        self.currentAcceleration = self.normalAcceleration
         for x in range(size[0]):
             for y in range(size[1]):
                 if sharedSurface.get_at((x, y))[1] == 200:
-                    pass
+                    tile = self.display.map[(self.rect.topleft[1] + y) // self.display.block_height][(self.rect.topleft[0] + x) // self.display.block_width]
+                    if not tile == 0:
+                        print(tile)
+                    if tile == 3:
+                        self.currentMaxSpeed = self.gravelMaxSpeed
