@@ -11,12 +11,13 @@ class Player:
         self.normalBackceleration = 0.1 * self.display.game.calibration
         self.iceAcceleration = 0 * self.display.game.calibration
         self.iceBackceleration = 0 * self.display.game.calibration
-        self.normalRotationSpeed = 0.05 * self.display.game.calibration
-        self.normalMaxSpeed = 10 * self.display.game.calibration
+        self.normalRotationSpeed = 0.03 * self.display.game.calibration
+        self.gravelRotationSpeed = 0.01 * self.display.game.calibration
+        self.normalMaxSpeed = 12 * self.display.game.calibration
         self.gravelMaxSpeed = 2 * self.display.game.calibration
 
         self.naturalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
-        self.speedCorrection = 1.5 * self.display.game.calibration # when the car is going over the speed limit
+        self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
 
@@ -98,6 +99,7 @@ class Player:
         else:
             self.currentMaxSpeed = self.normalMaxSpeed
             self.currentAcceleration = self.normalAcceleration
+            self.currentRotationSpeed = self.normalRotationSpeed
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.collision_render(self.display.mapMask, 0, 0)
@@ -138,7 +140,6 @@ class Player:
                 self.boost = False
 
     def movement(self):
-
         c, d = self.velLeft, self.velUp
         if self.w:
             if self.WASD_steering:
@@ -178,7 +179,7 @@ class Player:
             self.rotation -= self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed
 
 
-        print(self.steer_rotation)
+        # print(self.steer_rotation)
 
         if self.boost and self.nitroAmount >= 1:
             self.nitroAmount -= 1
@@ -188,10 +189,11 @@ class Player:
 
         magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
         if magnitude > self.currentMaxSpeed:
-            self.slow_down(self.speedCorrection / magnitude)
+            self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
         elif self.velLeft == c and self.velUp == d:
             if self.velLeft != 0 or self.velUp != 0:
                 self.slow_down(self.naturalSlowdown / magnitude)
+
 
         # if not self.boost:
         #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
@@ -282,12 +284,15 @@ class Player:
         sharedSurface.set_colorkey((0, 0, 0))
         size = sharedSurface.get_size()
         self.currentMaxSpeed = self.normalMaxSpeed
+        self.currentRotationSpeed = self.normalRotationSpeed
         self.currentAcceleration = self.normalAcceleration
         for x in range(size[0]):
             for y in range(size[1]):
                 if sharedSurface.get_at((x, y))[1] == 200:
                     tile = self.display.map[(self.rect.topleft[1] + y) // self.display.block_height][(self.rect.topleft[0] + x) // self.display.block_width]
-                    if not tile == 0:
-                        print(tile)
                     if tile == 3:
                         self.currentMaxSpeed = self.gravelMaxSpeed
+                        self.currentRotationSpeed = self.gravelRotationSpeed
+                    # elif tile == 1:
+                    #     self.velUp *= -1
+                    #     self.velLeft *= -1
