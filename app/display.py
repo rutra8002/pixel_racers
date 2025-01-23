@@ -117,8 +117,8 @@ class map_display(basic_display):
         self.tool = 1
 
         self.player_position = None
-        self.player_width = 6
-        self.player_height = 4
+        self.player_width = 50
+        self.player_height = 25
 
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
@@ -167,7 +167,9 @@ class map_display(basic_display):
                     color = self.asphalt_color
                 pygame.draw.rect(self.screen, color, (x * self.block_width + self.cx, y * self.block_height + self.cy, self.block_width, self.block_height))
         if self.player_position:
-            pygame.draw.rect(self.screen, (255, 0, 0), (self.player_position[0] * self.block_width + self.cx, self.player_position[1] * self.block_height + self.cy, self.player_width, self.player_height))
+            player_width_scaled = self.player_width * self.zoom_level
+            player_height_scaled = self.player_height * self.zoom_level
+            pygame.draw.rect(self.screen, (255, 0, 0), (self.player_position[0] * self.block_width + self.cx, self.player_position[1] * self.block_height + self.cy, player_width_scaled, player_height_scaled))
         pygame.draw.rect(self.screen, (155, 0, 0),(self.cx, self.cy, self.block_width*self.temp_width, self.block_height*self.temp_height), 2)
 
 
