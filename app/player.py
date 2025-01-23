@@ -11,7 +11,7 @@ class Player:
         self.normalBackceleration = 0.1 * self.display.game.calibration
         self.iceAcceleration = 0 * self.display.game.calibration
         self.iceBackceleration = 0 * self.display.game.calibration
-        self.normalRotationSpeed = 3 * self.display.game.calibration
+        self.normalRotationSpeed = 0.05 * self.display.game.calibration
         self.normalMaxSpeed = 10 * self.display.game.calibration
         self.gravelMaxSpeed = 2 * self.display.game.calibration
 
@@ -47,9 +47,11 @@ class Player:
         self.rotation = 0
 
         self.steer_rotation = 0
-        self.delta_rotation = 0.1 * self.display.game.calibration
-        self.max_steer_rotation = 0.01
+        self.delta_rotation = 0.01*self.display.game.calibration
+        self.max_steer_rotation = 60
         self.min_steer_rotation = -self.max_steer_rotation
+
+        self.steering_speed = 10 * self.display.game.calibration
 
         self.nitroAmount = 0
 
@@ -101,6 +103,16 @@ class Player:
             self.collision_render(self.display.mapMask, 0, 0)
             self.check_color(self.display.mapMask, 0, 0)
 
+        # Draw steering wheel
+        wheel_center = (100, 100)
+        wheel_radius = 50
+        pygame.draw.circle(self.display.screen, (255, 255, 255), wheel_center, wheel_radius, 2)
+
+        angle = lolino.radians(self.steer_rotation)
+        line_length = 40
+        line_end = (wheel_center[0] + line_length * lolino.cos(angle), wheel_center[1] - line_length * lolino.sin(angle))
+        pygame.draw.line(self.display.screen, (255, 0, 0), wheel_center, line_end, 2)
+
     def events(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_w:
@@ -146,24 +158,25 @@ class Player:
             if self.WASD_steering:
                 self.velLeft += self.currentAcceleration
             else:
-                self.steer_rotation += self.currentRotationSpeed * self.display.game.delta_time
+                self.steer_rotation += self.delta_rotation * self.display.game.delta_time * self.steering_speed
         if self.d:
             if self.WASD_steering:
                 self.velLeft -= self.currentAcceleration
             else:
-                self.steer_rotation += -self.currentRotationSpeed * self.display.game.delta_time
+                self.steer_rotation += -self.delta_rotation * self.display.game.delta_time * self.steering_speed
+        if not self.a and not self.d:
+            self.steer_rotation -= 10*self.steer_rotation * self.display.game.delta_time
+        if abs(self.steer_rotation) < 0.01:
+            self.steer_rotation = 0
 
 
         self.steer_rotation = max(self.min_steer_rotation, min(self.steer_rotation, self.max_steer_rotation))
 
+        if self.w:
+            self.rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed
+        if self.s:
+            self.rotation -= self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed
 
-        if self.w or self.s:
-            if self.steer_rotation > 0:
-                self.rotation += self.delta_rotation
-                self.steer_rotation -= self.delta_rotation
-            elif self.steer_rotation < 0:
-                self.rotation -= self.delta_rotation
-                self.steer_rotation += self.delta_rotation
 
         print(self.steer_rotation)
 
