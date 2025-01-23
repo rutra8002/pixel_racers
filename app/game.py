@@ -51,12 +51,12 @@ class Game:
             'custom_button': custom_button
         }
 
-        console_thread = threading.Thread(target=self.start_console, args=(custom_locals,))
-        console_thread.start()
-
-    def start_console(self, locals):
-        console = code.InteractiveConsole(locals=locals)
-        console.interact()
+    #     console_thread = threading.Thread(target=self.start_console, args=(custom_locals,))
+    #     console_thread.start()
+    #
+    # def start_console(self, locals):
+    #     console = code.InteractiveConsole(locals=locals)
+    #     console.interact()
 
     def fade(self, fade_in=True, duration=0.3):
         fade_surface = pygame.Surface((self.width, self.height))
