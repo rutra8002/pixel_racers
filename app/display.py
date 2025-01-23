@@ -356,6 +356,7 @@ class level_selector(basic_display):
     def render(self):
         for i, lvl in enumerate(list(self.levels.values())):
             if i - self.currently_selected == 0:
+                pygame.draw.rect(self.game.screen, self.bgColor, (self.game.width/2 - self.selected_surface_width/2 -5, self.game.height/2 - self.selected_surface_height/2-5, self.selected_surface_width + 10, self.selected_surface_height + 10))
                 pygame.draw.rect(self.game.screen, (0, 125, 0), (self.game.width/2 - self.selected_surface_width/2 -5, self.game.height/2 - self.selected_surface_height/2-5, self.selected_surface_width + 10, self.selected_surface_height + 10), width=10)
                 self.game.screen.blit(lvl, (self.game.width/2 - self.selected_surface_width/2, self.game.height/2 - self.selected_surface_height/2))
             else:
@@ -363,13 +364,16 @@ class level_selector(basic_display):
                 if i - self.currently_selected < 0:
                     a = 1
 
+                pygame.draw.rect(self.game.screen, self.bgColor, (
+                    self.game.width / 2 - (self.selected_surface_width / 2) * a + (
+                            self.not_selected_surface_width + 25) * (i - self.currently_selected) - 5,
+                    self.game.height / 2 - self.not_selected_surface_height / 2 - 5,
+                    self.not_selected_surface_width + 10,
+                    self.not_selected_surface_height + 10))
+
                 self.game.screen.blit(lvl, (
                 self.game.width / 2 - (self.selected_surface_width / 2) * a + (self.not_selected_surface_width + 25) * (i - self.currently_selected), self.game.height / 2 - self.not_selected_surface_height / 2))
 
-                pygame.draw.rect(self.game.screen, (26, 26, 26), (
-                self.game.width / 2 - (self.selected_surface_width / 2) * a + (self.not_selected_surface_width + 25) * (i - self.currently_selected) - 5,
-                self.game.height / 2 - self.not_selected_surface_height / 2 - 5, self.not_selected_surface_width + 10,
-                self.not_selected_surface_height + 10), width=10)
         for obj in self.objects:
             obj.render()
 
