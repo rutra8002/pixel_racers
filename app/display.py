@@ -43,13 +43,8 @@ class game_display(basic_display):
     def __init__(self, game, difficulty):
         basic_display.__init__(self, game)
         self.difficulty = difficulty
-        self.import_maps()
-        if self.difficulty == 'easy':
-            self.map = self.levels['aaa.json']
-        elif self.difficulty == 'medium':
-            self.map = self.levels['niegrzyb.json']
-        elif self.difficulty == 'hard':
-            self.map = self.levels['grzyb.json']
+        self.import_map()
+
         self.particle_system = ParticleSystem()
         self.block_width = self.game.width // len(self.map[0])
         self.block_height = self.game.height // len(self.map)
@@ -87,15 +82,11 @@ class game_display(basic_display):
                     color = self.gravel_color
                 pygame.draw.rect(self.map_surface, color,
                                  (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
-    def import_maps(self):
-        self.levels = {}
-        if not os.path.exists('maps'):
-            os.makedirs('maps')
-        for filename in os.listdir('maps'):
-            if filename.endswith('.json'):
-                with open(os.path.join('maps', filename), 'r') as f:
-                    map_data = json.load(f)
-                    self.levels[filename] = map_data
+    def import_map(self):
+        with open(f"{self.game.map_dir}\{self.difficulty}.json", 'r') as f:
+            map_data = json.load(f)
+            self.map = map_data
+            f.close()
 
 
     def render(self):
@@ -245,12 +236,14 @@ class map_display(basic_display):
             os.makedirs('maps')
         current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         filename = f'maps/map_{current_time}.json'
-        map_data = {
-            'map': self.map,
-            'player_position': self.player_position
-        }
+        # map_data = {
+        #     'map': self.map,
+        #     'player_position': self.player_position
+        # }
+        map_data = self.map
         with open(filename, 'w') as f:
             json.dump(map_data, f)
+            f.close()
         self.export_button.update_text('Exported!')
 
 
@@ -380,9 +373,10 @@ class level_selector(basic_display):
         for obj in self.objects:
             obj.render()
 
-    def get_levels(self, levels):
+    def load_maps(self, levels):
         self.levels = {}
         for i, lvl in enumerate(levels):
+            self.game.displays[lvl] = game_display(self.game, lvl)
             if i - self.currently_selected == 0:
                 sur = pygame.transform.scale(self.game.displays[lvl].map_surface, (self.selected_surface_width, self.selected_surface_height))
             else:
@@ -414,4 +408,5 @@ class level_selector(basic_display):
                                              (self.not_selected_surface_width, self.not_selected_surface_height))
                 self.levels[list(self.levels.keys())[i - dir]] = sur
                 break
+
 

@@ -1,4 +1,4 @@
-import pygame, sys, threading, code
+import pygame, sys, threading, code, os
 from app import config, display
 from customObjects import custom_text, custom_images, custom_button
 
@@ -8,6 +8,7 @@ class Game:
 
         config.set_config()
 
+        self.map_dir = 'maps'
         self.update_settings()
 
         self.objects_in_memory = 0
@@ -21,12 +22,10 @@ class Game:
 
         self.objects = []
 
-
-
-        self.displays = {'template_display': display.basic_display(self), 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'easy_level_display': display.game_display(self, 'easy'), 'medium_level_display': display.game_display(self, 'medium'), 'hard_level_display': display.game_display(self, 'hard')}
+        self.displays = {'template_display': display.basic_display(self), 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self)}
         self.current_display = self.displays['main_menu_display']
 
-        self.displays['level_selector'].get_levels(['easy_level_display', 'medium_level_display', 'hard_level_display'])
+        self.load_maps()
 
         self.pointing_at = []
 
@@ -137,5 +136,12 @@ class Game:
         if self.fullscreen:
             pygame.display.toggle_fullscreen()
         pygame.display.set_caption(f"{self.title} (v {self.version})")
+
+        if not os.path.exists(self.map_dir):
+            os.makedirs(self.map_dir)
+
+    def load_maps(self):
+        self.map_files = [file[:-5] for file in os.listdir(self.map_dir) if file.endswith('.json')]
+        self.displays['level_selector'].load_maps(self.map_files)
 
 
