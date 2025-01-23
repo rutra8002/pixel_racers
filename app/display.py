@@ -3,7 +3,7 @@ import random
 import math as lolekszcz
 import pygame
 import json
-from app import player, enemy
+from app import player, enemy, obstacle
 from particle_system import ParticleSystem
 from datetime import datetime
 import os
@@ -49,6 +49,7 @@ class game_display(basic_display):
         self.block_width = self.game.width // len(self.map[0])
         self.block_height = self.game.height // len(self.map)
         self.p = player.Player(self)
+        self.obstacles = []
         self.enemy1 = enemy.Enemy(self)
         self.objects.append(self.enemy1)
         self.objects.append(self.p)
@@ -95,13 +96,22 @@ class game_display(basic_display):
         self.particle_system.draw(self.screen)
         for obj in self.objects:
             obj.render()
+        for o in self.obstacles:
+            o.render()
 
     def events(self, event):
         for obj in self.objects:
             obj.events(event)
+        for o in self.obstacles:
+            o.events(event)
 
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.game.change_display('pause_display')
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+            print("cccc")
+            self.obstacles.append(obstacle.Obstacle(self, self.p.x, self.p.y, 'spikes'))
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_v:
+            self.obstacles.append(obstacle.Obstacle(self, self.p.x, self.p.y, 'barrier'))
 
 
     def mainloop(self):
@@ -163,6 +173,8 @@ class map_display(basic_display):
                     color = self.oil_color
                 elif self.map[y][x] == 3:
                     color = self.gravel_color
+                elif self.map[y][x] == 4:
+                    color = self.ice_color
                 else:
                     color = self.asphalt_color
                 pygame.draw.rect(self.screen, color, (x * self.block_width + self.cx, y * self.block_height + self.cy, self.block_width, self.block_height))
@@ -184,6 +196,8 @@ class map_display(basic_display):
                 self.tool = 2
             elif event.key == pygame.K_3:
                 self.tool = 3
+            elif event.key == pygame.K_4:
+                self.tool = 4
             elif event.key == pygame.K_p:
                 self.tool = 'p'
             elif event.key == pygame.K_0:
