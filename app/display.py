@@ -284,9 +284,18 @@ class main_menu_display(basic_display):
         custom_button.Button(self, 'to_map_maker_display', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 2), self.button_width, self.button_height, text='Map-maker goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
         custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 3), self.button_width, self.button_height, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
+        self.particle_system = self.game.menu_particle_system
+
+    def render(self):
+        self.particle_system.add_particle(random.randint(0, self.game.width), random.uniform(0, self.game.height), random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600, random.randint(1, 2), random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 100, 'square')
+        self.particle_system.draw(self.screen)
+
+        for obj in self.objects:
+            obj.render()
+
 
     def mainloop(self):
-        pass
+        self.particle_system.update(self.game.delta_time)
 
 class settings_display(basic_display):
     def __init__(self, game):
@@ -301,8 +310,21 @@ class settings_display(basic_display):
         custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
         custom_button.Button(self, 'to_level_selector', self.game.width/2, self.game.height/2, self.button_width, self.button_height, text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
+        self.particle_system = self.game.menu_particle_system
+
+    def render(self):
+        self.particle_system.add_particle(random.randint(0, self.game.width), random.uniform(0, self.game.height),
+                                          random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
+                                          random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
+                                          random.randint(0, 255), 100, 'square')
+        self.particle_system.draw(self.screen)
+
+        for obj in self.objects:
+            obj.render()
+
+
     def mainloop(self):
-        pass
+        self.particle_system.update(self.game.delta_time)
 
     def events(self, event):
         for obj in self.objects:
@@ -345,7 +367,7 @@ class level_selector(basic_display):
                              self.button_width, self.button_height, text='BACK', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
-
+        self.particle_system = self.game.menu_particle_system
 
         self.descaling_factor = 3
         self.currently_selected = 0
@@ -370,9 +392,15 @@ class level_selector(basic_display):
 
 
     def mainloop(self):
-        pass
+        self.particle_system.update(self.game.delta_time)
 
     def render(self):
+        self.particle_system.add_particle(random.randint(0, self.game.width), random.uniform(0, self.game.height),
+                                          random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
+                                          random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
+                                          random.randint(0, 255), 100, 'square')
+        self.particle_system.draw(self.screen)
+
         for i, lvl in enumerate(list(self.levels.values())):
             if i - self.currently_selected == 0:
                 pygame.draw.rect(self.game.screen, self.bgColor, (self.game.width/2 - self.selected_surface_width/2 -5, self.game.height/2 - self.selected_surface_height/2-5, self.selected_surface_width + 10, self.selected_surface_height + 10))

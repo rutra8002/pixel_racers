@@ -1,6 +1,7 @@
 import pygame, sys, threading, code, os
 from app import config, display
 from customObjects import custom_text, custom_images, custom_button
+import particle_system
 
 class Game:
     def __init__(self):
@@ -21,6 +22,8 @@ class Game:
         self.calibration = 60
 
         self.objects = []
+
+        self.menu_particle_system = particle_system.ParticleSystem()
 
         self.displays = {'template_display': display.basic_display(self), 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self)}
         self.current_display = self.displays['main_menu_display']
