@@ -60,15 +60,19 @@ class Button:  # A button class
                 self.display.game.displays['level_selector'].reload_maps()
                 self.display.game.change_display('level_selector')
             elif self.action == 'move_selection_to_left':
+                self.display.game.fade(fade_in=True)
                 lvl_display = self.display.game.displays['level_selector']
                 if lvl_display.currently_selected > 0:
                     lvl_display.currently_selected -= 1
                     lvl_display.update_surfaces(-1)
+                self.display.game.fade(fade_in=False)
             elif self.action == 'move_selection_to_right':
+                self.display.game.fade(fade_in=True)
                 lvl_display = self.display.game.displays['level_selector']
                 if lvl_display.currently_selected < len(list(lvl_display.levels.values())) - 1:
                     lvl_display.currently_selected += 1
                     lvl_display.update_surfaces(1)
+                self.display.game.fade(fade_in=False)
             else:
                 print('No action assigned to this button')
 
