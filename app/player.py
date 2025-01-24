@@ -96,6 +96,12 @@ class Player:
 
         if self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1]):
             self.collision_render(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1])
+        for obstacle in self.display.obstacles:
+            if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
+                if obstacle.type == 1:
+                    print("spikes")
+                elif obstacle.type == 2:
+                    print("barrier")
         else:
             self.currentMaxSpeed = self.normalMaxSpeed
             self.currentAcceleration = self.normalAcceleration
