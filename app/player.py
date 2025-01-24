@@ -2,7 +2,7 @@ import pygame
 import math as lolino
 
 class Player:
-    def __init__(self, display):
+    def __init__(self, display, image, coordinates):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.color = (100, 200, 100)
@@ -20,9 +20,9 @@ class Player:
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
+        self.oilDelay = 1000
 
-
-        self.x, self.y = 500, 500
+        self.x, self.y = coordinates[0], coordinates[1]
         self.currentAcceleration = self.normalAcceleration
         self.currentBackceleration = self.normalBackceleration
         self.currentMaxSpeed = self.normalMaxSpeed
@@ -33,12 +33,12 @@ class Player:
         self.WASD_steering = False # For debug only
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
-        self.image = pygame.image.load("images/jeffcar.png").convert_alpha()
+        self.image = pygame.image.load(image).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.center = self.x, self.y
 
-        self.player_mask = pygame.mask.from_surface(self.image)
-        self.mask_image = self.player_mask.to_surface()
+        self.car_mask = pygame.mask.from_surface(self.image)
+        self.mask_image = self.car_mask.to_surface()
 
         # self.image.set_colorkey((0, 0, 0))
         # self.image.fill(self.color)
@@ -62,12 +62,12 @@ class Player:
     def render(self):
         self.center = self.rect.center
         # self.display.screen.blit(self.mask_image, self.rect)
-        self.nitroAmount += 0.3
+        self.nitroAmount += 1
         self.newImg = pygame.transform.rotate(self.image, self.rotation + 90)
         self.rect = self.newImg.get_rect()
         self.rect.center = self.x, self.y
-        self.player_mask = pygame.mask.from_surface(self.newImg)
-        self.mask_image = self.player_mask.to_surface()
+        self.car_mask = pygame.mask.from_surface(self.newImg)
+        self.mask_image = self.car_mask.to_surface()
         # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
         self.display.screen.blit(self.newImg, self.rect)
 
@@ -117,24 +117,24 @@ class Player:
 
     def events(self, event):
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_w:
+            if event.key in (pygame.K_w, pygame.K_UP):
                 self.w = True
-            if event.key == pygame.K_a:
+            if event.key in (pygame.K_a, pygame.K_LEFT):
                 self.a = True
-            if event.key == pygame.K_s:
+            if event.key in (pygame.K_s, pygame.K_DOWN):
                 self.s = True
-            if event.key == pygame.K_d:
+            if event.key in (pygame.K_d, pygame.K_RIGHT):
                 self.d = True
             if event.key == pygame.K_SPACE:
                 self.boost = True
         elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_w:
+            if event.key in (pygame.K_w, pygame.K_UP):
                 self.w = False
-            if event.key == pygame.K_a:
+            if event.key in (pygame.K_a, pygame.K_LEFT):
                 self.a = False
-            if event.key == pygame.K_s:
+            if event.key in (pygame.K_s, pygame.K_DOWN):
                 self.s = False
-            if event.key == pygame.K_d:
+            if event.key in (pygame.K_d, pygame.K_RIGHT):
                 self.d = False
             if event.key == pygame.K_SPACE:
                 self.boost = False
@@ -264,11 +264,11 @@ class Player:
 
     def collision_detection(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
-        return self.player_mask.overlap(mask, offset)
+        return self.car_mask.overlap(mask, offset)
 
     def collision_render(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
-        sharedMask = self.player_mask.overlap_mask(mask, offset)
+        sharedMask = self.car_mask.overlap_mask(mask, offset)
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
         self.display.screen.blit(sharedSurface, self.rect)
@@ -279,7 +279,7 @@ class Player:
 
     def check_color(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
-        sharedMask = self.player_mask.overlap_mask(mask, offset)
+        sharedMask = self.car_mask.overlap_mask(mask, offset)
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
         size = sharedSurface.get_size()

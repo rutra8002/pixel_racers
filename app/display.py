@@ -48,7 +48,7 @@ class game_display(basic_display):
         self.particle_system = ParticleSystem()
         self.block_width = self.game.width // len(self.map[0])
         self.block_height = self.game.height // len(self.map)
-        self.p = player.Player(self)
+        self.p = player.Player(self, "images/jeffcar.png", (500, 500))
         self.obstacles = []
         self.enemy1 = enemy.Enemy(self)
         self.objects.append(self.enemy1)
