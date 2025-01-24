@@ -2,10 +2,10 @@ import pygame
 import math as lolino
 
 class Player:
-    def __init__(self, display, image, coordinates):
+    def __init__(self, display, image, coordinates, isPlayer):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
-        self.color = (100, 200, 100)
+        self.isPlayer = isPlayer
 
         self.normalAcceleration = 0.2 * self.display.game.calibration
         self.normalBackceleration = 0.1 * self.display.game.calibration
@@ -30,7 +30,7 @@ class Player:
 
         self.borderBounce = True # whether the bounce from borders depends on the player's velocity
         self.borderBounciness = 0.9
-        self.WASD_steering = True # For debug only
+        self.WASD_steering = False # For debug only
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.image = pygame.image.load(image).convert_alpha()
@@ -94,8 +94,8 @@ class Player:
             nitro_y = self.y - back_wheel_y_offset
             self.particle_system.add_particle(nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100, 30, 150, 'circle', True)
 
-        if self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1]):
-            self.collision_render(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1])
+        # if self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1]):
+        #     self.collision_render(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1])
         for obstacle in self.display.obstacles:
             if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
                 if obstacle.type == 1:
@@ -122,36 +122,37 @@ class Player:
         pygame.draw.line(self.display.screen, (255, 0, 0), wheel_center, line_end, 2)
 
     def events(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key in (pygame.K_w, pygame.K_UP):
-                self.w = True
-            if event.key in (pygame.K_a, pygame.K_LEFT):
-                self.a = True
-            if event.key in (pygame.K_s, pygame.K_DOWN):
-                self.s = True
-            if event.key in (pygame.K_d, pygame.K_RIGHT):
-                self.d = True
-            if event.key == pygame.K_q:
-                self.q = True
-            if event.key == pygame.K_e:
-                self.e = True
-            if event.key == pygame.K_SPACE:
-                self.boost = True
-        elif event.type == pygame.KEYUP:
-            if event.key in (pygame.K_w, pygame.K_UP):
-                self.w = False
-            if event.key in (pygame.K_a, pygame.K_LEFT):
-                self.a = False
-            if event.key in (pygame.K_s, pygame.K_DOWN):
-                self.s = False
-            if event.key in (pygame.K_d, pygame.K_RIGHT):
-                self.d = False
-            if event.key == pygame.K_SPACE:
-                self.boost = False
-            if event.key == pygame.K_q:
-                self.q = False
-            if event.key == pygame.K_e:
-                self.e = False
+        if self.isPlayer:
+            if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_w, pygame.K_UP):
+                    self.w = True
+                if event.key in (pygame.K_a, pygame.K_LEFT):
+                    self.a = True
+                if event.key in (pygame.K_s, pygame.K_DOWN):
+                    self.s = True
+                if event.key in (pygame.K_d, pygame.K_RIGHT):
+                    self.d = True
+                if event.key == pygame.K_q:
+                    self.q = True
+                if event.key == pygame.K_e:
+                    self.e = True
+                if event.key == pygame.K_SPACE:
+                    self.boost = True
+            elif event.type == pygame.KEYUP:
+                if event.key in (pygame.K_w, pygame.K_UP):
+                    self.w = False
+                if event.key in (pygame.K_a, pygame.K_LEFT):
+                    self.a = False
+                if event.key in (pygame.K_s, pygame.K_DOWN):
+                    self.s = False
+                if event.key in (pygame.K_d, pygame.K_RIGHT):
+                    self.d = False
+                if event.key == pygame.K_SPACE:
+                    self.boost = False
+                if event.key == pygame.K_q:
+                    self.q = False
+                if event.key == pygame.K_e:
+                    self.e = False
 
     def movement(self):
         c, d = self.velLeft, self.velUp
@@ -280,7 +281,7 @@ class Player:
 
     def loop(self):
         self.movement()
-        self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0], self.display.enemy1.rect.topleft[1])
+        # self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0], self.display.enemy1.rect.topleft[1])
         self.collision_detection(self.display.mapMask, 0, 0)
 
     def collision_detection(self, mask, x, y):

@@ -48,11 +48,13 @@ class game_display(basic_display):
         self.particle_system = ParticleSystem()
         self.block_width = self.game.width // len(self.map[0])
         self.block_height = self.game.height // len(self.map)
-        self.p = player.Player(self, "images/jeffcar.png", (500, 500))
+        self.p = player.Player(self, "images/jeffcar.png", (500, 500), True)
+        self.e = player.Player(self, "images/enemycar.png", (200, 200), True)
         self.obstacles = []
-        self.enemy1 = enemy.Enemy(self)
-        self.objects.append(self.enemy1)
+        # self.enemy1 = enemy.Enemy(self)
+        # self.objects.append(self.enemy1)
         self.objects.append(self.p)
+        self.objects.append(self.e)
         self.map_surface = pygame.Surface((self.game.width, self.game.height))
         self.draw_map()
         self.map_surface.set_colorkey(self.bgColor)
@@ -117,6 +119,7 @@ class game_display(basic_display):
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
         self.p.loop()
+        self.e.loop()
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
 class map_display(basic_display):
