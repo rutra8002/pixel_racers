@@ -30,7 +30,7 @@ class Player:
 
         self.borderBounce = True # whether the bounce from borders depends on the player's velocity
         self.borderBounciness = 0.9
-        self.WASD_steering = False # For debug only
+        self.WASD_steering = True # For debug only
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.image = pygame.image.load(image).convert_alpha()
@@ -44,7 +44,7 @@ class Player:
         # self.image.fill(self.color)
 
         self.velUp, self.velLeft = 0, 0
-        self.w, self.a, self.s, self.d, self.boost = False, False, False, False, False
+        self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
         self.rotation = 0
 
         self.steer_rotation = 0
@@ -89,7 +89,7 @@ class Player:
             self.particle_system.add_particle(back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp, -0.01 * self.velLeft, -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square')
             self.particle_system.add_particle(back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp, -0.01 * self.velLeft, -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square')
 
-        if self.boost:
+        if self.boost and not self.WASD_steering:
             nitro_x = self.x - back_wheel_x_offset
             nitro_y = self.y - back_wheel_y_offset
             self.particle_system.add_particle(nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100, 30, 150, 'circle', True)
@@ -131,6 +131,10 @@ class Player:
                 self.s = True
             if event.key in (pygame.K_d, pygame.K_RIGHT):
                 self.d = True
+            if event.key == pygame.K_q:
+                self.q = True
+            if event.key == pygame.K_e:
+                self.e = True
             if event.key == pygame.K_SPACE:
                 self.boost = True
         elif event.type == pygame.KEYUP:
@@ -144,6 +148,10 @@ class Player:
                 self.d = False
             if event.key == pygame.K_SPACE:
                 self.boost = False
+            if event.key == pygame.K_q:
+                self.q = False
+            if event.key == pygame.K_e:
+                self.e = False
 
     def movement(self):
         c, d = self.velLeft, self.velUp
@@ -171,6 +179,10 @@ class Player:
                 self.velLeft -= self.currentAcceleration
             else:
                 self.steer_rotation += -self.delta_rotation * self.display.game.delta_time * self.steering_speed
+        if self.q and self.WASD_steering:
+            self.steer_rotation += self.delta_rotation * self.display.game.delta_time * self.steering_speed
+        if self.e and self.WASD_steering:
+            self.steer_rotation += -self.delta_rotation * self.display.game.delta_time * self.steering_speed
         if not self.a and not self.d:
             self.steer_rotation -= 10*self.steer_rotation * self.display.game.delta_time
         if abs(self.steer_rotation) < 0.01:
@@ -179,15 +191,18 @@ class Player:
 
         self.steer_rotation = max(self.min_steer_rotation, min(self.steer_rotation, self.max_steer_rotation))
 
-        if self.w:
+        if self.WASD_steering:
+            self.rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed * 2
+
+        elif self.w:
             self.rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed
-        if self.s:
-            self.rotation -= self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed
+        elif self.s:
+            self.rotation -= self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed / 2
 
 
         # print(self.steer_rotation)
 
-        if self.boost and self.nitroAmount >= 1:
+        if self.boost and self.nitroAmount >= 1 and not self.WASD_steering:
             self.nitroAmount -= 1
             a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
             self.velLeft += a * self.display.game.delta_time * self.display.game.calibration
