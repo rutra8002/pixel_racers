@@ -36,7 +36,7 @@ class Obstacle:
             if elapsed >= 30:
                 self.display.obstacles.remove(self)
                 del self
-        elif self.type == 1:
+        elif self.type == 2:
             if elapsed >= 5:
                 self.display.obstacles.remove(self)
                 del self
