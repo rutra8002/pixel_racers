@@ -7,13 +7,13 @@ class Obstacle:
         self.display = display
         self.x = x
         self.y = y
+        self.start_time = time.time()
         types = {"spikes": 1, "barrier": 2}
         self.type = types[type]
         if type == "spikes":
             self.image = pygame.image.load("images/spikes.png").convert_alpha()
             self.image = pygame.transform.rotate(self.image, angle)
         elif type == "barrier":
-            self.start_time = time.time()
             self.image = pygame.image.load("images/barrier.png").convert_alpha()
             self.image = pygame.transform.rotate(self.image, angle)
         self.rect = self.image.get_rect()
