@@ -44,7 +44,7 @@ class Game:
         for debug_item in self.debug_items:
             debug_item.hidden = True
 
-        custom_locals = {
+        self.custom_locals = {
             'self': self,
             'pygame': pygame,
             'config': config,
@@ -53,6 +53,11 @@ class Game:
             'custom_images': custom_images,
             'custom_button': custom_button
         }
+
+        self.console_active = False
+        self.console_input = ""
+        self.console_history = []
+        self.console_font = pygame.font.Font(None, 24)
 
     #     console_thread = threading.Thread(target=self.start_console, args=(custom_locals,))
     #     console_thread.start()
@@ -99,10 +104,30 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.run = False
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSLASH and self.enable_debug:
-                self.debug = not self.debug
-                for di in self.debug_items:
-                    di.hidden = not di.hidden
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_BACKSLASH and self.enable_debug:
+                    self.debug = not self.debug
+                    for di in self.debug_items:
+                        di.hidden = not di.hidden
+
+                elif event.key == pygame.K_BACKQUOTE:
+                    self.console_active = not self.console_active
+            #console
+            if self.console_active:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        try:
+                            result = eval(self.console_input, self.custom_locals, {})
+                            self.console_history.append(f"> {self.console_input}")
+                            self.console_history.append(f"Result: {result}")
+                        except Exception as e:
+                            self.console_history.append(f"Error: {str(e)}")
+                        self.console_input = ""
+                    elif event.key == pygame.K_BACKSPACE:
+                        self.console_input = self.console_input[:-1]
+                    else:
+                        if event.unicode:
+                            self.console_input += event.unicode
             else:
                 self.current_display.events(event)
 
@@ -112,6 +137,23 @@ class Game:
 
         for object in self.objects:
             object.render()
+
+        #console
+        if self.console_active:
+            console_height = self.height // 2
+            console_surface = pygame.Surface((self.width, console_height), pygame.SRCALPHA)
+            console_surface.fill((0, 0, 0, 180))
+            self.screen.blit(console_surface, (0, self.height - console_height))
+
+            y = self.height - console_height + 10
+            for line in reversed(self.console_history[-10:]):
+                text_surf = self.console_font.render(line, True, (255, 255, 255))
+                self.screen.blit(text_surf, (10, y))
+                y += 20
+
+            input_text = f"> {self.console_input}"
+            input_surf = self.console_font.render(input_text, True, (255, 255, 255))
+            self.screen.blit(input_surf, (10, self.height - 30))
 
 
     def update(self):
