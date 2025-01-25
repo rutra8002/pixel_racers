@@ -25,10 +25,10 @@ class Game:
 
         self.menu_particle_system = particle_system.ParticleSystem()
 
-        self.displays = {'template_display': display.basic_display(self), 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self)}
+        self.displays = {'template_display': display.basic_display(self), 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self)}
         self.current_display = self.displays['main_menu_display']
 
-        self.load_maps()
+        self.displays['level_selector'].load_maps()
 
         self.pointing_at = []
 
@@ -184,9 +184,5 @@ class Game:
 
         if not os.path.exists(self.map_dir):
             os.makedirs(self.map_dir)
-
-    def load_maps(self):
-        self.map_files = [file[:-5] for file in os.listdir(self.map_dir) if file.endswith('.json')]
-        self.displays['level_selector'].load_maps(self.map_files)
-
-
+    def get_level_names(self):
+        return [file[:-5] for file in os.listdir(self.map_dir) if file.endswith('.json')]

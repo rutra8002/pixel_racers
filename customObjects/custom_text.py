@@ -56,3 +56,12 @@ class Custom_text:  # A class that generates text
     def update_color(self, color, bg_color):
         self.text_color = color
         self.background_color = bg_color
+
+    def update_position(self, x, y):
+        self.x = x
+        self.y = y
+
+        if self.center:  # If self.center == True it sets the center of the text as self.x and self.y
+            self.rect.center = (self.x, self.y)
+        else:  # Else it set self.x and self.y as the top left corner of the text
+            self.rect.center = (self.x + self.rect.width / 2, self.y + self.rect.height / 2)

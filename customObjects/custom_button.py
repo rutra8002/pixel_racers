@@ -1,4 +1,4 @@
-import pygame
+import pygame, json
 from customObjects import custom_text
 
 class Button:  # A button class
@@ -18,7 +18,9 @@ class Button:  # A button class
         if self.append:
             self.display.objects.append(self)  # Adding self to objects of the screen
 
-        if text != None:  # if there is text it's put on the button
+
+        self.text = text
+        if self.text != None:  # if there is text it's put on the button
             self.text = custom_text.Custom_text(self.display, self.x + self.width / 2, self.y + self.height / 2, text, font=None,
                                    font_height=int(self.height // 2), text_color=text_color,)
 
@@ -69,14 +71,27 @@ class Button:  # A button class
                 if lvl_display.currently_selected < len(list(lvl_display.levels.values())) - 1:
                     lvl_display.currently_selected += 1
                     lvl_display.update_surfaces(1)
+            elif self.action == 'to_map_maker_menu':
+                self.display.game.change_display('map_maker_menu')
+
+            elif self.action == 'new_map':
+                self.display.game.displays['map_display'].reset_map()
+                self.display.game.change_display('map_display')
+
+            elif 'edit_map_titled_' in self.action:
+                with open(f"{self.display.game.map_dir}\{self.action.removeprefix('edit_map_titled_')}.json", 'r') as f:
+                    map_data = json.load(f)
+                    self.display.game.displays['map_display'].load_map(map_data)
+                    f.close()
+                self.display.game.change_display('map_display')
             else:
                 print('No action assigned to this button')
 
     def delete(self):
         self.text.delete()
         self.display.objects_in_memory -= 1
-        if self.append:
-            self.display.objects.remove(self.text)
+        if self.append == True:
+            self.display.objects.remove(self)
         del self
 
     def get_hover_color(self):
@@ -92,3 +107,19 @@ class Button:  # A button class
 
     def update_text(self, text):
         self.text.update_text(text)
+
+    def update_rect(self):
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+    def update_position(self, x, y):
+        self.x = x
+        self.y = y
+        self.update_rect()
+
+        if self.text != None:  # if there is text it's put on the button
+            self.text.update_position(self.x + self.width / 2, self.y + self.height / 2,)
+
+    def update_pos_and_size(self, x, y, w, h):
+        self.width = w
+        self.height = h
+        self.update_position(x, y)

@@ -138,7 +138,7 @@ class map_display(basic_display):
         self.temp_height = self.game.height // self.gcd
         # print(self.game.width // self.gcd, self.game.height // self.gcd)
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
-        print(self.gcd)
+
         self.block_width = self.gcd
         self.block_height = self.gcd
 
@@ -150,6 +150,27 @@ class map_display(basic_display):
         # self.block_height = self.game.height // len(self.map)
 
         self.export_button = custom_button.Button(self, "export_map", 10, 10, 100, 50, text="Export map", text_color=(0, 255, 0), color=(255, 0, 0), border_radius=0)
+
+
+    def reset_map(self):
+        self.gcd = 5
+        self.temp_width = self.game.width // self.gcd
+        self.temp_height = self.game.height // self.gcd
+
+        self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
+
+
+    def load_map(self, map):
+        self.map = map
+
+
+        self.temp_width = len(self.map[0])
+        self.temp_height = len(self.map)
+
+        self.gdc = self.temp_width / self.game.width
+
+
+
 
     def mainloop(self):
 
@@ -214,6 +235,9 @@ class map_display(basic_display):
         self.handle_mouse_events(event)
         self.handle_zoom(event)
 
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.game.change_display('map_maker_menu')
+
     def handle_mouse_events(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT  or (event.type == pygame.MOUSEMOTION and event.buttons[0]):
             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -263,7 +287,8 @@ class map_display(basic_display):
         with open(filename, 'w') as f:
             json.dump(map_data, f)
             f.close()
-        self.export_button.update_text('Exported!')
+
+        self.game.change_display('map_maker_menu')
 
 
 
@@ -281,7 +306,7 @@ class main_menu_display(basic_display):
         custom_text.Custom_text(self, self.game.width/2, self.game.height/5, 'VROOM!\n    VROOM!', text_color='white', font_height=int(self.game.height*(19/216)))
         custom_button.Button(self, 'to_level_selector', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * self.amount_of_buttons, self.button_width, self.button_height, text='Game goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
         custom_button.Button(self, 'settings', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 1), self.button_width, self.button_height, text='Settings', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-        custom_button.Button(self, 'to_map_maker_display', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 2), self.button_width, self.button_height, text='Map-maker goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'to_map_maker_menu', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 2), self.button_width, self.button_height, text='Map-maker goes brrrr', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
         custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 3), self.button_width, self.button_height, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
         self.particle_system = self.game.menu_particle_system
@@ -424,7 +449,8 @@ class level_selector(basic_display):
         for obj in self.objects:
             obj.render()
 
-    def load_maps(self, levels):
+    def load_maps(self):
+        levels = self.game.get_level_names()
         self.levels = {}
         for i, lvl in enumerate(levels):
             self.game.displays[lvl] = game_display(self.game, lvl)
@@ -436,16 +462,20 @@ class level_selector(basic_display):
             self.levels[lvl] = sur
 
     def reload_maps(self):
-        for i, lvl in enumerate(list(self.levels.keys())):
-            difficulty = self.game.displays[lvl].difficulty
-            del self.game.displays[lvl]
-            self.game.displays[lvl] = game_display(self.game, difficulty)
-            if i - self.currently_selected == 0:
-                sur = pygame.transform.scale(self.game.displays[lvl].map_surface,
-                                             (self.selected_surface_width, self.selected_surface_height))
-            else:
-                sur = pygame.transform.scale(self.game.displays[lvl].map_surface, (self.not_selected_surface_width, self.not_selected_surface_height))
-            self.levels[lvl] = sur
+        try:
+            for i, lvl in enumerate(list(self.levels.keys())):
+                difficulty = self.game.displays[lvl].difficulty
+                del self.game.displays[lvl]
+                self.game.displays[lvl] = game_display(self.game, difficulty)
+                if i - self.currently_selected == 0:
+                    sur = pygame.transform.scale(self.game.displays[lvl].map_surface,
+                                                 (self.selected_surface_width, self.selected_surface_height))
+                else:
+                    sur = pygame.transform.scale(self.game.displays[lvl].map_surface, (self.not_selected_surface_width, self.not_selected_surface_height))
+                self.levels[lvl] = sur
+
+        except:
+            self.load_maps()
 
     def update_surfaces(self, dir): # if changing to the left dir = -1, if changing to the right dir = 1
         for i, lvl in enumerate(list(self.levels.values())):
@@ -461,3 +491,72 @@ class level_selector(basic_display):
                 break
 
 
+class map_maker_menu(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
+        custom_button.Button(self, 'new_map', self.game.width/2 - self.game.width*40/384 - self.game.width*40/192 - 15, self.game.height/1.2, self.game.width*40/192, self.game.height*10/108, self.bgColor, text='NEW MAP', text_color=(150, 150, 150), outline_color=(150, 150, 150), border_radius=0, outline_width=1)
+        custom_button.Button(self, 'to_map_maker_display', self.game.width/2 - self.game.width*40/384, self.game.height/1.2, self.game.width*40/192, self.game.height*10/108, self.bgColor,
+                             text='CONTINUE', text_color=(150, 150, 150), outline_color=(150, 150, 150), border_radius=0,
+                             outline_width=1)
+
+        custom_button.Button(self, 'to_main_menu', self.game.width/2 + self.game.width*40/384 + 15, self.game.height/1.2, self.game.width*40/192, self.game.height*10/108,
+                             self.bgColor,
+                             text='BACK', text_color=(150, 150, 150), outline_color=(150, 150, 150),
+                             border_radius=0,
+                             outline_width=1)
+
+        self.menu_w = self.game.width * 142/192
+        self.menu_h = self.game.height * 50/108
+        self.padding = 15
+
+        self.menu_x = self.game.width * 15/192
+        self.menu_y = self.game.height * 22/108
+
+        custom_text.Custom_text(self, self.game.width/2, self.game.height/10, 'MAP MAKER MENU', font_height=100, text_color='white')
+
+        self.file_names = self.game.get_level_names()
+        self.lists_len = len(self.file_names)
+        self.text_list = [custom_text.Custom_text(self, 0, 0, '', text_color=(150, 150, 150)) for _ in range(self.lists_len)]
+        self.edit_button_list = [custom_button.Button(self, 'blank', 0, 0, 100, 50, self.bgColor, text='Edit', text_color=(150, 150, 150), outline_color=(150, 150, 150), border_radius=0, outline_width=1) for _ in range(self.lists_len)]
+    def mainloop(self):
+        pass
+
+    def render(self):
+        try:
+            self.file_names = self.game.get_level_names()
+
+            l = len(self.file_names)
+
+            if l != self.lists_len:
+                if l < self.lists_len:
+                    for _ in range(self.lists_len - l):
+                        self.text_list[-1].delete()
+                        self.text_list.pop(-1)
+
+                        self.edit_button_list[-1].delete()
+                        self.edit_button_list.pop(-1)
+
+                else:
+                    for _ in range(l - self.lists_len):
+                        print(l - self.lists_len)
+                        self.text_list.append(custom_text.Custom_text(self, 0, 0, '', text_color=(150, 150, 150)))
+                        self.edit_button_list.append(custom_button.Button(self, 'blank', 0, 0, 100, 50, self.bgColor, text='Edit', text_color=(150, 150, 150), outline_color=(150, 150, 150), border_radius=0, outline_width=1))
+
+                self.lists_len = l
+
+
+            for x in range(l):
+                pygame.draw.rect(self.game.screen, self.bgColor, (self.menu_x, (self.menu_h/l + self.padding) * x + self.menu_y, self.menu_w, self.menu_h/l))
+
+                self.text_list[x].update_text(self.file_names[x])
+                self.text_list[x].update_position(self.menu_x + self.menu_w / 2, self.menu_y + (self.menu_h/l + self.padding) * x + ((self.menu_h/l + self.padding))/2)
+
+                self.edit_button_list[x].update_pos_and_size(self.menu_x + self.menu_w + self.padding, self.menu_y + (self.menu_h/l + self.padding) * x + ((self.menu_h/l + self.padding))/2 - self.menu_h/l/2 - self.padding/2, self.menu_h/l, self.menu_h/l)
+                self.edit_button_list[x].action = f'edit_map_titled_{self.file_names[x]}'
+        except Exception as e:
+            print(e)
+
+
+
+        for o in self.objects:
+            o.render()
