@@ -287,7 +287,7 @@ class map_display(basic_display):
         with open(filename, 'w') as f:
             json.dump(map_data, f)
             f.close()
-
+        self.game.displays['level_selector'].load_maps()
         self.game.change_display('map_maker_menu')
 
 
