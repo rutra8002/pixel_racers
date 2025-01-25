@@ -1,3 +1,5 @@
+from asyncio import current_task
+
 import pygame
 import math as lolino
 
@@ -23,6 +25,7 @@ class Player:
         self.oilDelay = 1000
 
         self.x, self.y = coordinates[0], coordinates[1]
+        self.prevPos = [self.x, self.y]
         self.currentAcceleration = self.normalAcceleration
         self.currentBackceleration = self.normalBackceleration
         self.currentMaxSpeed = self.normalMaxSpeed
@@ -96,20 +99,7 @@ class Player:
 
         # if self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1]):
         #     self.collision_render(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1])
-        for obstacle in self.display.obstacles:
-            if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
-                if obstacle.type == 1:
-                    print("spikes")
-                elif obstacle.type == 2:
-                    print("barrier")
-        else:
-            self.currentMaxSpeed = self.normalMaxSpeed
-            self.currentAcceleration = self.normalAcceleration
-            self.currentRotationSpeed = self.normalRotationSpeed
 
-        if self.collision_detection(self.display.mapMask, 0, 0):
-            self.collision_render(self.display.mapMask, 0, 0)
-            self.check_color(self.display.mapMask, 0, 0)
 
         # Draw steering wheel
         wheel_center = (100, 100)
@@ -155,6 +145,8 @@ class Player:
                     self.e = False
 
     def movement(self):
+        self.prevPos = [self.x, self.y]
+        self.prevRotation = self.rotation
         c, d = self.velLeft, self.velUp
         if self.w:
             if self.WASD_steering:
@@ -188,6 +180,7 @@ class Player:
             self.steer_rotation -= 10*self.steer_rotation * self.display.game.delta_time
         if abs(self.steer_rotation) < 0.01:
             self.steer_rotation = 0
+
 
 
         self.steer_rotation = max(self.min_steer_rotation, min(self.steer_rotation, self.max_steer_rotation))
@@ -250,7 +243,6 @@ class Player:
         self.x -= self.velLeft * self.display.game.delta_time
         self.y -= self.velUp * self.display.game.delta_time
 
-
     def slow_down(self, slowdown):
         self.velLeft -= self.velLeft * slowdown * self.display.game.delta_time * self.display.game.calibration
         self.velUp -= self.velUp * slowdown * self.display.game.delta_time * self.display.game.calibration
@@ -283,6 +275,37 @@ class Player:
         self.movement()
         # self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0], self.display.enemy1.rect.topleft[1])
         self.collision_detection(self.display.mapMask, 0, 0)
+        for obstacle in self.display.obstacles:
+            if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
+                if obstacle.type == 1:
+                    obstacle.destroy()
+                    self.velUp, self.velLeft = 0, 0
+                elif obstacle.type == 2:
+                    if self.velLeft > 0:
+                        self.x = self.prevPos[0] + 1
+                    elif self.velLeft < 0:
+                        self.x = self.prevPos[0] - 1
+                    if self.velUp > 0:
+                        self.y = self.prevPos[1] + 1
+                    elif self.velUp < 0:
+                        self.y = self.prevPos[1] - 1
+                    # self.x, self.y = self.prevPos
+                    self.rotation = self.prevRotation
+                    self.velUp *= -0.5
+                    self.velLeft *= -0.5
+
+                    # self.velUp *= -self.borderBounciness
+                    # self.velLeft *= -self.borderBounciness
+
+
+        else:
+            self.currentMaxSpeed = self.normalMaxSpeed
+            self.currentAcceleration = self.normalAcceleration
+            self.currentRotationSpeed = self.normalRotationSpeed
+
+        if self.collision_detection(self.display.mapMask, 0, 0):
+            self.collision_render(self.display.mapMask, 0, 0)
+            self.check_color(self.display.mapMask, 0, 0)
 
     def collision_detection(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
