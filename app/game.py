@@ -157,7 +157,10 @@ class Game:
 
 
     def update(self):
-        self.delta_time = self.clock.get_time() / 1000.0
+        if self.clock.get_time() / 1000.0 > 0.1:
+            self.delta_time = 0.1
+        else:
+            self.delta_time = self.clock.get_time() / 1000.0
         if self.debug:
 
             self.debug_items[3].update_text(f'FPS: {self.clock.get_fps()}')
