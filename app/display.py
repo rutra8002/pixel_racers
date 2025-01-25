@@ -152,6 +152,12 @@ class map_display(basic_display):
         self.export_button = custom_button.Button(self, "export_map", 10, 10, 100, 50, text="Export map", text_color=(0, 255, 0), color=(255, 0, 0), border_radius=0)
 
 
+        self.dragging = False
+        self.start_x = 0
+        self.start_y = 0
+        self.start_cx = 0
+        self.start_cy = 0
+
     def reset_map(self):
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
@@ -258,6 +264,19 @@ class map_display(basic_display):
                 for dx in range(-self.brush_size // 2, self.brush_size // 2 + 1):
                     if 0 <= grid_x + dx < self.temp_width and 0 <= grid_y + dy < self.temp_height:
                         self.map[grid_y + dy][grid_x + dx] = 0
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_MIDDLE:
+            self.dragging = True
+            self.start_x, self.start_y = event.pos
+            self.start_cx = self.cx
+            self.start_cy = self.cy
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == pygame.BUTTON_MIDDLE:
+            self.dragging = False
+        elif event.type == pygame.MOUSEMOTION and self.dragging:
+            current_x, current_y = event.pos
+            delta_x = current_x - self.start_x
+            delta_y = current_y - self.start_y
+            self.cx = self.start_cx + delta_x
+            self.cy = self.start_cy + delta_y
     def handle_zoom(self, event):
         if event.type == pygame.MOUSEWHEEL:
             old_block_width = self.block_width
