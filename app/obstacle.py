@@ -28,19 +28,18 @@ class Obstacle:
         #elif self.type == 2:
         #    pygame.draw.rect(self.display.screen, (200, 0, 0), (self.x, self.y, self.width, self.height))
         if self.type == 1:
-            self.display.screen.blit(self.image, self.rect)
+            self.alpha = max(0, 255 - int((elapsed / 3) * 255))
         elif self.type == 2:
-            self.display.screen.blit(self.image, self.rect)
+            self.alpha = max(0, 255 - int((elapsed / 5) * 255))
+        self.image.set_alpha(self.alpha)
+
+        self.display.screen.blit(self.image, self.rect)
+
         self.obstacle_mask = pygame.mask.from_surface(self.image)
         self.rect.center = self.x, self.y
-        if self.type == 1:
-            if elapsed >= 30:
-                self.display.obstacles.remove(self)
-                del self
-        elif self.type == 2:
-            if elapsed >= 5:
-                self.display.obstacles.remove(self)
-                del self
+        if self.alpha == 0:
+            self.display.obstacles.remove(self)
+            del self
 
     def events(self, event):
         pass
