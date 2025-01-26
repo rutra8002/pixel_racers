@@ -189,9 +189,9 @@ class Player:
             self.rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed * 2
 
         elif self.w:
-            self.rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed
+            self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed
         elif self.s:
-            self.rotation -= self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed / 2
+            self.rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed / 2
 
 
         # print(self.steer_rotation)

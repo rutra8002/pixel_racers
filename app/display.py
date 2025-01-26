@@ -113,7 +113,7 @@ class game_display(basic_display):
             spawn_x = self.p.x - (50 * lolekszcz.cos(angle))
             spawn_y = self.p.y + (50 * lolekszcz.sin(angle))
             if event.key == pygame.K_ESCAPE:
-                self.game.change_display('pause')
+                self.game.change_display('pause_display')
             if event.key == pygame.K_c:
                 self.obstacles.append(obstacle.Obstacle(self, spawn_x, spawn_y, 'spikes', self.p.rotation - 90))
             if event.key == pygame.K_v:
