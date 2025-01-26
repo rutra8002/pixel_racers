@@ -36,7 +36,7 @@ class Player:
         self.WASD_steering = False # For debug only
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
-        self.image = pygame.image.load(image).convert_alpha()
+        self.image = image.convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.center = self.x, self.y
 

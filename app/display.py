@@ -3,11 +3,12 @@ import random
 import math as lolekszcz
 import pygame
 import json
-from app import player, enemy, obstacle
+from app import player, enemy, obstacle, images
 from particle_system import ParticleSystem
 from datetime import datetime
 import os
 import json
+
 class basic_display:
     def __init__(self, game):
         self.game = game
@@ -48,8 +49,8 @@ class game_display(basic_display):
         self.particle_system = ParticleSystem()
         self.block_width = self.game.width // len(self.map[0])
         self.block_height = self.game.height // len(self.map)
-        self.p = player.Player(self, "images/jeffcar.png", (500, 500), True)
-        self.e = player.Player(self, "images/enemycar.png", (200, 200), True)
+        self.p = player.Player(self, images.player, (500, 500), True)
+        self.e = player.Player(self, images.enemy, (200, 200), True)
         self.obstacles = []
         # self.enemy1 = enemy.Enemy(self)
         # self.objects.append(self.enemy1)

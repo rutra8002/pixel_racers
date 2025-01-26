@@ -1,6 +1,7 @@
 import pygame
 import math as jeszcze_nie_wiem_jak
 import time
+from app import images
 
 class Obstacle:
     def __init__(self, display, x, y, type: str, angle=0):
@@ -11,10 +12,10 @@ class Obstacle:
         types = {"spikes": 1, "barrier": 2}
         self.type = types[type]
         if type == "spikes":
-            self.image = pygame.image.load("images/spikes.png").convert_alpha()
+            self.image = images.spikes.convert_alpha()
             self.image = pygame.transform.rotate(self.image, angle)
         elif type == "barrier":
-            self.image = pygame.image.load("images/barrier.png").convert_alpha()
+            self.image = images.barrier.convert_alpha()
             self.image = pygame.transform.rotate(self.image, angle)
         self.rect = self.image.get_rect()
         self.rect.center = self.x, self.y
