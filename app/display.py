@@ -53,11 +53,18 @@ class game_display(basic_display):
         self.block_height = self.game.height // len(self.map)
 
         for i in range(1, 6):
-            self.c = car.Car(self, images.enemy, (100 * i, 100 * i), False)
+            if i == 5:
+                self.c = car.Car(self, images.enemy, (100 * i, 700), False)
+                self.e = enemy.Enemy(self, self.c, False)
+            else:
+                self.c = car.Car(self, images.enemy, (100 * i, 100 * i), False)
+                self.e = enemy.Enemy(self, self.c)
             self.objects.append(self.c)
             self.cars.append(self.c)
-            self.e = enemy.Enemy(self, self.c)
             self.enemies.append(self.e)
+
+
+
 
         self.p = car.Car(self, images.player, (500, 500), True)
         self.objects.append(self.p)

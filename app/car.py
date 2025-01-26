@@ -2,6 +2,7 @@ from asyncio import current_task
 
 import pygame
 import math as lolino
+import time
 
 class Car:
     def __init__(self, display, image, coordinates, isPlayer):
@@ -17,15 +18,17 @@ class Car:
         self.gravelRotationSpeed = 0.01 * self.display.game.calibration
         self.normalMaxSpeed = 12 * self.display.game.calibration
         self.gravelMaxSpeed = 2 * self.display.game.calibration
-
         self.naturalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
+        self.recentCollisions = {}
+        self.bumpingCooldown = 0.3
         self.oilDelay = 1000
 
         self.x, self.y = coordinates[0], coordinates[1]
         self.prevPos = [self.x, self.y]
+        self.prevRotation = 0
         self.currentAcceleration = self.normalAcceleration
         self.currentBackceleration = self.normalBackceleration
         self.currentMaxSpeed = self.normalMaxSpeed
@@ -104,7 +107,10 @@ class Car:
             if not self == c:
                 if self.collision_detection(c.car_mask, c.rect.topleft[0], c.rect.topleft[1]):
                     self.collision_render(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
-                    # self.handle_bumping(c)
+                    self.block()
+                    if self.recentCollisions[c] == 0:
+                        self.handle_bumping(c)
+                        self.recentCollisions[c] = time.time()
 
         # Draw steering wheel
         if self.isPlayer:
@@ -265,10 +271,32 @@ class Car:
             return self.velLeft, self.velUp
         return (x * -acc), (y * acc)
 
+    def block(self):
+        if self.velLeft > 0:
+            self.x = self.prevPos[0] + 1
+        elif self.velLeft < 0:
+            self.x = self.prevPos[0] - 1
+        if self.velUp > 0:
+            self.y = self.prevPos[1] + 1
+        elif self.velUp < 0:
+            self.y = self.prevPos[1] - 1
+        self.rotation = self.prevRotation
+
     def loop(self):
         self.movement()
-        # if self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0], self.display.enemy1.rect.topleft[1]):
-        #     self.collision_render(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0], self.display.enemy1.rect.topleft[1])
+
+        if len(self.recentCollisions) != len(self.display.cars) - 1:
+            for car in self.display.cars:
+                if not self == car:
+                    if car not in self.recentCollisions:
+                        self.recentCollisions[car] = 0
+
+        for car in self.recentCollisions:
+            if self.recentCollisions[car] != 0 and not self.collision_detection(car.car_mask, car.rect.topleft[0], car.rect.topleft[1]):
+                if time.time() - self.recentCollisions[car] > self.bumpingCooldown:
+                    self.recentCollisions[car] = 0
+
+
 
         for obstacle in self.display.obstacles:
             if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
@@ -276,16 +304,7 @@ class Car:
                     obstacle.destroy()
                     self.velUp, self.velLeft = 0, 0
                 elif obstacle.type == 2:
-                    if self.velLeft > 0:
-                        self.x = self.prevPos[0] + 1
-                    elif self.velLeft < 0:
-                        self.x = self.prevPos[0] - 1
-                    if self.velUp > 0:
-                        self.y = self.prevPos[1] + 1
-                    elif self.velUp < 0:
-                        self.y = self.prevPos[1] - 1
-                    # self.x, self.y = self.prevPos
-                    self.rotation = self.prevRotation
+                    self.block()
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
 
@@ -298,6 +317,8 @@ class Car:
             self.check_color(self.display.mapMask, 0, 0)
 
     def handle_bumping(self, other):
+        if lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2) == 0:
+            return
         n = ((other.x - self.x) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2), (other.y - self.y) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2))
         t = (-n[1], n[0])
         v1n = self.velLeft * n[0] + self.velUp * n[1]
