@@ -50,7 +50,8 @@ class game_display(basic_display):
         self.block_width = self.game.width // len(self.map[0])
         self.block_height = self.game.height // len(self.map)
         self.p = player.Player(self, images.player, (500, 500), True)
-        self.e = player.Player(self, images.enemy, (200, 200), True)
+        # self.e = player.Player(self, images.enemy, (200, 200), True)
+        self.e = enemy.Enemy(self)
         self.obstacles = []
         # self.enemy1 = enemy.Enemy(self)
         # self.objects.append(self.enemy1)

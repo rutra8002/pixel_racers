@@ -8,7 +8,7 @@ class Player:
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
-
+        self.mass = 1
         self.normalAcceleration = 0.2 * self.display.game.calibration
         self.normalBackceleration = 0.1 * self.display.game.calibration
         self.iceAcceleration = 0 * self.display.game.calibration
@@ -201,7 +201,6 @@ class Player:
             a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
             self.velLeft += a * self.display.game.delta_time * self.display.game.calibration
             self.velUp += b * self.display.game.delta_time * self.display.game.calibration
-
         magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
         if magnitude > self.currentMaxSpeed:
             self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
@@ -275,6 +274,8 @@ class Player:
         self.movement()
         # self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0], self.display.enemy1.rect.topleft[1])
         self.collision_detection(self.display.mapMask, 0, 0)
+        if self.collision_detection(self.display.e.enemy_mask, self.display.e.rect.topleft[0], self.display.e.rect.topleft[1]):
+            self.handle_bumping(self.display.e)
         for obstacle in self.display.obstacles:
             if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
                 if obstacle.type == 1:
@@ -306,6 +307,24 @@ class Player:
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.collision_render(self.display.mapMask, 0, 0)
             self.check_color(self.display.mapMask, 0, 0)
+
+    def handle_bumping(self, other):
+        n = ((other.x - self.x) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2), (other.y - self.y) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2))
+        t = (-n[1], n[0])
+        v1n = self.velLeft * n[0] + self.velUp * n[1]
+        v1t = self.velLeft * t[0] + self.velUp * t[1]
+        v2n = other.velLeft * n[0] + other.velUp * n[1]
+        v2t = other.velLeft * t[0] + other.velUp * t[1]
+
+        v1n_new = (v1n * (self.mass - other.mass) + 2 * other.mass * v2n) / (self.mass + other.mass)
+        v2n_new = (v2n * (other.mass - self.mass) + 2 * self.mass * v1n) / (self.mass + other.mass)
+
+        v1 = (v1n_new * n[0] + v1t * t[0], v1n_new * n[1] + v1t * t[1])
+        v2 = (v2n_new * n[0] + v2t * t[0], v2n_new * n[1] + v2t * t[1])
+        self.velLeft, other.velLeft = v1[0], v2[0]
+        self.velUp, other.velUp = v1[1], v2[1]
+
+
 
     def collision_detection(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])

@@ -13,6 +13,9 @@ class Enemy:
         self.enemy_mask = pygame.mask.from_surface(self.image)
         self.mask_image = self.enemy_mask.to_surface()
         self.rotation = 0
+        self.mass = 1
+        self.velUp = 0
+        self.velLeft = 0
     def render(self):
         self.rect = self.image.get_rect()
         self.enemy_mask = pygame.mask.from_surface(self.image)
@@ -24,4 +27,6 @@ class Enemy:
         # self.newMask = pygame.transform.rotate(self.mask_image, self.rotation)
         # self.newImg = pygame.transform.rotate(self.image, self.rotation)
     def events(self, event):
+        pass
+    def loop(self):
         pass
