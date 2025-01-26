@@ -197,7 +197,7 @@ class map_display(basic_display):
         self.temp_width = len(self.map[0])
         self.temp_height = len(self.map)
 
-        self.gcd = self.temp_width / self.game.width #hohenzoler, why?
+        self.gcd = max(1, self.temp_width / self.game.width) #hohenzoler, why?
         self.block_width = int(self.gcd * self.zoom_level)
         self.block_height = int(self.gcd * self.zoom_level)
 
