@@ -3,7 +3,7 @@ from asyncio import current_task
 import pygame
 import math as lolino
 
-class Player:
+class Car:
     def __init__(self, display, image, coordinates, isPlayer):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
@@ -97,19 +97,25 @@ class Player:
             nitro_y = self.y - back_wheel_y_offset
             self.particle_system.add_particle(nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100, 30, 150, 'circle', True)
 
-        # if self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1]):
-        #     self.collision_render(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0],self.display.enemy1.rect.topleft[1])
+        if self.collision_detection(self.display.mapMask, 0, 0):
+            self.collision_render(self.display.mapMask, 0, 0)
 
+        for c in self.display.cars:
+            if not self == c:
+                if self.collision_detection(c.car_mask, c.rect.topleft[0], c.rect.topleft[1]):
+                    self.collision_render(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
+                    # self.handle_bumping(c)
 
         # Draw steering wheel
-        wheel_center = (100, 100)
-        wheel_radius = 50
-        pygame.draw.circle(self.display.screen, (255, 255, 255), wheel_center, wheel_radius, 2)
+        if self.isPlayer:
+            wheel_center = (100, 100)
+            wheel_radius = 50
+            pygame.draw.circle(self.display.screen, (255, 255, 255), wheel_center, wheel_radius, 2)
 
-        angle = lolino.radians(self.steer_rotation)
-        line_length = 40
-        line_end = (wheel_center[0] + line_length * lolino.cos(angle), wheel_center[1] - line_length * lolino.sin(angle))
-        pygame.draw.line(self.display.screen, (255, 0, 0), wheel_center, line_end, 2)
+            angle = lolino.radians(self.steer_rotation)
+            line_length = 40
+            line_end = (wheel_center[0] + line_length * lolino.cos(angle), wheel_center[1] - line_length * lolino.sin(angle))
+            pygame.draw.line(self.display.screen, (255, 0, 0), wheel_center, line_end, 2)
 
     def events(self, event):
         if self.isPlayer:
@@ -201,6 +207,7 @@ class Player:
             a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
             self.velLeft += a * self.display.game.delta_time * self.display.game.calibration
             self.velUp += b * self.display.game.delta_time * self.display.game.calibration
+
         magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
         if magnitude > self.currentMaxSpeed:
             self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
@@ -246,18 +253,6 @@ class Player:
         self.velLeft -= self.velLeft * slowdown * self.display.game.delta_time * self.display.game.calibration
         self.velUp -= self.velUp * slowdown * self.display.game.delta_time * self.display.game.calibration
 
-    def get_rect_dimentions(self):
-        alfa = 90 - self.rotation % 90
-        alfa = lolino.radians(alfa)
-        if self.rotation // 90 in (1, 3):
-            height = self.playerHeight * lolino.sin(alfa) + self.playerWidth * lolino.cos(alfa)
-            width = self.playerWidth * lolino.sin(alfa) + self.playerHeight * lolino.cos(alfa)
-        else:
-            height = self.playerWidth * lolino.sin(alfa) + self.playerHeight * lolino.cos(alfa)
-            width = self.playerHeight * lolino.sin(alfa) + self.playerWidth * lolino.cos(alfa)
-        return (width, height)
-
-
     def get_acceleration_with_trigonometry(self, direction, acc):
         if direction == 1:
             r = lolino.radians(self.rotation)
@@ -272,10 +267,9 @@ class Player:
 
     def loop(self):
         self.movement()
-        # self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0], self.display.enemy1.rect.topleft[1])
-        self.collision_detection(self.display.mapMask, 0, 0)
-        if self.collision_detection(self.display.e.enemy_mask, self.display.e.rect.topleft[0], self.display.e.rect.topleft[1]):
-            self.handle_bumping(self.display.e)
+        # if self.collision_detection(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0], self.display.enemy1.rect.topleft[1]):
+        #     self.collision_render(self.display.enemy1.enemy_mask, self.display.enemy1.rect.topleft[0], self.display.enemy1.rect.topleft[1])
+
         for obstacle in self.display.obstacles:
             if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
                 if obstacle.type == 1:
@@ -295,17 +289,12 @@ class Player:
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
 
-                    # self.velUp *= -self.borderBounciness
-                    # self.velLeft *= -self.borderBounciness
 
-
-        else:
-            self.currentMaxSpeed = self.normalMaxSpeed
-            self.currentAcceleration = self.normalAcceleration
-            self.currentRotationSpeed = self.normalRotationSpeed
+        self.currentMaxSpeed = self.normalMaxSpeed
+        self.currentAcceleration = self.normalAcceleration
+        self.currentRotationSpeed = self.normalRotationSpeed
 
         if self.collision_detection(self.display.mapMask, 0, 0):
-            self.collision_render(self.display.mapMask, 0, 0)
             self.check_color(self.display.mapMask, 0, 0)
 
     def handle_bumping(self, other):
@@ -323,8 +312,6 @@ class Player:
         v2 = (v2n_new * n[0] + v2t * t[0], v2n_new * n[1] + v2t * t[1])
         self.velLeft, other.velLeft = v1[0], v2[0]
         self.velUp, other.velUp = v1[1], v2[1]
-
-
 
     def collision_detection(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])

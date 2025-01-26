@@ -3,7 +3,7 @@ import random
 import math as lolekszcz
 import pygame
 import json
-from app import player, enemy, obstacle, images
+from app import car, enemy, obstacle, images
 from particle_system import ParticleSystem
 from datetime import datetime
 import os
@@ -45,18 +45,25 @@ class game_display(basic_display):
         basic_display.__init__(self, game)
         self.difficulty = difficulty
         self.import_map()
-
+        self.obstacles = []
+        self.cars = [] #the physical cars of enemies and of the player
+        self.enemies = [] #the enemies' will, the intent, the embodied resolve in their uphill ascent (the decision-making part)
         self.particle_system = ParticleSystem()
         self.block_width = self.game.width // len(self.map[0])
         self.block_height = self.game.height // len(self.map)
-        self.p = player.Player(self, images.player, (500, 500), True)
-        # self.e = player.Player(self, images.enemy, (200, 200), True)
-        self.e = enemy.Enemy(self)
-        self.obstacles = []
-        # self.enemy1 = enemy.Enemy(self)
-        # self.objects.append(self.enemy1)
+
+        for i in range(1, 6):
+            self.c = car.Car(self, images.enemy, (100 * i, 100 * i), False)
+            self.objects.append(self.c)
+            self.cars.append(self.c)
+            self.e = enemy.Enemy(self, self.c)
+            self.enemies.append(self.e)
+
+        self.p = car.Car(self, images.player, (500, 500), True)
         self.objects.append(self.p)
-        self.objects.append(self.e)
+        self.cars.append(self.p)
+
+
         self.map_surface = pygame.Surface((self.game.width, self.game.height))
         self.draw_map()
         self.map_surface.set_colorkey(self.bgColor)
@@ -123,8 +130,10 @@ class game_display(basic_display):
 
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
-        self.p.loop()
-        self.e.loop()
+        for c in self.cars:
+            c.loop()
+        for e in self.enemies:
+            e.loop()
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
 class map_display(basic_display):
