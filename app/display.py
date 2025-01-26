@@ -157,6 +157,16 @@ class map_display(basic_display):
         self.block_height = self.gcd
 
         self.brush_size = 1
+        self.dragging = False
+
+        self.color_map = {
+            0: self.asphalt_color,
+            1: self.wall_color,
+            2: self.oil_color,
+            3: self.gravel_color,
+            4: self.ice_color
+        }
+
 
         self.brushtext = custom_text.Custom_text(self, 10, 70, f'Brush size: {self.brush_size}', text_color='white', font_height=30, center=False)
         self.tooltext = custom_text.Custom_text(self, 10, 100, f'Tool: {self.tool}', text_color='white', font_height=30, center=False)
@@ -187,8 +197,9 @@ class map_display(basic_display):
         self.temp_width = len(self.map[0])
         self.temp_height = len(self.map)
 
-        self.gdc = self.temp_width / self.game.width
-
+        self.gcd = self.temp_width / self.game.width #hohenzoler, why?
+        self.block_width = int(self.gcd * self.zoom_level)
+        self.block_height = int(self.gcd * self.zoom_level)
 
 
 
@@ -209,26 +220,31 @@ class map_display(basic_display):
 
 
     def render(self):
-        for y in range(len(self.map)):
-            for x in range(len(self.map[y])):
-                if self.map[y][x] == 1:
-                    color = self.wall_color
-                elif self.map[y][x] == 2:
-                    color = self.oil_color
-                elif self.map[y][x] == 3:
-                    color = self.gravel_color
-                elif self.map[y][x] == 4:
-                    color = self.ice_color
-                else:
-                    color = self.asphalt_color
-                pygame.draw.rect(self.screen, color, (x * self.block_width + self.cx, y * self.block_height + self.cy, self.block_width, self.block_height))
+        visible_x_start = max(0, int((-self.cx) // self.block_width))
+        visible_x_end = min(len(self.map[0]), int((-self.cx + self.game.width) // self.block_width) + 1)
+        visible_y_start = max(0, int((-self.cy) // self.block_height))
+        visible_y_end = min(len(self.map), int((-self.cy + self.game.height) // self.block_height) + 1)
+
+        for y in range(visible_y_start, visible_y_end):
+            for x in range(visible_x_start, visible_x_end):
+                color = self.color_map.get(self.map[y][x], self.asphalt_color)
+                rect = (x * self.block_width + self.cx,
+                        y * self.block_height + self.cy,
+                        self.block_width,
+                        self.block_height)
+                pygame.draw.rect(self.screen, color, rect)
+
         if self.player_position:
-            player_width_scaled = self.player_width * self.zoom_level
-            player_height_scaled = self.player_height * self.zoom_level
-            pygame.draw.rect(self.screen, (255, 0, 0), (self.player_position[0] * self.block_width + self.cx, self.player_position[1] * self.block_height + self.cy, player_width_scaled, player_height_scaled))
-        pygame.draw.rect(self.screen, (155, 0, 0),(self.cx, self.cy, self.block_width*self.temp_width, self.block_height*self.temp_height), 2)
+            pw, ph = self.player_width * self.zoom_level, self.player_height * self.zoom_level
+            pygame.draw.rect(self.screen, (255, 0, 0),
+                             (self.player_position[0] * self.block_width + self.cx,
+                              self.player_position[1] * self.block_height + self.cy,
+                              pw, ph))
 
-
+        pygame.draw.rect(self.screen, (155, 0, 0),
+                         (self.cx, self.cy,
+                          self.block_width * self.temp_width,
+                          self.block_height * self.temp_height), 2)
         for obj in self.objects:
             obj.render()
 
@@ -291,6 +307,7 @@ class map_display(basic_display):
             delta_y = current_y - self.start_y
             self.cx = self.start_cx + delta_x
             self.cy = self.start_cy + delta_y
+
     def handle_zoom(self, event):
         if event.type == pygame.MOUSEWHEEL:
             old_block_width = self.block_width
@@ -300,8 +317,9 @@ class map_display(basic_display):
                 self.zoom_level *= 1.1
             elif event.y < 0 and self.block_width > 1 and self.block_height > 1:
                 self.zoom_level /= 1.1
-            self.block_width = int((self.game.width // len(self.map[0])) * self.zoom_level)
-            self.block_height = int((self.game.height // len(self.map)) * self.zoom_level)
+
+            self.block_width = int(self.gcd * self.zoom_level)
+            self.block_height = int(self.gcd * self.zoom_level)
 
             mouse_x, mouse_y = pygame.mouse.get_pos()
             self.cx -= (mouse_x - self.cx) * (self.block_width / old_block_width - 1)
