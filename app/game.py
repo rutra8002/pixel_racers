@@ -59,6 +59,8 @@ class Game:
         self.console_history = []
         self.console_font = pygame.font.Font(None, 24)
 
+        self.console_history_index = 0
+
     #     console_thread = threading.Thread(target=self.start_console, args=(custom_locals,))
     #     console_thread.start()
     #
@@ -112,19 +114,29 @@ class Game:
 
                 elif event.key == pygame.K_BACKQUOTE:
                     self.console_active = not self.console_active
-            #console
+                    self.console_history_index = 0
+
+            # console
             if self.console_active:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         try:
                             result = eval(self.console_input, self.custom_locals, {})
-                            self.console_history.append(f"> {self.console_input}")
-                            self.console_history.append(f"Result: {result}")
+                            self.console_history.append({"input": self.console_input, "output": f"Result: {result}"})
                         except Exception as e:
-                            self.console_history.append(f"Error: {str(e)}")
+                            self.console_history.append({"input": self.console_input, "output": f"Error: {str(e)}"})
                         self.console_input = ""
+                        self.console_history_index = 0  # Reset history index after executing command
                     elif event.key == pygame.K_BACKSPACE:
                         self.console_input = self.console_input[:-1]
+                    elif event.key == pygame.K_UP:
+                        if self.console_history:
+                            self.console_history_index = min(self.console_history_index + 1, len(self.console_history))
+                            self.console_input = self.console_history[-self.console_history_index]["input"]
+                    elif event.key == pygame.K_DOWN:
+                        if self.console_history:
+                            self.console_history_index = max(self.console_history_index - 1, 0)
+                            self.console_input = self.console_history[-self.console_history_index]["input"]
                     else:
                         if event.unicode:
                             self.console_input += event.unicode
@@ -138,7 +150,7 @@ class Game:
         for object in self.objects:
             object.render()
 
-        #console
+        # console
         if self.console_active:
             console_height = self.height // 2
             console_surface = pygame.Surface((self.width, console_height), pygame.SRCALPHA)
@@ -146,9 +158,14 @@ class Game:
             self.screen.blit(console_surface, (0, self.height - console_height))
 
             y = self.height - console_height + 10
-            for line in reversed(self.console_history[-10:]):
-                text_surf = self.console_font.render(line, True, (255, 255, 255))
-                self.screen.blit(text_surf, (10, y))
+            for entry in reversed(self.console_history[-10:]):
+                input_text = f"> {entry['input']}"
+                output_text = entry['output']
+                input_surf = self.console_font.render(input_text, True, (255, 255, 255))
+                output_surf = self.console_font.render(output_text, True, (255, 255, 255))
+                self.screen.blit(input_surf, (10, y))
+                y += 20
+                self.screen.blit(output_surf, (10, y))
                 y += 20
 
             input_text = f"> {self.console_input}"
