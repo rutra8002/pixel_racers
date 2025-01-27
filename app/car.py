@@ -1,4 +1,4 @@
-from asyncio import current_task
+
 
 import pygame
 import math as lolino
@@ -124,37 +124,7 @@ class Car:
             pygame.draw.line(self.display.screen, (255, 0, 0), wheel_center, line_end, 2)
 
     def events(self, event):
-        if self.isPlayer:
-            if event.type == pygame.KEYDOWN:
-                if event.key in (pygame.K_w, pygame.K_UP):
-                    self.w = True
-                if event.key in (pygame.K_a, pygame.K_LEFT):
-                    self.a = True
-                if event.key in (pygame.K_s, pygame.K_DOWN):
-                    self.s = True
-                if event.key in (pygame.K_d, pygame.K_RIGHT):
-                    self.d = True
-                if event.key == pygame.K_q:
-                    self.q = True
-                if event.key == pygame.K_e:
-                    self.e = True
-                if event.key == pygame.K_SPACE:
-                    self.boost = True
-            elif event.type == pygame.KEYUP:
-                if event.key in (pygame.K_w, pygame.K_UP):
-                    self.w = False
-                if event.key in (pygame.K_a, pygame.K_LEFT):
-                    self.a = False
-                if event.key in (pygame.K_s, pygame.K_DOWN):
-                    self.s = False
-                if event.key in (pygame.K_d, pygame.K_RIGHT):
-                    self.d = False
-                if event.key == pygame.K_SPACE:
-                    self.boost = False
-                if event.key == pygame.K_q:
-                    self.q = False
-                if event.key == pygame.K_e:
-                    self.e = False
+        pass
 
     def movement(self):
         self.prevPos = [self.x, self.y]
@@ -318,7 +288,7 @@ class Car:
 
     def handle_bumping(self, other):
         if lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2) == 0:
-            return
+            return "lolekszcz is mad"
         n = ((other.x - self.x) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2), (other.y - self.y) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2))
         t = (-n[1], n[0])
         v1n = self.velLeft * n[0] + self.velUp * n[1]
