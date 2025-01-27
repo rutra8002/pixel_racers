@@ -10,10 +10,9 @@ class Car:
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
         self.mass = 1
+        self.backDifference = 0.5
         self.normalAcceleration = 0.2 * self.display.game.calibration
-        self.normalBackceleration = 0.1 * self.display.game.calibration
-        self.iceAcceleration = 0 * self.display.game.calibration
-        self.iceBackceleration = 0 * self.display.game.calibration
+        self.iceAcceleration = 1 * self.display.game.calibration
         self.normalRotationSpeed = 0.03 * self.display.game.calibration
         self.gravelRotationSpeed = 0.01 * self.display.game.calibration
         self.normalMaxSpeed = 12 * self.display.game.calibration
@@ -22,7 +21,6 @@ class Car:
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
-        self.recentCollisions = {}
         self.bumpingCooldown = 0.3
         self.oilDelay = 1000
 
@@ -30,7 +28,6 @@ class Car:
         self.prevPos = [self.x, self.y]
         self.prevRotation = 0
         self.currentAcceleration = self.normalAcceleration
-        self.currentBackceleration = self.normalBackceleration
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentRotationSpeed = self.normalRotationSpeed
 
@@ -52,6 +49,7 @@ class Car:
         self.velUp, self.velLeft = 0, 0
         self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
         self.rotation = 0
+        self.recentCollisions = {}
 
         self.steer_rotation = 0
         self.delta_rotation = 0.01*self.display.game.calibration
@@ -171,7 +169,7 @@ class Car:
             if self.WASD_steering:
                 self.velUp -= self.currentAcceleration
             else:
-                a, b = self.get_acceleration_with_trigonometry(-1, self.currentBackceleration * self.display.game.delta_time * self.display.game.calibration / 2)
+                a, b = self.get_acceleration_with_trigonometry(-1, self.currentAcceleration * self.backDifference * self.display.game.delta_time * self.display.game.calibration / 2)
                 self.velLeft += a
                 self.velUp += b
         if self.a:
@@ -203,7 +201,7 @@ class Car:
         elif self.w:
             self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed
         elif self.s:
-            self.rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed / 2
+            self.rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * self.backDifference
 
 
         # print(self.steer_rotation)
@@ -365,6 +363,8 @@ class Car:
                     if tile == 3:
                         self.currentMaxSpeed = self.gravelMaxSpeed
                         self.currentRotationSpeed = self.gravelRotationSpeed
+                    if tile == 4:
+                        self.currentAcceleration = self.iceAcceleration
                     # elif tile == 1:
                     #     self.velUp *= -1
                     #     self.velLeft *= -1
