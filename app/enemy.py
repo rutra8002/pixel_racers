@@ -1,15 +1,18 @@
 import random
 import math as lolekszcz
+from app.car import Car
 
-class Enemy:
-    def __init__(self, display, car, crazy=True):
-        self.display = display
-        self.car = car
+class Enemy(Car):
+    def __init__(self, display, image, coordinates, crazy=True):
+        super().__init__(display, image, coordinates, isPlayer=False)
         self.crazy = crazy
+
     def loop(self):
+        super().loop()
+
         if self.crazy:
-            self.car.a = random.choice((True, False))
-            self.car.w = random.choice((True, False))
-            self.car.s = random.choice((True, False))
-            self.car.d = random.choice((True, False))
-            self.car.boost = random.choice((True, False))
+            self.a = random.choice((True, False))
+            self.w = random.choice((True, False))
+            self.s = random.choice((True, False))
+            self.d = random.choice((True, False))
+            self.boost = random.choice((True, False))
