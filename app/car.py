@@ -111,6 +111,7 @@ class Car:
                     if self.recentCollisions[c] == 0:
                         self.handle_bumping(c)
                         self.recentCollisions[c] = time.time()
+                        c.recentCollisions[self] = time.time()
 
         # Draw steering wheel
         if self.isPlayer:
