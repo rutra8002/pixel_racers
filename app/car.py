@@ -12,6 +12,7 @@ class Car:
         self.borderBounce = True  # whether the bounce from borders depends on the player's velocity
         self.borderBounciness = 0.9
         self.WASD_steering = False  # For debug only
+        self.collision_draw = False
         self.mass = 1
         self.backDifference = 0.5
 
@@ -178,11 +179,6 @@ class Car:
         if self.WASD_steering:
             self.rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed * 2
 
-        elif self.w:
-            self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed
-        elif self.s:
-            self.rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * self.backDifference
-
 
         # print(self.steer_rotation)
 
@@ -198,6 +194,13 @@ class Car:
         elif self.velLeft == c and self.velUp == d:
             if self.velLeft != 0 or self.velUp != 0:
                 self.slow_down(self.currentNaturalSlowdown / magnitude)
+
+        if magnitude > self.currentNaturalSlowdown:
+            modifier = magnitude / 200
+            print(modifier)
+            if modifier > 2:
+                modifier = 2
+            self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
 
 
         # if not self.boost:
@@ -322,11 +325,13 @@ class Car:
         sharedMask = self.car_mask.overlap_mask(mask, offset)
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
-        self.display.screen.blit(sharedSurface, self.rect)
+        if self.collision_draw:
+            self.display.screen.blit(sharedSurface, self.rect)
 
         blue_surface = sharedMask.to_surface(setcolor=(0, 0, 200))
         blue_surface.set_colorkey((0, 0, 0))
-        self.display.screen.blit(blue_surface, (0, 0))
+        if self.collision_draw:
+            self.display.screen.blit(blue_surface, (0, 0))
 
     def check_color(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
