@@ -9,15 +9,27 @@ class Car:
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
+        self.borderBounce = True  # whether the bounce from borders depends on the player's velocity
+        self.borderBounciness = 0.9
+        self.WASD_steering = False  # For debug only
         self.mass = 1
         self.backDifference = 0.5
+
+
         self.normalAcceleration = 0.2 * self.display.game.calibration
-        self.iceAcceleration = 1 * self.display.game.calibration
+        self.iceAcceleration = 0.04 * self.display.game.calibration
+
         self.normalRotationSpeed = 0.03 * self.display.game.calibration
         self.gravelRotationSpeed = 0.01 * self.display.game.calibration
+
         self.normalMaxSpeed = 12 * self.display.game.calibration
         self.gravelMaxSpeed = 2 * self.display.game.calibration
-        self.naturalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
+        self.iceMaxSpeed = 25 * self.display.game.calibration
+
+        self.normalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
+        self.iceSlowdown = 0.02 * self.display.game.calibration # when the player doesn't press W or S
+
+
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
@@ -30,10 +42,7 @@ class Car:
         self.currentAcceleration = self.normalAcceleration
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentRotationSpeed = self.normalRotationSpeed
-
-        self.borderBounce = True # whether the bounce from borders depends on the player's velocity
-        self.borderBounciness = 0.9
-        self.WASD_steering = False # For debug only
+        self.currentNaturalSlowdown = self.normalSlowdown
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.image = image.convert_alpha()
@@ -188,7 +197,7 @@ class Car:
             self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
         elif self.velLeft == c and self.velUp == d:
             if self.velLeft != 0 or self.velUp != 0:
-                self.slow_down(self.naturalSlowdown / magnitude)
+                self.slow_down(self.currentNaturalSlowdown / magnitude)
 
 
         # if not self.boost:
@@ -281,6 +290,7 @@ class Car:
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentAcceleration = self.normalAcceleration
         self.currentRotationSpeed = self.normalRotationSpeed
+        self.currentNaturalSlowdown = self.normalSlowdown
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.check_color(self.display.mapMask, 0, 0)
@@ -324,9 +334,12 @@ class Car:
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
         size = sharedSurface.get_size()
+
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentRotationSpeed = self.normalRotationSpeed
         self.currentAcceleration = self.normalAcceleration
+        self.currentNaturalSlowdown = self.normalSlowdown
+
         for x in range(size[0]):
             for y in range(size[1]):
                 if sharedSurface.get_at((x, y))[1] == 200:
@@ -336,6 +349,8 @@ class Car:
                         self.currentRotationSpeed = self.gravelRotationSpeed
                     if tile == 4:
                         self.currentAcceleration = self.iceAcceleration
+                        self.currentMaxSpeed = self.iceMaxSpeed
+                        self.currentNaturalSlowdown = self.iceSlowdown
                     # elif tile == 1:
                     #     self.velUp *= -1
                     #     self.velLeft *= -1

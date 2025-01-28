@@ -95,6 +95,8 @@ class game_display(basic_display):
                     color = self.oil_color
                 elif self.map[y][x] == 3:
                     color = self.gravel_color
+                elif self.map[y][x] == 4:
+                    color = self.ice_color
                 pygame.draw.rect(self.map_surface, color,
                                  (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
     def import_map(self):
