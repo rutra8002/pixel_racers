@@ -265,6 +265,8 @@ class map_display(basic_display):
                 self.tool = 4
             elif event.key == pygame.K_p:
                 self.tool = 'p'
+            elif event.key == pygame.K_b:
+                self.map = [[self.tool] * self.temp_width for _ in range(self.temp_height)]
             elif event.key == pygame.K_0:
                 self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
             elif event.key == pygame.K_PLUS or event.key == pygame.K_EQUALS:  # Increase brush size
