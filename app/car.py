@@ -11,7 +11,7 @@ class Car:
         self.isPlayer = isPlayer
         self.borderBounce = True  # whether the bounce from borders depends on the player's velocity
         self.borderBounciness = 0.9
-        self.WASD_steering = False  # For debug only
+        self.WASD_steering = True  # For debug only
         self.collision_draw = False
         self.mass = 1
         self.backDifference = 0.5
@@ -38,6 +38,7 @@ class Car:
         self.oilDelay = 1000
 
         self.x, self.y = coordinates[0], coordinates[1]
+        self.archiveCords = [self.x, self.y]
         self.prevPos = [self.x, self.y]
         self.prevRotation = 0
         self.currentAcceleration = self.normalAcceleration
@@ -179,9 +180,6 @@ class Car:
         if self.WASD_steering:
             self.rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed * 2
 
-
-        # print(self.steer_rotation)
-
         if self.boost and self.nitroAmount >= 1 and not self.WASD_steering:
             self.nitroAmount -= 1
             a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
@@ -196,10 +194,13 @@ class Car:
                 self.slow_down(self.currentNaturalSlowdown / magnitude)
 
         if magnitude > self.currentNaturalSlowdown:
+            if self.isPlayer:
+                print(self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1])))
             modifier = magnitude / 200
-            print(modifier)
             if modifier > 2:
                 modifier = 2
+            if modifier < 0.2:
+                modifier = 0.2
             self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
 
 
@@ -233,6 +234,7 @@ class Car:
             if self.y > self.display.screenHeight:
                 self.velUp = self.borderForce
 
+        self.archiveCords = [self.x, self.y]
         self.x -= self.velLeft * self.display.game.delta_time
         self.y -= self.velUp * self.display.game.delta_time
 
@@ -251,6 +253,48 @@ class Car:
         if self.WASD_steering:
             return self.velLeft, self.velUp
         return (x * -acc), (y * acc)
+
+    def get_direction_with_trigonometry(self, xStep, yStep):
+        quarter = 0
+        if xStep >= 0:
+            if yStep < 0:
+                quarter = 1
+            else:
+                quarter = 4
+        else:
+            if yStep <= 0:
+                quarter = 2
+            else:
+                quarter = 3
+
+
+        xStep, yStep = abs(xStep), abs(yStep)
+
+        if quarter == 1:
+            a, b = xStep, yStep
+        elif quarter == 2:
+            a, b = yStep, xStep
+        elif quarter == 3:
+            a, b = yStep, xStep
+        elif quarter == 4:
+            a, b = xStep, yStep
+
+        try:
+            tan = a/b
+        except:
+            tan = a/0.000000000000000000000000000000000000001
+
+        rads = lolino.atan(tan)
+        degs = int(lolino.degrees(rads))
+
+        if quarter == 1:
+            return 90 - degs, quarter
+        elif quarter == 2:
+            return 180 - degs, quarter
+        elif quarter == 3:
+            return 180 + degs, quarter
+        elif quarter == 4:
+            return 270 + degs, quarter
 
     def block(self):
         if self.velLeft > 0:
