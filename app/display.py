@@ -55,7 +55,7 @@ class game_display(basic_display):
             if i == 5:
                 self.e = enemy.Enemy(self, images.enemy, (100 * i, 700), False)
             else:
-                self.e = enemy.Enemy(self, images.enemy, (100 * i, 100 * i))
+                self.e = enemy.Enemy(self, images.enemy, (100 * i, 100 * i), False)
             self.objects.append(self.e)
             self.cars.append(self.e)
 
@@ -153,7 +153,6 @@ class map_display(basic_display):
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
         self.temp_height = self.game.height // self.gcd
-        # print(self.game.width // self.gcd, self.game.height // self.gcd)
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
 
         self.block_width = self.gcd
