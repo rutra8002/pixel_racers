@@ -11,7 +11,7 @@ class Car:
         self.isPlayer = isPlayer
         self.borderBounce = True  # whether the bounce from borders depends on the player's velocity
         self.borderBounciness = 0.9
-        self.WASD_steering = True  # For debug only
+        self.WASD_steering = False  # For debug only
         self.collision_draw = False
         self.mass = 1
         self.backDifference = 0.5
@@ -116,7 +116,7 @@ class Car:
             if not self == c:
                 if self.collision_detection(c.car_mask, c.rect.topleft[0], c.rect.topleft[1]):
                     self.collision_render(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
-                    self.block()
+                    self.block(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
                     if self.recentCollisions[c] == 0:
                         self.handle_bumping(c)
                         self.recentCollisions[c] = time.time()
@@ -296,16 +296,39 @@ class Car:
         elif quarter == 4:
             return 270 + degs, quarter
 
-    def block(self):
+    def block(self, mask, x, y):
+        xs, ys = self.get_penetration(mask, x, y)
         if self.velLeft > 0:
-            self.x = self.prevPos[0] + 1
+            self.x = self.prevPos[0] + 1 + xs
         elif self.velLeft < 0:
-            self.x = self.prevPos[0] - 1
+            self.x = self.prevPos[0] - 1 - xs
         if self.velUp > 0:
             self.y = self.prevPos[1] + 1
         elif self.velUp < 0:
-            self.y = self.prevPos[1] - 1
+            self.y = self.prevPos[1] - 1 - ys
         self.rotation = self.prevRotation
+
+    def get_penetration(self, mask, x, y):
+        xs = 0
+        ys = 0
+        offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
+        sharedMask = self.car_mask.overlap_mask(mask, offset)
+        sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
+        sharedSurface.set_colorkey((0, 0, 0))
+        size = sharedSurface.get_size()
+
+        for x in range(size[0]):
+            for y in range(size[1]):
+                if sharedSurface.get_at((x, y))[1] == 200:
+                    xs += 1
+                    break
+        for y in range(size[1]):
+            for x in range(size[0]):
+                if sharedSurface.get_at((x, y))[1] == 200:
+                    ys += 1
+                    break
+
+        return xs, ys
 
     def loop(self):
         self.movement()
@@ -329,7 +352,7 @@ class Car:
                     obstacle.destroy()
                     self.velUp, self.velLeft = 0, 0
                 elif obstacle.type == 2:
-                    self.block()
+                    self.block(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1])
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
 
