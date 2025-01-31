@@ -23,7 +23,10 @@ class Player(Car):
             if event.key == pygame.K_e:
                 self.e = True
             if event.key == pygame.K_SPACE:
-                self.boost = True
+                if self.WASD_steering:
+                    self.velUp, self.velLeft = 0, 0
+                else:
+                    self.boost = True
         elif event.type == pygame.KEYUP:
             if event.key in (pygame.K_w, pygame.K_UP):
                 self.w = False

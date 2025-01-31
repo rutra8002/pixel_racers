@@ -57,7 +57,7 @@ class game_display(basic_display):
             if i == 5:
                 self.e = enemy.Enemy(self, images.enemy, (100 * i, 700), False)
             else:
-                self.e = enemy.Enemy(self, images.enemy, (100 * i, 100 * i))
+                self.e = enemy.Enemy(self, images.enemy, (100 * i, 100 * i), False)
             self.objects.append(self.e)
             self.cars.append(self.e)
 
@@ -106,7 +106,7 @@ class game_display(basic_display):
                 pygame.draw.rect(self.map_surface, color,
                                  (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
     def import_map(self):
-        with open(f"{self.game.map_dir}\\{self.difficulty}.json", 'r') as f:
+        with open(f"{self.game.map_dir}\{self.difficulty}.json", 'r') as f:
             map_data = json.load(f)
             if isinstance(map_data, dict):
                 self.map = map_data['map']
@@ -276,8 +276,17 @@ class map_display(basic_display):
                 ph
             ))
 
+        pygame.draw.rect(self.screen, (155, 0, 0),
+                         (self.cx, self.cy,
+                          self.block_width * self.temp_width,
+                          self.block_height * self.temp_height), 2)
         for obj in self.objects:
             obj.render()
+        b = self.brush_size * self.block_width
+        if self.tool != 'p':
+            c = self.color_map.get(self.tool)
+            pygame.draw.rect(self.screen, c, (pygame.mouse.get_pos()[0] - b / 2, pygame.mouse.get_pos()[1] - b / 2, b, b), 2)
+
 
     def events(self, event):
         for obj in self.objects:
@@ -293,6 +302,8 @@ class map_display(basic_display):
                 self.tool = 4
             elif event.key == pygame.K_p:
                 self.tool = 'p'
+            elif event.key == pygame.K_b:
+                self.map = [[self.tool] * self.temp_width for _ in range(self.temp_height)]
             elif event.key == pygame.K_0:
                 self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
             elif event.key == pygame.K_PLUS or event.key == pygame.K_EQUALS:  # Increase brush size
@@ -652,3 +663,4 @@ class map_maker_menu(basic_display):
 
         for o in self.objects:
             o.render()
+

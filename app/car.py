@@ -4,20 +4,36 @@ import pygame
 import math as lolino
 import time
 
+from unicodedata import normalize
+
+
 class Car:
     def __init__(self, display, image, coordinates, isPlayer):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
+        self.borderBounce = True  # whether the bounce from borders depends on the player's velocity
+        self.borderBounciness = 0.9
+        self.WASD_steering = False  # For debug only
+        self.collision_draw = False
         self.mass = 1
         self.backDifference = 0.5
+
+
         self.normalAcceleration = 0.2 * self.display.game.calibration
-        self.iceAcceleration = 1 * self.display.game.calibration
+        self.iceAcceleration = 0.04 * self.display.game.calibration
+
         self.normalRotationSpeed = 0.03 * self.display.game.calibration
         self.gravelRotationSpeed = 0.01 * self.display.game.calibration
+
         self.normalMaxSpeed = 12 * self.display.game.calibration
         self.gravelMaxSpeed = 2 * self.display.game.calibration
-        self.naturalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
+        self.iceMaxSpeed = 25 * self.display.game.calibration
+
+        self.normalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
+        self.iceSlowdown = 0.02 * self.display.game.calibration # when the player doesn't press W or S
+
+
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
@@ -25,15 +41,13 @@ class Car:
         self.oilDelay = 1000
 
         self.x, self.y = coordinates[0], coordinates[1]
+        self.archiveCords = [self.x, self.y]
         self.prevPos = [self.x, self.y]
         self.prevRotation = 0
         self.currentAcceleration = self.normalAcceleration
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentRotationSpeed = self.normalRotationSpeed
-
-        self.borderBounce = True # whether the bounce from borders depends on the player's velocity
-        self.borderBounciness = 0.9
-        self.WASD_steering = False # For debug only
+        self.currentNaturalSlowdown = self.normalSlowdown
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.image = image.convert_alpha()
@@ -50,6 +64,8 @@ class Car:
         self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
         self.rotation = 0
         self.recentCollisions = {}
+        self.timeToCheck = 5
+        self.goingForward = True
 
         self.steer_rotation = 0
         self.delta_rotation = 0.01*self.display.game.calibration
@@ -105,7 +121,7 @@ class Car:
             if not self == c:
                 if self.collision_detection(c.car_mask, c.rect.topleft[0], c.rect.topleft[1]):
                     self.collision_render(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
-                    self.block()
+                    self.block(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
                     if self.recentCollisions[c] == 0:
                         self.handle_bumping(c)
                         self.recentCollisions[c] = time.time()
@@ -169,14 +185,6 @@ class Car:
         if self.WASD_steering:
             self.rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed * 2
 
-        elif self.w:
-            self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed
-        elif self.s:
-            self.rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * self.backDifference
-
-
-        # print(self.steer_rotation)
-
         if self.boost and self.nitroAmount >= 1 and not self.WASD_steering:
             self.nitroAmount -= 1
             a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
@@ -188,8 +196,24 @@ class Car:
             self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
         elif self.velLeft == c and self.velUp == d:
             if self.velLeft != 0 or self.velUp != 0:
-                self.slow_down(self.naturalSlowdown / magnitude)
+                self.slow_down(self.currentNaturalSlowdown / magnitude)
 
+        if magnitude > self.currentNaturalSlowdown:
+            modifier = magnitude / 200
+            if modifier > 2:
+                modifier = 2
+            if modifier < 0.2:
+                modifier = 0.2
+            if self.timeToCheck >= 0:
+                self.timeToCheck = 5
+                self.goingForward = self.check_if_forward(self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1])))
+            else:
+                self.timeToCheck -= 1
+            if self.goingForward:
+                self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
+            else:
+                self.rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
+                # print(2)
 
         # if not self.boost:
         #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
@@ -221,6 +245,7 @@ class Car:
             if self.y > self.display.screenHeight:
                 self.velUp = self.borderForce
 
+        self.archiveCords = [self.x, self.y]
         self.x -= self.velLeft * self.display.game.delta_time
         self.y -= self.velUp * self.display.game.delta_time
 
@@ -240,16 +265,107 @@ class Car:
             return self.velLeft, self.velUp
         return (x * -acc), (y * acc)
 
-    def block(self):
+    def get_direction_with_trigonometry(self, xStep, yStep):
+        if xStep >= 0:
+            if yStep < 0:
+                quarter = 1
+            else:
+                quarter = 4
+        else:
+            if yStep <= 0:
+                quarter = 2
+            else:
+                quarter = 3
+
+
+        xStep, yStep = abs(xStep), abs(yStep)
+
+        if quarter == 1:
+            a, b = xStep, yStep
+        elif quarter == 2:
+            a, b = yStep, xStep
+        elif quarter == 3:
+            a, b = yStep, xStep
+        elif quarter == 4:
+            a, b = xStep, yStep
+
+        try:
+            tan = a/b
+        except:
+            tan = a/0.000000000000000000000000000000000000001
+
+        rads = lolino.atan(tan)
+        degs = int(lolino.degrees(rads))
+
+        if quarter == 1:
+            return 90 - degs
+        elif quarter == 2:
+            return 180 - degs
+        elif quarter == 3:
+            return 180 + degs
+        elif quarter == 4:
+            return 270 + degs
+
+    def check_if_forward(self, direction):
+        if direction >= 360:
+            direction -= 360
+        min, max = direction - 110, direction + 110
+        r = self.normalize_angle(self.rotation)
+        if self.isPlayer:
+            print(min, r, max)
+        if r < max and min < r:
+            # print('forward')
+            return True
+        else:
+            if min < 0:
+                if r < max + 360 and min + 360 < r:
+                    return True
+            elif max > 360:
+                if r < max - 360 and min - 360 < r:
+                    return True
+        # print('backward')
+        return False
+
+
+    def normalize_angle(self, angle):
+        while angle <= 0:
+            angle += 360
+        while angle > 360:
+            angle -= 360
+        return angle
+    def block(self, mask, x, y):
+        xs, ys = self.get_penetration(mask, x, y)
         if self.velLeft > 0:
-            self.x = self.prevPos[0] + 1
+            self.x = self.prevPos[0] + 1 + xs
         elif self.velLeft < 0:
-            self.x = self.prevPos[0] - 1
+            self.x = self.prevPos[0] - 1 - xs
         if self.velUp > 0:
             self.y = self.prevPos[1] + 1
         elif self.velUp < 0:
-            self.y = self.prevPos[1] - 1
+            self.y = self.prevPos[1] - 1 - ys
         self.rotation = self.prevRotation
+
+    def get_penetration(self, mask, x, y):
+        xs = 0
+        ys = 0
+        offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
+        sharedMask = self.car_mask.overlap_mask(mask, offset)
+        sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
+        sharedSurface.set_colorkey((0, 0, 0))
+        size = sharedSurface.get_size()
+
+        for x in range(size[0]):
+            for y in range(size[1]):
+                if sharedSurface.get_at((x, y))[1] == 200:
+                    xs += 1
+                    break
+        for y in range(size[1]):
+            for x in range(size[0]):
+                if sharedSurface.get_at((x, y))[1] == 200:
+                    ys += 1
+                    break
+
+        return xs, ys
 
     def loop(self):
         self.movement()
@@ -273,7 +389,7 @@ class Car:
                     obstacle.destroy()
                     self.velUp, self.velLeft = 0, 0
                 elif obstacle.type == 2:
-                    self.block()
+                    self.block(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1])
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
 
@@ -281,6 +397,7 @@ class Car:
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentAcceleration = self.normalAcceleration
         self.currentRotationSpeed = self.normalRotationSpeed
+        self.currentNaturalSlowdown = self.normalSlowdown
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.check_color(self.display.mapMask, 0, 0)
@@ -312,11 +429,13 @@ class Car:
         sharedMask = self.car_mask.overlap_mask(mask, offset)
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
-        self.display.screen.blit(sharedSurface, self.rect)
+        if self.collision_draw:
+            self.display.screen.blit(sharedSurface, self.rect)
 
         blue_surface = sharedMask.to_surface(setcolor=(0, 0, 200))
         blue_surface.set_colorkey((0, 0, 0))
-        self.display.screen.blit(blue_surface, (0, 0))
+        if self.collision_draw:
+            self.display.screen.blit(blue_surface, (0, 0))
 
     def check_color(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
@@ -324,9 +443,12 @@ class Car:
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
         size = sharedSurface.get_size()
+
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentRotationSpeed = self.normalRotationSpeed
         self.currentAcceleration = self.normalAcceleration
+        self.currentNaturalSlowdown = self.normalSlowdown
+
         for x in range(size[0]):
             for y in range(size[1]):
                 if sharedSurface.get_at((x, y))[1] == 200:
@@ -336,6 +458,8 @@ class Car:
                         self.currentRotationSpeed = self.gravelRotationSpeed
                     if tile == 4:
                         self.currentAcceleration = self.iceAcceleration
+                        self.currentMaxSpeed = self.iceMaxSpeed
+                        self.currentNaturalSlowdown = self.iceSlowdown
                     # elif tile == 1:
                     #     self.velUp *= -1
                     #     self.velLeft *= -1
