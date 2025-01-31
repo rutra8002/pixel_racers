@@ -64,6 +64,8 @@ class Car:
         self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
         self.rotation = 0
         self.recentCollisions = {}
+        self.timeToCheck = 5
+        self.goingForward = True
 
         self.steer_rotation = 0
         self.delta_rotation = 0.01*self.display.game.calibration
@@ -202,7 +204,12 @@ class Car:
                 modifier = 2
             if modifier < 0.2:
                 modifier = 0.2
-            if self.check_if_forward(self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))):
+            if self.timeToCheck >= 0:
+                self.timeToCheck = 5
+                self.goingForward = self.check_if_forward(self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1])))
+            else:
+                self.timeToCheck -= 1
+            if self.goingForward:
                 self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
             else:
                 self.rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
@@ -300,13 +307,24 @@ class Car:
             return 270 + degs
 
     def check_if_forward(self, direction):
-        d, r = direction, self.rotation
-        min, max = d - 90, d + 90
-        r = self.normalize_angle(r)
-
-        if min < r < max:
+        if direction >= 360:
+            direction -= 360
+        min, max = direction - 110, direction + 110
+        r = self.normalize_angle(self.rotation)
+        if self.isPlayer:
+            print(min, r, max)
+        if r < max and min < r:
+            # print('forward')
             return True
-        return min, r, max
+        else:
+            if min < 0:
+                if r < max + 360 and min + 360 < r:
+                    return True
+            elif max > 360:
+                if r < max - 360 and min - 360 < r:
+                    return True
+        # print('backward')
+        return False
 
 
     def normalize_angle(self, angle):
