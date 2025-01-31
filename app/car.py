@@ -83,9 +83,16 @@ class Car:
                                           -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square', False, 20)
         self.backwheel2_pgen = ParticleGenerator(self.particle_system, 0, 0, self.velLeft, self.velUp, -0.01 * self.velLeft,
                                           -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square', False, 20)
+        self.nitrogen = ParticleGenerator(self.particle_system, 0, 0, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100,
+                                          30, 150, 'circle', True, 100)
+
 
         self.particle_system.add_generator(self.backwheel1_pgen)
         self.particle_system.add_generator(self.backwheel2_pgen)
+        self.particle_system.add_generator(self.nitrogen)
+
+        self.backwheel1_pgen.start()
+        self.backwheel2_pgen.start()
 
     def render(self):
         self.center = self.rect.center
@@ -118,7 +125,13 @@ class Car:
         if self.boost and not self.WASD_steering:
             nitro_x = self.x - back_wheel_x_offset
             nitro_y = self.y - back_wheel_y_offset
-            self.particle_system.add_particle(nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100, 30, 150, 'circle', True)
+            if self.nitrogen.active:
+                self.nitrogen.edit(nitro_x, nitro_y, self.velLeft, self.velUp)
+            else:
+                self.nitrogen.start()
+        elif self.nitrogen.active:
+            self.nitrogen.stop()
+
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.collision_render(self.display.mapMask, 0, 0)
