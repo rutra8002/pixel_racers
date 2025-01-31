@@ -191,7 +191,6 @@ class map_display(basic_display):
 
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
 
-
     def load_map(self, map):
         self.map = map
 
@@ -202,8 +201,6 @@ class map_display(basic_display):
         self.gcd = max(1, self.temp_width / self.game.width) #hohenzoler, why?
         self.block_width = int(self.gcd * self.zoom_level)
         self.block_height = int(self.gcd * self.zoom_level)
-
-
 
     def mainloop(self):
 
@@ -249,6 +246,11 @@ class map_display(basic_display):
                           self.block_height * self.temp_height), 2)
         for obj in self.objects:
             obj.render()
+        b = self.brush_size * self.block_width
+        if self.tool != 'p':
+            c = self.color_map.get(self.tool)
+            pygame.draw.rect(self.screen, c, (pygame.mouse.get_pos()[0] - b / 2, pygame.mouse.get_pos()[1] - b / 2, b, b), 2)
+
 
     def events(self, event):
         for obj in self.objects:
@@ -284,7 +286,7 @@ class map_display(basic_display):
             grid_x = int((mouse_x - self.cx) // self.block_width)
             grid_y = int((mouse_y - self.cy) // self.block_height)
             if self.tool == 'p':
-                self.player_position = (grid_x, grid_y)
+                self.player_position = (grid_x - self.player_width/10, grid_y - self.player_height/10)
             else:
                 for dy in range(-self.brush_size // 2, self.brush_size // 2 + 1):
                     for dx in range(-self.brush_size // 2, self.brush_size // 2 + 1):
@@ -615,3 +617,4 @@ class map_maker_menu(basic_display):
 
         for o in self.objects:
             o.render()
+
