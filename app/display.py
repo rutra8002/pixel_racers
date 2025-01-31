@@ -1,4 +1,6 @@
 from customObjects import custom_images, custom_text, custom_button
+from jeff_the_objects.slider import Slider
+from app.config import read_config, write_config_to_file
 import random
 import math as lolekszcz
 import pygame
@@ -438,6 +440,14 @@ class settings_display(basic_display):
         custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
         custom_button.Button(self, 'to_level_selector', self.game.width/2, self.game.height/2, self.button_width, self.button_height, text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
+        cfg = read_config()
+        current_fps = int(cfg['fps'])
+
+        # Add FPS slider and text
+        self.fps_text = custom_text.Custom_text(self, self.game.width/4, self.game.height/2 - 50, f'FPS: {current_fps}', text_color='white', font_height=30)
+        self.fps_slider = Slider(self, 'fps_slider', self.game.width/4 - 100, self.game.height/2, 200, 20, 30, 144, current_fps)
+
+
         self.particle_system = self.game.menu_particle_system
 
     def render(self):
@@ -446,6 +456,8 @@ class settings_display(basic_display):
                                           random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
                                           random.randint(0, 255), 100, 'square')
         self.particle_system.draw(self.screen)
+
+        self.fps_text.update_text(f'FPS: {self.game.fps}')
 
         for obj in self.objects:
             obj.render()
