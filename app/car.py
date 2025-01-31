@@ -5,6 +5,7 @@ import math as lolino
 import time
 from particle_system import ParticleGenerator
 from unicodedata import normalize
+from customObjects.custom_text import Custom_text
 
 
 class Car:
@@ -106,9 +107,6 @@ class Car:
         # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
         self.display.screen.blit(self.newImg, self.rect)
 
-        if self.display.game.debug:
-            pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
-
         back_wheel_offset = self.playerHeight / 2
         angle_rad = lolino.radians(-self.rotation)
         back_wheel_x_offset = lolino.cos(angle_rad) * back_wheel_offset
@@ -146,16 +144,58 @@ class Car:
                         self.recentCollisions[c] = time.time()
                         c.recentCollisions[self] = time.time()
 
-        # Draw steering wheel
-        if self.isPlayer:
-            wheel_center = (100, 100)
-            wheel_radius = 50
-            pygame.draw.circle(self.display.screen, (255, 255, 255), wheel_center, wheel_radius, 2)
 
+        if self.display.game.debug:
+            pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
+
+            # Create/reuse debug text elements
+            if not hasattr(self, 'debug_texts'):
+                # Initialize debug texts once
+                self.debug_texts = [
+                    Custom_text(self.display, 0, 0, "", font_height=18, text_color=(255, 255, 255),
+                                background_color=(0, 0, 0, 128), center=False),
+                    Custom_text(self.display, 0, 0, "", font_height=18, text_color=(255, 255, 255),
+                                background_color=(0, 0, 0, 128), center=False),
+                    Custom_text(self.display, 0, 0, "", font_height=18, text_color=(255, 255, 255),
+                                background_color=(0, 0, 0, 128), center=False),
+                    Custom_text(self.display, 0, 0, "", font_height=18, text_color=(255, 255, 255),
+                                background_color=(0, 0, 0, 128), center=False)
+                ]
+
+            # Calculate debug info
+            speed = lolino.hypot(self.velLeft, self.velUp)
+            surface_type = "Normal"
+            if self.currentMaxSpeed == self.gravelMaxSpeed:
+                surface_type = "Gravel"
+            elif self.currentMaxSpeed == self.iceMaxSpeed:
+                surface_type = "Ice"
+
+            # Update text contents
+            texts = [
+                f"Speed: {speed:.1f}",
+                f"Rotation: {self.rotation:.1f}°",
+                f"Surface: {surface_type}",
+                f"Nitro: {self.nitroAmount}"
+            ]
+
+            # Position texts above the car
+            base_y = self.rect.top - 70
+            for i, text_obj in enumerate(self.debug_texts):
+                text_obj.update_text(texts[i])
+                text_obj.update_position(self.rect.centerx, base_y + i * 20)
+                text_obj.render()
+
+            # Steering wheel visualization
+            wheel_radius = 15
+            wheel_center = (self.rect.centerx-30, self.rect.top - 30)
+            line_length = 12
+            pygame.draw.circle(self.display.screen, (200, 200, 200), wheel_center, wheel_radius, 2)
             angle = lolino.radians(self.steer_rotation)
-            line_length = 40
-            line_end = (wheel_center[0] + line_length * lolino.cos(angle), wheel_center[1] - line_length * lolino.sin(angle))
-            pygame.draw.line(self.display.screen, (255, 0, 0), wheel_center, line_end, 2)
+            line_end = (
+                wheel_center[0] + line_length * lolino.cos(angle),
+                wheel_center[1] - line_length * lolino.sin(angle)
+            )
+            pygame.draw.line(self.display.screen, (255, 40, 40), wheel_center, line_end, 2)
 
     def events(self, event):
         pass
