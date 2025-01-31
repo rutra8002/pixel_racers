@@ -353,15 +353,21 @@ class Car:
             angle -= 360
         return angle
     def block(self, mask, x, y):
-        xs, ys = self.get_penetration(mask, x, y)
-        if self.velLeft > 0:
-            self.x = self.prevPos[0] + 1 + xs
-        elif self.velLeft < 0:
-            self.x = self.prevPos[0] - 1 - xs
-        if self.velUp > 0:
-            self.y = self.prevPos[1] + 1
-        elif self.velUp < 0:
-            self.y = self.prevPos[1] - 1 - ys
+        dx = x - self.rect.centerx
+        dy = y - self.rect.centery
+        distance = lolino.sqrt(dx ** 2 + dy ** 2)
+        if distance == 0:
+            return
+
+        nx = dx / distance
+        ny = dy / distance
+
+        # Move car back along collision normal
+        separation = 2  # Adjust this value based on penetration depth if available
+        self.x -= nx * separation
+        self.y -= ny * separation
+
+        # Reset rotation to prevent clipping
         self.rotation = self.prevRotation
 
     def get_penetration(self, mask, x, y):
@@ -422,8 +428,26 @@ class Car:
             self.check_color(self.display.mapMask, 0, 0)
 
     def handle_bumping(self, other):
-        if lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2) == 0:
-            return "lolekszcz is mad"
+        dx = other.x - self.x
+        dy = other.y - self.y
+        distance = lolino.sqrt(dx ** 2 + dy ** 2)
+        if distance == 0:
+            return ">:("
+
+        sum_radii = (self.playerWidth + other.playerWidth) / 2
+        overlap = sum_radii - distance
+        if overlap > 0:
+            # Normalize direction vector
+            nx = dx / distance
+            ny = dy / distance
+
+            # Separate the cars
+            separation = overlap * 0.5
+            self.x -= nx * separation
+            self.y -= ny * separation
+            other.x += nx * separation
+            other.y += ny * separation
+
         n = ((other.x - self.x) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2), (other.y - self.y) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2))
         t = (-n[1], n[0])
         v1n = self.velLeft * n[0] + self.velUp * n[1]
