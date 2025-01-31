@@ -45,6 +45,8 @@ class game_display(basic_display):
         basic_display.__init__(self, game)
         self.difficulty = difficulty
         self.import_map()
+        if self.player_position:
+            print(self.player_position)
         self.obstacles = []
         self.cars = [] #the physical cars of enemies and of the player
         self.particle_system = ParticleSystem()
@@ -61,8 +63,10 @@ class game_display(basic_display):
 
 
 
-
-        self.p = player.Player(self, images.player, (500, 500))
+        if self.player_position:
+            self.p = player.Player(self, images.player, self.player_position)
+        else:
+            self.p = player.Player(self, images.player, (100, 100))
         self.objects.append(self.p)
         self.cars.append(self.p)
 
@@ -95,12 +99,21 @@ class game_display(basic_display):
                     color = self.oil_color
                 elif self.map[y][x] == 3:
                     color = self.gravel_color
+                elif self.map[y][x] == 4:
+                    color = self.ice_color
+                else:
+                    color = self.asphalt_color
                 pygame.draw.rect(self.map_surface, color,
                                  (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
     def import_map(self):
-        with open(f"{self.game.map_dir}\{self.difficulty}.json", 'r') as f:
+        with open(f"{self.game.map_dir}\\{self.difficulty}.json", 'r') as f:
             map_data = json.load(f)
-            self.map = map_data
+            if isinstance(map_data, dict):
+                self.map = map_data['map']
+                self.player_position = map_data.get('player_position')
+            else:
+                self.map = map_data
+                self.player_position = None
             f.close()
 
 
@@ -140,13 +153,13 @@ class game_display(basic_display):
 class map_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
-        self.cx, self.cy = 0, 0
+        self.cx, self.cy = 0.0, 0.0
         self.zoom_level = 1.0
         self.tool = 1
 
         self.player_position = None
-        self.player_width = 50
-        self.player_height = 25
+        self.player_width_blocks = 2
+        self.player_height_blocks = 1
 
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
@@ -154,8 +167,8 @@ class map_display(basic_display):
         # print(self.game.width // self.gcd, self.game.height // self.gcd)
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
 
-        self.block_width = self.gcd
-        self.block_height = self.gcd
+        self.block_width = float(self.gcd)
+        self.block_height = float(self.gcd)
 
         self.brush_size = 1
         self.dragging = False
@@ -191,61 +204,70 @@ class map_display(basic_display):
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
 
 
-    def load_map(self, map):
-        self.map = map
-
+    def load_map(self, map_data):
+        if isinstance(map_data, dict):
+            self.map = map_data['map']
+            self.player_position = map_data.get('player_position')
+        else:
+            self.map = map_data
+            self.player_position = None
 
         self.temp_width = len(self.map[0])
         self.temp_height = len(self.map)
+        self.gcd = self.game.width / self.temp_width
+        self.update_block_dimensions()
 
-        self.gcd = max(1, self.temp_width / self.game.width) #hohenzoler, why?
-        self.block_width = int(self.gcd * self.zoom_level)
-        self.block_height = int(self.gcd * self.zoom_level)
-
+    def update_block_dimensions(self):
+        self.block_width = self.gcd * self.zoom_level
+        self.block_height = self.gcd * self.zoom_level
 
 
     def mainloop(self):
 
         self.delta_time = self.game.delta_time
         keys = pygame.key.get_pressed()
+
+        speed = 500 * self.delta_time / self.zoom_level
         if keys[pygame.K_w]:
-            self.cy += 500 * self.delta_time
+            self.cy += speed
         if keys[pygame.K_s]:
-            self.cy -= 500 * self.delta_time
+            self.cy -= speed
         if keys[pygame.K_a]:
-            self.cx += 500 * self.delta_time
+            self.cx += speed
         if keys[pygame.K_d]:
-            self.cx -= 500 * self.delta_time
+            self.cx -= speed
+
         self.brushtext.update_text(f'Brush size: {self.brush_size}')
         self.tooltext.update_text(f'Tool: {self.tool}')
 
 
     def render(self):
-        visible_x_start = max(0, int((-self.cx) // self.block_width))
-        visible_x_end = min(len(self.map[0]), int((-self.cx + self.game.width) // self.block_width) + 1)
-        visible_y_start = max(0, int((-self.cy) // self.block_height))
-        visible_y_end = min(len(self.map), int((-self.cy + self.game.height) // self.block_height) + 1)
+        vis_x_start = max(0, lolekszcz.floor((-self.cx) / self.block_width))
+        vis_x_end = min(self.temp_width, lolekszcz.ceil((-self.cx + self.game.width) / self.block_width))
+        vis_y_start = max(0, lolekszcz.floor((-self.cy) / self.block_height))
+        vis_y_end = min(self.temp_height, lolekszcz.ceil((-self.cy + self.game.height) / self.block_height))
 
-        for y in range(visible_y_start, visible_y_end):
-            for x in range(visible_x_start, visible_x_end):
+        for y in range(vis_y_start, vis_y_end):
+            for x in range(vis_x_start, vis_x_end):
                 color = self.color_map.get(self.map[y][x], self.asphalt_color)
-                rect = (x * self.block_width + self.cx,
-                        y * self.block_height + self.cy,
-                        self.block_width,
-                        self.block_height)
-                pygame.draw.rect(self.screen, color, rect)
+                pygame.draw.rect(self.screen, color, (
+                    x * self.block_width + self.cx,
+                    y * self.block_height + self.cy,
+                    self.block_width,
+                    self.block_height
+                ))
 
         if self.player_position:
-            pw, ph = self.player_width * self.zoom_level, self.player_height * self.zoom_level
-            pygame.draw.rect(self.screen, (255, 0, 0),
-                             (self.player_position[0] * self.block_width + self.cx,
-                              self.player_position[1] * self.block_height + self.cy,
-                              pw, ph))
+            px, py = self.player_position
+            pw = self.player_width_blocks * self.block_width
+            ph = self.player_height_blocks * self.block_height
+            pygame.draw.rect(self.screen, (255, 0, 0), (
+                px * self.block_width + self.cx,
+                py * self.block_height + self.cy,
+                pw,
+                ph
+            ))
 
-        pygame.draw.rect(self.screen, (155, 0, 0),
-                         (self.cx, self.cy,
-                          self.block_width * self.temp_width,
-                          self.block_height * self.temp_height), 2)
         for obj in self.objects:
             obj.render()
 
@@ -276,72 +298,82 @@ class map_display(basic_display):
             self.game.change_display('map_maker_menu')
 
     def handle_mouse_events(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT  or (event.type == pygame.MOUSEMOTION and event.buttons[0]):
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            grid_x = int((mouse_x - self.cx) // self.block_width)
-            grid_y = int((mouse_y - self.cy) // self.block_height)
-            if self.tool == 'p':
+        mouse_pos = pygame.mouse.get_pos()
+        grid_x = lolekszcz.floor((mouse_pos[0] - self.cx) / self.block_width)
+        grid_y = lolekszcz.floor((mouse_pos[1] - self.cy) / self.block_height)
+
+        # Handle painting tools
+        if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION]:
+            if self.valid_grid_pos(grid_x, grid_y):
+                if self.is_painting(event):
+                    self.apply_brush(grid_x, grid_y, self.tool)
+                elif self.is_erasing(event):
+                    self.apply_brush(grid_x, grid_y, 0)
+
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
+            if self.tool == 'p' and self.valid_grid_pos(grid_x, grid_y):
                 self.player_position = (grid_x, grid_y)
-            else:
-                for dy in range(-self.brush_size // 2, self.brush_size // 2 + 1):
-                    for dx in range(-self.brush_size // 2, self.brush_size // 2 + 1):
-                        if 0 <= grid_x + dx < self.temp_width and 0 <= grid_y + dy < self.temp_height:
-                            self.map[grid_y + dy][grid_x + dx] = self.tool
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT or (event.type == pygame.MOUSEMOTION and event.buttons[2]):
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            grid_x = int((mouse_x - self.cx) // self.block_width)
-            grid_y = int((mouse_y - self.cy) // self.block_height)
-            for dy in range(-self.brush_size // 2, self.brush_size // 2 + 1):
-                for dx in range(-self.brush_size // 2, self.brush_size // 2 + 1):
-                    if 0 <= grid_x + dx < self.temp_width and 0 <= grid_y + dy < self.temp_height:
-                        self.map[grid_y + dy][grid_x + dx] = 0
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_MIDDLE:
+
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_MIDDLE:
             self.dragging = True
-            self.start_x, self.start_y = event.pos
-            self.start_cx = self.cx
-            self.start_cy = self.cy
+            self.start_x, self.start_y = mouse_pos
+            self.start_cx, self.start_cy = self.cx, self.cy
         elif event.type == pygame.MOUSEBUTTONUP and event.button == pygame.BUTTON_MIDDLE:
             self.dragging = False
         elif event.type == pygame.MOUSEMOTION and self.dragging:
-            current_x, current_y = event.pos
-            delta_x = current_x - self.start_x
-            delta_y = current_y - self.start_y
+            delta_x = mouse_pos[0] - self.start_x
+            delta_y = mouse_pos[1] - self.start_y
             self.cx = self.start_cx + delta_x
             self.cy = self.start_cy + delta_y
 
     def handle_zoom(self, event):
         if event.type == pygame.MOUSEWHEEL:
-            old_block_width = self.block_width
-            old_block_height = self.block_height
-
-            if event.y > 0:
-                self.zoom_level *= 1.1
-            elif event.y < 0 and self.block_width > 1 and self.block_height > 1:
-                self.zoom_level /= 1.1
-
-            self.block_width = int(self.gcd * self.zoom_level)
-            self.block_height = int(self.gcd * self.zoom_level)
+            old_zoom = self.zoom_level
+            self.zoom_level *= 1.1 ** event.y  # Zoom in/out by 10% per step
+            self.zoom_level = max(0.1, min(self.zoom_level, 5.0))  # Clamp zoom
+            self.update_block_dimensions()
 
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            self.cx -= (mouse_x - self.cx) * (self.block_width / old_block_width - 1)
-            self.cy -= (mouse_y - self.cy) * (self.block_height / old_block_height - 1)
+            self.cx = mouse_x - (mouse_x - self.cx) * (self.zoom_level / old_zoom)
+            self.cy = mouse_y - (mouse_y - self.cy) * (self.zoom_level / old_zoom)
 
     def export_map(self):
         if not os.path.exists('maps'):
             os.makedirs('maps')
         current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         filename = f'maps/map_{current_time}.json'
-        # map_data = {
-        #     'map': self.map,
-        #     'player_position': self.player_position
-        # }
-        map_data = self.map
+
+        self.player_position = (self.player_position[0]/self.zoom_level, self.player_position[1]/self.zoom_level) if self.player_position else None
+
+        map_data = {
+            'map': self.map,
+            'player_position': self.player_position
+        }
+        # map_data = self.map
         with open(filename, 'w') as f:
             json.dump(map_data, f)
             f.close()
         self.game.displays['level_selector'].load_maps()
         self.game.change_display('map_maker_menu')
 
+    def apply_brush(self, x, y, value):
+        half_brush = self.brush_size // 2
+        for dy in range(-half_brush, half_brush + 1):
+            for dx in range(-half_brush, half_brush + 1):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < self.temp_width and 0 <= ny < self.temp_height:
+                    self.map[ny][nx] = value
+
+    def valid_grid_pos(self, x, y):
+        return 0 <= x < self.temp_width and 0 <= y < self.temp_height
+
+    def is_painting(self, event):
+        return (event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT) or \
+               (event.type == pygame.MOUSEMOTION and event.buttons[0])
+
+    def is_erasing(self, event):
+        return (event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT) or \
+               (event.type == pygame.MOUSEMOTION and event.buttons[2])
 
 
 class main_menu_display(basic_display):
