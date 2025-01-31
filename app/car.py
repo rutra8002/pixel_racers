@@ -4,6 +4,9 @@ import pygame
 import math as lolino
 import time
 
+from unicodedata import normalize
+
+
 class Car:
     def __init__(self, display, image, coordinates, isPlayer):
         self.display = display
@@ -194,15 +197,16 @@ class Car:
                 self.slow_down(self.currentNaturalSlowdown / magnitude)
 
         if magnitude > self.currentNaturalSlowdown:
-            if self.isPlayer:
-                print(self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1])))
             modifier = magnitude / 200
             if modifier > 2:
                 modifier = 2
             if modifier < 0.2:
                 modifier = 0.2
-            self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
-
+            if self.check_if_forward(self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))):
+                self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
+            else:
+                self.rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
+                # print(2)
 
         # if not self.boost:
         #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
@@ -255,7 +259,6 @@ class Car:
         return (x * -acc), (y * acc)
 
     def get_direction_with_trigonometry(self, xStep, yStep):
-        quarter = 0
         if xStep >= 0:
             if yStep < 0:
                 quarter = 1
@@ -288,14 +291,30 @@ class Car:
         degs = int(lolino.degrees(rads))
 
         if quarter == 1:
-            return 90 - degs, quarter
+            return 90 - degs
         elif quarter == 2:
-            return 180 - degs, quarter
+            return 180 - degs
         elif quarter == 3:
-            return 180 + degs, quarter
+            return 180 + degs
         elif quarter == 4:
-            return 270 + degs, quarter
+            return 270 + degs
 
+    def check_if_forward(self, direction):
+        d, r = direction, self.rotation
+        min, max = d - 90, d + 90
+        r = self.normalize_angle(r)
+
+        if min < r < max:
+            return True
+        return min, r, max
+
+
+    def normalize_angle(self, angle):
+        while angle <= 0:
+            angle += 360
+        while angle > 360:
+            angle -= 360
+        return angle
     def block(self, mask, x, y):
         xs, ys = self.get_penetration(mask, x, y)
         if self.velLeft > 0:
