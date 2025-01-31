@@ -3,7 +3,7 @@
 import pygame
 import math as lolino
 import time
-
+from particle_system import ParticleGenerator
 from unicodedata import normalize
 
 
@@ -77,7 +77,15 @@ class Car:
         self.nitroAmount = 0
 
         self.particle_system = self.display.particle_system
-        self.particle_counter = 0
+
+
+        self.backwheel1_pgen = ParticleGenerator(self.particle_system, 0, 0, self.velLeft, self.velUp, -0.01 * self.velLeft,
+                                          -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square', False, 20)
+        self.backwheel2_pgen = ParticleGenerator(self.particle_system, 0, 0, self.velLeft, self.velUp, -0.01 * self.velLeft,
+                                          -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square', False, 20)
+
+        self.particle_system.add_generator(self.backwheel1_pgen)
+        self.particle_system.add_generator(self.backwheel2_pgen)
 
     def render(self):
         self.center = self.rect.center
@@ -103,11 +111,9 @@ class Car:
         back_wheel1_y = self.y - back_wheel_y_offset + lolino.cos(angle_rad) * (self.playerWidth / 2)
         back_wheel2_x = self.x - back_wheel_x_offset + lolino.sin(angle_rad) * (self.playerWidth / 2)
         back_wheel2_y = self.y - back_wheel_y_offset - lolino.cos(angle_rad) * (self.playerWidth / 2)
-        self.particle_counter += 1
 
-        if self.particle_counter % 3 == 0:
-            self.particle_system.add_particle(back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp, -0.01 * self.velLeft, -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square')
-            self.particle_system.add_particle(back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp, -0.01 * self.velLeft, -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square')
+        self.backwheel1_pgen.edit(back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp)
+        self.backwheel2_pgen.edit(back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp)
 
         if self.boost and not self.WASD_steering:
             nitro_x = self.x - back_wheel_x_offset
