@@ -184,6 +184,10 @@ class map_display(basic_display):
 
         self.brushtext = custom_text.Custom_text(self, 10, 70, f'Brush size: {self.brush_size}', text_color='white', font_height=30, center=False)
         self.tooltext = custom_text.Custom_text(self, 10, 100, f'Tool: {self.tool}', text_color='white', font_height=30, center=False)
+        self.player_pos_text = custom_text.Custom_text(self, 10, 220, f'Player position: {self.player_position}',
+                                                       text_color='white', font_height=30, center=False)
+        self.cursor_pos_text = custom_text.Custom_text(self, 10, 250, f'Cursor position: (0, 0)',
+                                                       text_color='white', font_height=30, center=False)
         # self.block_width = self.game.width // len(self.map[0])
         # self.block_height = self.game.height // len(self.map)
 
@@ -208,6 +212,8 @@ class map_display(basic_display):
         if isinstance(map_data, dict):
             self.map = map_data['map']
             self.player_position = map_data.get('player_position')
+            self.player_position = (self.player_position[0] * self.zoom_level / self.block_width, self.player_position[
+                1] * self.zoom_level / self.block_height) if self.player_position else None
         else:
             self.map = map_data
             self.player_position = None
@@ -239,6 +245,8 @@ class map_display(basic_display):
 
         self.brushtext.update_text(f'Brush size: {self.brush_size}')
         self.tooltext.update_text(f'Tool: {self.tool}')
+
+        self.player_pos_text.update_text(f'Player position: {self.player_position}')
 
 
     def render(self):
@@ -343,7 +351,7 @@ class map_display(basic_display):
         current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         filename = f'maps/map_{current_time}.json'
 
-        self.player_position = (self.player_position[0]/self.zoom_level, self.player_position[1]/self.zoom_level) if self.player_position else None
+        self.player_position = (self.player_position[0]/self.zoom_level*self.block_width, self.player_position[1]/self.zoom_level*self.block_height) if self.player_position else None
 
         map_data = {
             'map': self.map,
