@@ -212,6 +212,8 @@ class map_display(basic_display):
         self.start_cx = 0
         self.start_cy = 0
 
+        self.noplayertext = custom_text.Custom_text(self, self.game.width/2, self.game.height/20, 'No player position set!', text_color='white', font_height=30, center=True, append=False)
+
     def reset_map(self):
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
@@ -287,6 +289,10 @@ class map_display(basic_display):
                 pw,
                 ph
             ))
+
+        else:
+            self.noplayertext.render()
+
 
         pygame.draw.rect(self.screen, (155, 0, 0),
                          (self.cx, self.cy,
