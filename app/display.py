@@ -88,6 +88,7 @@ class game_display(basic_display):
         #         else:
         #             color = (26, 26, 26)
 
+        self.background_music = None
 
     def draw_map(self):
         self.map_surface.fill(self.bgColor)
@@ -147,6 +148,15 @@ class game_display(basic_display):
 
 
     def mainloop(self):
+        #music stuff
+        if self.background_music is None:
+            self.background_music = pygame.mixer.Sound('sounds/stildre.wav')
+            self.background_music.play(loops=-1)
+        if self.game.debug:
+            self.background_music.set_volume(0)
+        else:
+            self.background_music.set_volume(1)
+        ########################################
         self.particle_system.update(self.game.delta_time)
         for c in self.cars:
             c.loop()

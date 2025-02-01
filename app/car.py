@@ -161,6 +161,9 @@ class Car:
                     Custom_text(self.display, 0, 0, "", font_height=18, text_color=(255, 255, 255),
                                 background_color=(0, 0, 0, 128), center=False)
                 ]
+            else:
+                for i, text_obj in enumerate(self.debug_texts):
+                    text_obj.hidden = False
 
             # Calculate debug info
             speed = lolino.hypot(self.velLeft, self.velUp)
@@ -196,6 +199,10 @@ class Car:
                 wheel_center[1] - line_length * lolino.sin(angle)
             )
             pygame.draw.line(self.display.screen, (255, 40, 40), wheel_center, line_end, 2)
+        else:
+            if hasattr(self, 'debug_texts'):
+                for text_obj in self.debug_texts:
+                    text_obj.hidden = True
 
     def events(self, event):
         pass
