@@ -79,7 +79,7 @@ class Button:  # A button class
                 self.display.game.change_display('map_display')
 
             elif 'edit_map_titled_' in self.action:
-                with open(f"{self.display.game.map_dir}\{self.action.removeprefix('edit_map_titled_')}.json", 'r') as f:
+                with open(f"{self.display.game.map_dir}/{self.action.removeprefix('edit_map_titled_')}.json", 'r') as f:
                     map_data = json.load(f)
                     self.display.game.displays['map_display'].load_map(map_data)
                     f.close()
