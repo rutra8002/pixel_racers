@@ -1,11 +1,14 @@
 import pygame, sys, threading, code, os
-from app import config, display
+from app import config, display, sounds
 from customObjects import custom_text, custom_images, custom_button
 import particle_system
 
 class Game:
     def __init__(self):
         pygame.init()
+
+        self.sound_manager = sounds.SoundManager()
+        self.sound_manager.load_music('sounds/stildre.wav')
 
         config.set_config()
 
@@ -25,7 +28,7 @@ class Game:
 
         self.menu_particle_system = particle_system.ParticleSystem()
 
-        self.displays = {'template_display': display.basic_display(self), 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self)}
+        self.displays = {'template_display': display.basic_display(self), 'game_display':display.game_display,'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self)}
         self.current_display = self.displays['main_menu_display']
 
         self.displays['level_selector'].load_maps()
@@ -68,6 +71,12 @@ class Game:
     #     console = code.InteractiveConsole(locals=locals)
     #     console.interact()
 
+    def music(self):
+        if isinstance(self.current_display, self.displays["game_display"]) and not self.sound_manager.is_playing_music():
+            self.sound_manager.play_music(loops=-1)
+        elif not isinstance(self.current_display, self.displays["game_display"]):
+            self.sound_manager.stop_music()
+
     def fade(self, fade_in=True, duration=0.3):
         fade_surface = pygame.Surface((self.width, self.height))
         fade_surface.fill((0, 0, 0))
@@ -92,6 +101,7 @@ class Game:
 
     def mainloop(self):
         while self.run:
+            self.music()
             self.current_display.mainloop()
             self.events()
             self.render()
@@ -118,30 +128,33 @@ class Game:
 
             # console
             if self.console_active:
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        try:
-                            result = eval(self.console_input, self.custom_locals, {})
-                            self.console_history.append({"input": self.console_input, "output": f"Result: {result}"})
-                        except Exception as e:
-                            self.console_history.append({"input": self.console_input, "output": f"Error: {str(e)}"})
-                        self.console_input = ""
-                        self.console_history_index = 0  # Reset history index after executing command
-                    elif event.key == pygame.K_BACKSPACE:
-                        self.console_input = self.console_input[:-1]
-                    elif event.key == pygame.K_UP:
-                        if self.console_history:
-                            self.console_history_index = min(self.console_history_index + 1, len(self.console_history))
-                            self.console_input = self.console_history[-self.console_history_index]["input"]
-                    elif event.key == pygame.K_DOWN:
-                        if self.console_history:
-                            self.console_history_index = max(self.console_history_index - 1, 0)
-                            self.console_input = self.console_history[-self.console_history_index]["input"]
-                    else:
-                        if event.unicode:
-                            self.console_input += event.unicode
+                self.console_stuff(event)
             else:
                 self.current_display.events(event)
+
+    def console_stuff(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                try:
+                    result = eval(self.console_input, self.custom_locals, {})
+                    self.console_history.append({"input": self.console_input, "output": f"Result: {result}"})
+                except Exception as e:
+                    self.console_history.append({"input": self.console_input, "output": f"Error: {str(e)}"})
+                self.console_input = ""
+                self.console_history_index = 0  # Reset history index after executing command
+            elif event.key == pygame.K_BACKSPACE:
+                self.console_input = self.console_input[:-1]
+            elif event.key == pygame.K_UP:
+                if self.console_history:
+                    self.console_history_index = min(self.console_history_index + 1, len(self.console_history))
+                    self.console_input = self.console_history[-self.console_history_index]["input"]
+            elif event.key == pygame.K_DOWN:
+                if self.console_history:
+                    self.console_history_index = max(self.console_history_index - 1, 0)
+                    self.console_input = self.console_history[-self.console_history_index]["input"]
+            else:
+                if event.unicode:
+                    self.console_input += event.unicode
 
     def render(self):
         self.screen.fill('black')

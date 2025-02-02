@@ -88,8 +88,6 @@ class game_display(basic_display):
         #         else:
         #             color = (26, 26, 26)
 
-        self.background_music = None
-
     def draw_map(self):
         self.map_surface.fill(self.bgColor)
         for y in range(len(self.map)):
@@ -109,7 +107,7 @@ class game_display(basic_display):
                 pygame.draw.rect(self.map_surface, color,
                                  (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
     def import_map(self):
-        with open(f"{self.game.map_dir}\{self.difficulty}.json", 'r') as f:
+        with open(f"{self.game.map_dir}/{self.difficulty}.json", 'r') as f:
             map_data = json.load(f)
             if isinstance(map_data, dict):
                 self.map = map_data['map']
@@ -148,15 +146,6 @@ class game_display(basic_display):
 
 
     def mainloop(self):
-        #music stuff
-        if self.background_music is None:
-            self.background_music = pygame.mixer.Sound('sounds/stildre.wav')
-            self.background_music.play(loops=-1)
-        if self.game.debug:
-            self.background_music.set_volume(0)
-        else:
-            self.background_music.set_volume(1)
-        ########################################
         self.particle_system.update(self.game.delta_time)
         for c in self.cars:
             c.loop()
