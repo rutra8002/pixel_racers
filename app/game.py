@@ -8,8 +8,7 @@ class Game:
         pygame.init()
 
         self.sound_manager = sounds.SoundManager()
-        self.sound_manager.load_music('sounds/XDD.wav')
-        self.sound_manager.set_music_volume(1)
+        self.sound_manager.load_music('sounds/stildre.wav')
 
         config.set_config()
 
