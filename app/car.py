@@ -20,6 +20,13 @@ class Car:
         self.mass = 1
         self.backDifference = 0.5
 
+        self.gravel_color = (128, 128, 128)
+        self.oil_color = (235, 180, 3)
+        self.asphalt_color = (26,26,26)
+        self.wall_color = (255, 255, 255)
+        self.ice_color = (63, 208, 212)
+
+        self.particle_color = [0, 0, 0]
 
         self.normalAcceleration = 0.2 * self.display.game.calibration
         self.oilAcceleration = 0.1 * self.display.game.calibration
@@ -83,9 +90,9 @@ class Car:
 
 
         self.backwheel1_pgen = ParticleGenerator(self.particle_system, 0, 0, self.velLeft, self.velUp, -0.01 * self.velLeft,
-                                          -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square', False, 20)
+                                          -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
         self.backwheel2_pgen = ParticleGenerator(self.particle_system, 0, 0, self.velLeft, self.velUp, -0.01 * self.velLeft,
-                                          -0.01 * self.velUp, 0, 0, 1, 100, 3, 100, 100, 100, 150, 'square', False, 20)
+                                          -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
         self.nitrogen = ParticleGenerator(self.particle_system, 0, 0, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100,
                                           30, 150, 'circle', True, 100)
 
@@ -471,6 +478,12 @@ class Car:
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.check_color(self.display.mapMask, 0, 0)
+        else:
+            self.particle_color = (100, 100, 100)
+            self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],
+                                      blue=self.particle_color[2])
+            self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],
+                                      blue=self.particle_color[2])
 
     def handle_bumping(self, other):
         dx = other.x - self.x
@@ -546,13 +559,27 @@ class Car:
                         self.currentAcceleration = self.oilAcceleration
                         self.currentNaturalSlowdown = self.oilSlowdown
                         self.in_oil = True
-                    if tile == 3:
+                        self.particle_color = self.oil_color
+                        self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+                        self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+                    elif tile == 1:
+                        self.particle_color = self.wall_color
+                        self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+                        self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+                    elif tile == 3:
                         self.currentMaxSpeed = self.gravelMaxSpeed
                         self.currentRotationSpeed = self.gravelRotationSpeed
-                    if tile == 4:
+                        self.particle_color = self.gravel_color
+                        self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+                        self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+                    elif tile == 4:
                         self.currentAcceleration = self.iceAcceleration
                         self.currentMaxSpeed = self.iceMaxSpeed
                         self.currentNaturalSlowdown = self.iceSlowdown
+                        self.particle_color = self.ice_color
+                        self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+                        self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+
                     # elif tile == 1:
                     #     self.velUp *= -1
                     #     self.velLeft *= -1
