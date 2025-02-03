@@ -77,16 +77,7 @@ class game_display(basic_display):
         self.draw_map()
         self.map_surface.set_colorkey(self.bgColor)
         self.mapMask = pygame.mask.from_surface(self.map_surface)
-        # for y in range(len(self.map)):
-        #     for x in range(len(self.map[y])):
-        #         if self.map[y][x] == 1:
-        #             color = (255, 255, 255)
-        #         elif self.map[y][x] == 2:
-        #             color = (0, 0, 0)
-        #         elif self.map[y][x] == 3:
-        #             color = (128, 128, 128)
-        #         else:
-        #             color = (26, 26, 26)
+
 
     def draw_map(self):
         self.map_surface.fill(self.bgColor)
@@ -159,8 +150,8 @@ class map_display(basic_display):
         self.tool = 1
 
         self.player_position = None
-        self.player_width_blocks = 2
-        self.player_height_blocks = 1
+        self.player_width_blocks = 10
+        self.player_height_blocks = 4
 
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
@@ -335,6 +326,10 @@ class map_display(basic_display):
                     self.apply_brush(grid_x, grid_y, self.tool)
                 elif self.is_erasing(event):
                     self.apply_brush(grid_x, grid_y, 0)
+                    if self.player_position != None:
+                        if (grid_x >= self.player_position[0] and grid_x <= self.player_position[0] + self.player_width_blocks * self.block_width) and (grid_y >= self.player_position[1] and grid_y <= self.player_position[1] + self.player_height_blocks * self.block_height):
+                            self.player_position = None
+
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
             if self.tool == 'p' and self.valid_grid_pos(grid_x, grid_y):
