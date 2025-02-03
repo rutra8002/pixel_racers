@@ -22,6 +22,7 @@ class Car:
 
 
         self.normalAcceleration = 0.2 * self.display.game.calibration
+        self.oilAcceleration = 0.1 * self.display.game.calibration
         self.iceAcceleration = 0.04 * self.display.game.calibration
 
         self.normalRotationSpeed = 0.03 * self.display.game.calibration
@@ -33,13 +34,13 @@ class Car:
 
         self.normalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
         self.iceSlowdown = 0.02 * self.display.game.calibration # when the player doesn't press W or S
+        self.oilSlowdown = 0.02 * self.display.game.calibration # when the player doesn't press W or S
 
 
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.borderForce = 2 * self.display.game.calibration
         self.bumpingCooldown = 0.3
-        self.oilDelay = 1000
 
         self.x, self.y = coordinates[0], coordinates[1]
         self.archiveCords = [self.x, self.y]
@@ -63,6 +64,7 @@ class Car:
 
         self.velUp, self.velLeft = 0, 0
         self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
+        self.in_oil = False
         self.rotation = 0
         self.recentCollisions = {}
         self.timeToCheck = 5
@@ -279,7 +281,6 @@ class Car:
                 self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
             else:
                 self.rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
-                # print(2)
 
         # if not self.boost:
         #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
@@ -377,10 +378,7 @@ class Car:
             direction -= 360
         min, max = direction - 110, direction + 110
         r = self.normalize_angle(self.rotation)
-        if self.isPlayer:
-            print(min, r, max)
         if r < max and min < r:
-            # print('forward')
             return True
         else:
             if min < 0:
@@ -389,9 +387,7 @@ class Car:
             elif max > 360:
                 if r < max - 360 and min - 360 < r:
                     return True
-        # print('backward')
         return False
-
 
     def normalize_angle(self, angle):
         while angle <= 0:
@@ -399,6 +395,7 @@ class Car:
         while angle > 360:
             angle -= 360
         return angle
+
     def block(self, mask, x, y):
         dx = x - self.rect.centerx
         dy = y - self.rect.centery
@@ -470,6 +467,7 @@ class Car:
         self.currentAcceleration = self.normalAcceleration
         self.currentRotationSpeed = self.normalRotationSpeed
         self.currentNaturalSlowdown = self.normalSlowdown
+        self.in_oil = False
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.check_color(self.display.mapMask, 0, 0)
@@ -538,11 +536,16 @@ class Car:
         self.currentRotationSpeed = self.normalRotationSpeed
         self.currentAcceleration = self.normalAcceleration
         self.currentNaturalSlowdown = self.normalSlowdown
+        self.in_oil = False
 
         for x in range(size[0]):
             for y in range(size[1]):
                 if sharedSurface.get_at((x, y))[1] == 200:
                     tile = self.display.map[(self.rect.topleft[1] + y) // self.display.block_height][(self.rect.topleft[0] + x) // self.display.block_width]
+                    if tile == 2:
+                        self.currentAcceleration = self.oilAcceleration
+                        self.currentNaturalSlowdown = self.oilSlowdown
+                        self.in_oil = True
                     if tile == 3:
                         self.currentMaxSpeed = self.gravelMaxSpeed
                         self.currentRotationSpeed = self.gravelRotationSpeed
