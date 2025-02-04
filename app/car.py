@@ -72,6 +72,8 @@ class Car:
         self.velUp, self.velLeft = 0, 0
         self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
         self.in_oil = False
+        self.tireHealth = 1
+        self.min_tireHealth = 0.2
         self.rotation = 0
         self.recentCollisions = {}
         self.timeToCheck = 5
@@ -226,14 +228,14 @@ class Car:
             if self.WASD_steering:
                 self.velUp += self.currentAcceleration
             else:
-                a, b = self.get_acceleration_with_trigonometry(1, self.currentAcceleration * self.display.game.delta_time * self.display.game.calibration / 2)
+                a, b = self.get_acceleration_with_trigonometry(1, self.currentAcceleration * self.display.game.delta_time * self.display.game.calibration * self.tireHealth / 2)
                 self.velLeft += a
                 self.velUp += b
         if self.s and not self.in_oil:
             if self.WASD_steering:
                 self.velUp -= self.currentAcceleration
             else:
-                a, b = self.get_acceleration_with_trigonometry(-1, self.currentAcceleration * self.backDifference * self.display.game.delta_time * self.display.game.calibration / 2)
+                a, b = self.get_acceleration_with_trigonometry(-1, self.currentAcceleration * self.backDifference * self.display.game.delta_time * self.display.game.calibration * self.tireHealth / 2)
                 self.velLeft += a
                 self.velUp += b
         if self.a and not self.in_oil:
@@ -273,7 +275,7 @@ class Car:
             self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
         elif self.velLeft == c and self.velUp == d:
             if self.velLeft != 0 or self.velUp != 0:
-                self.slow_down(self.currentNaturalSlowdown / magnitude)
+                self.slow_down(self.currentNaturalSlowdown / magnitude / (self.tireHealth ** 0.2))
 
         if magnitude > self.currentNaturalSlowdown:
             modifier = magnitude / 200
@@ -465,7 +467,9 @@ class Car:
             if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
                 if obstacle.type == 1:
                     obstacle.destroy()
-                    self.velUp, self.velLeft = 0, 0
+                    self.tireHealth -= self.min_tireHealth
+                    if self.tireHealth < self.min_tireHealth:
+                        self.tireHealth = self.min_tireHealth
                 elif obstacle.type == 2:
                     self.block(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1])
                     self.velUp *= -0.5
@@ -482,10 +486,8 @@ class Car:
             self.check_color(self.display.mapMask, 0, 0)
         else:
             self.particle_color = (100, 100, 100)
-            self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],
-                                      blue=self.particle_color[2])
-            self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],
-                                      blue=self.particle_color[2])
+            self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],blue=self.particle_color[2])
+            self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],blue=self.particle_color[2])
 
     def handle_bumping(self, other):
         dx = other.x - self.x
