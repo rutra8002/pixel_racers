@@ -25,6 +25,7 @@ class Car:
         self.asphalt_color = (26,26,26)
         self.wall_color = (255, 255, 255)
         self.ice_color = (63, 208, 212)
+        self.spike_color = (255, 0, 0)
 
         self.particle_color = [0, 0, 0]
 
@@ -149,7 +150,7 @@ class Car:
             if not self == c:
                 if self.collision_detection(c.car_mask, c.rect.topleft[0], c.rect.topleft[1]):
                     self.collision_render(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
-                    self.block(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
+                    self.block(c.rect.topleft[0], c.rect.topleft[1])
                     try:
                         if self.recentCollisions[c] == 0:
                             self.handle_bumping(c)
@@ -407,7 +408,7 @@ class Car:
             angle -= 360
         return angle
 
-    def block(self, mask, x, y):
+    def block(self, x, y):
         dx = x - self.rect.centerx
         dy = y - self.rect.centery
         distance = lolino.sqrt(dx ** 2 + dy ** 2)
@@ -471,7 +472,7 @@ class Car:
                     if self.tireHealth < self.min_tireHealth:
                         self.tireHealth = self.min_tireHealth
                 elif obstacle.type == 2:
-                    self.block(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1])
+                    self.block(obstacle.rect.topleft[0], obstacle.rect.topleft[1])
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
 
@@ -583,7 +584,10 @@ class Car:
                         self.particle_color = self.ice_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
-
+                    elif tile == 5:
+                        self.particle_color = self.spike_color
+                        self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+                        self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                     # elif tile == 1:
                     #     self.velUp *= -1
                     #     self.velLeft *= -1
