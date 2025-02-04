@@ -24,6 +24,7 @@ class basic_display:
         self.asphalt_color = (26,26,26)
         self.wall_color = (255, 255, 255)
         self.ice_color = (63, 208, 212)
+        self.spike_color = (255, 0, 0)
 
 
         self.loading_error = custom_text.Custom_text(self, self.game.width/2, self.game.height/2, 'Error, no display found!', text_color='white')
@@ -102,6 +103,8 @@ class game_display(basic_display):
                     color = self.gravel_color
                 elif self.map[y][x] == 4:
                     color = self.ice_color
+                elif self.map[y][x] == 5:
+                    color = self.spike_color
                 else:
                     color = self.asphalt_color
                 pygame.draw.rect(self.map_surface, color,
@@ -179,7 +182,8 @@ class map_display(basic_display):
             1: self.wall_color,
             2: self.oil_color,
             3: self.gravel_color,
-            4: self.ice_color
+            4: self.ice_color,
+            5: self.spike_color
         }
 
 
@@ -307,6 +311,8 @@ class map_display(basic_display):
                 self.tool = 3
             elif event.key == pygame.K_4:
                 self.tool = 4
+            elif event.key == pygame.K_5:
+                self.tool = 5
             elif event.key == pygame.K_p:
                 self.tool = 'p'
             elif event.key == pygame.K_b:

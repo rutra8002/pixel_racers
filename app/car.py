@@ -25,6 +25,7 @@ class Car:
         self.asphalt_color = (26,26,26)
         self.wall_color = (255, 255, 255)
         self.ice_color = (63, 208, 212)
+        self.spike_color = (255, 0, 0)
 
         self.particle_color = [0, 0, 0]
 
@@ -581,7 +582,10 @@ class Car:
                         self.particle_color = self.ice_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
-
+                    elif tile == 5:
+                        self.particle_color = self.spike_color
+                        self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+                        self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                     # elif tile == 1:
                     #     self.velUp *= -1
                     #     self.velLeft *= -1
