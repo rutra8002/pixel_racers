@@ -564,6 +564,7 @@ class Car:
                         self.currentAcceleration = self.oilAcceleration
                         self.currentNaturalSlowdown = self.oilSlowdown
                         self.in_oil = True
+                        self.steer_rotation = 0
                         self.particle_color = self.oil_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
