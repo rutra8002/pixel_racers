@@ -4,7 +4,7 @@ from app.car import Car
 
 class Enemy(Car):
     def __init__(self, display, image, coordinates, crazy=True):
-        super().__init__(display, image, coordinates, isPlayer=False)
+        super().__init__(display, image, coordinates)
         self.crazy = crazy
 
     def loop(self):
