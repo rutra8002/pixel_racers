@@ -7,6 +7,7 @@ from particle_system import ParticleGenerator
 from unicodedata import normalize
 from customObjects.custom_text import Custom_text
 from app import images
+from jeff_the_objects import stacked_sprite
 
 
 class Car:
@@ -60,12 +61,15 @@ class Car:
         self.currentRotationSpeed = self.normalRotationSpeed
         self.currentNaturalSlowdown = self.normalSlowdown
 
+        self.num_of_sprites = 9
+        self.car3d_size = 2
+        self.car3d_sprite = stacked_sprite.StackedSprite(image, self.num_of_sprites, (16, 16), self.car3d_size)
+
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
-        self.image = image.convert_alpha()
-        self.rect = self.image.get_rect()
+        self.rect = self.car3d_sprite.rect
         self.rect.center = self.x, self.y
 
-        self.car_mask = pygame.mask.from_surface(self.image)
+        self.car_mask = self.car3d_sprite.masks[self.num_of_sprites//2]
         self.mask_image = self.car_mask.to_surface()
 
         # self.image.set_colorkey((0, 0, 0))
@@ -109,40 +113,18 @@ class Car:
         self.backwheel1_pgen.start()
         self.backwheel2_pgen.start()
 
-        self.num_of_sprites = 9
-        self.car3d_size = 2
-
-        self.car3d_image = images.car3d
-        self.car3d_sprites = self.load_car_sprites()
-        self.car3d_sprites.reverse()
-
-
-
-
-    def load_car_sprites(self):
-        car_sprites = []
-        sprite_width = 16
-        sprite_height = 16
-        for i in range(self.num_of_sprites):
-            sprite = self.car3d_image.subsurface((0, i * sprite_height, sprite_width, sprite_height))
-            scaled_sprite = pygame.transform.scale(sprite, (sprite_width * self.car3d_size, sprite_height * self.car3d_size))
-            car_sprites.append(scaled_sprite)
-        return car_sprites
 
     def render(self):
         self.center = self.rect.center
         # self.display.screen.blit(self.mask_image, self.rect)
         self.nitroAmount += 1
-        self.newImg = pygame.transform.rotate(self.image, self.rotation + 90)
-        self.rect = self.newImg.get_rect()
+        self.rect = self.car3d_sprite.rect
         self.rect.center = self.x, self.y
-        self.car_mask = pygame.mask.from_surface(self.newImg)
+        self.car_mask = self.car3d_sprite.masks[self.num_of_sprites//2]
         self.mask_image = self.car_mask.to_surface()
         # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
         # self.display.screen.blit(self.newImg, self.rect)
-        for i in range(len(self.car3d_sprites)):
-            rotated_sprite = pygame.transform.rotate(self.car3d_sprites[i], self.rotation - 90)
-            self.display.screen.blit(rotated_sprite, (self.rect.topleft[0], self.rect.topleft[1] - i * self.car3d_size))
+        self.car3d_sprite.render(self.display.screen, (self.x, self.y), self.rotation)
 
         back_wheel_offset = self.playerHeight / 2
         angle_rad = lolino.radians(-self.rotation)
