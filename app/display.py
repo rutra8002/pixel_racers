@@ -58,18 +58,18 @@ class game_display(basic_display):
 
         for i in range(1, 6):
             if i == 5:
-                self.e = enemy.Enemy(self, images.enemy, (100 * i, 700), False)
+                self.e = enemy.Enemy(self, images.car3d, (100 * i, 700), False)
             else:
-                self.e = enemy.Enemy(self, images.enemy, (100 * i, 100 * i), False)
+                self.e = enemy.Enemy(self, images.car3d, (100 * i, 100 * i), False)
             self.objects.append(self.e)
             self.cars.append(self.e)
 
 
 
         if self.player_position:
-            self.p = player.Player(self, images.player, self.player_position)
+            self.p = player.Player(self, images.car3d, self.player_position)
         else:
-            self.p = player.Player(self, images.player, (100, 100))
+            self.p = player.Player(self, images.car3d, (100, 100))
         self.objects.append(self.p)
         self.cars.append(self.p)
 
