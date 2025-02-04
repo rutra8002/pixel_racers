@@ -10,9 +10,10 @@ from app import images
 
 
 class Car:
-    def __init__(self, display, image, coordinates):
+    def __init__(self, display, image, coordinates, isPlayer):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
+        self.isPlayer = isPlayer
         self.borderBounce = True  # whether the bounce from borders depends on the player's velocity
         self.borderBounciness = 0.9
         self.WASD_steering = False  # For debug only
