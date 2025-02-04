@@ -1,0 +1,1 @@
+https://github.com/StanislavPetrovV/SpriteStacking/blob/main/LICENSE

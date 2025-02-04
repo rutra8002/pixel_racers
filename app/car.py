@@ -6,6 +6,7 @@ import time
 from particle_system import ParticleGenerator
 from unicodedata import normalize
 from customObjects.custom_text import Custom_text
+from app import images
 
 
 class Car:
@@ -105,6 +106,25 @@ class Car:
         self.backwheel1_pgen.start()
         self.backwheel2_pgen.start()
 
+        self.num_of_sprites = 9
+
+        self.car3d_image = images.car3d
+        self.car3d_sprites = self.load_car_sprites()
+        self.car3d_sprites.reverse()
+
+
+
+
+    def load_car_sprites(self):
+        car_sprites = []
+        sprite_width = 16
+        sprite_height = 16
+        for i in range(self.num_of_sprites):
+            sprite = self.car3d_image.subsurface((0, i * sprite_height, sprite_width, sprite_height))
+            scaled_sprite = pygame.transform.scale(sprite, (sprite_width * 2, sprite_height * 2))
+            car_sprites.append(scaled_sprite)
+        return car_sprites
+
     def render(self):
         self.center = self.rect.center
         # self.display.screen.blit(self.mask_image, self.rect)
@@ -115,7 +135,10 @@ class Car:
         self.car_mask = pygame.mask.from_surface(self.newImg)
         self.mask_image = self.car_mask.to_surface()
         # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
-        self.display.screen.blit(self.newImg, self.rect)
+        # self.display.screen.blit(self.newImg, self.rect)
+        for i in range(len(self.car3d_sprites)):
+            rotated_sprite = pygame.transform.rotate(self.car3d_sprites[i], self.rotation - 90)
+            self.display.screen.blit(rotated_sprite, (self.rect.topleft[0], self.rect.topleft[1] - i * 3))
 
         back_wheel_offset = self.playerHeight / 2
         angle_rad = lolino.radians(-self.rotation)
@@ -215,6 +238,7 @@ class Car:
             if hasattr(self, 'debug_texts'):
                 for text_obj in self.debug_texts:
                     text_obj.hidden = True
+
 
     def events(self, event):
         pass
