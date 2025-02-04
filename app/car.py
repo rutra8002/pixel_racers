@@ -17,7 +17,7 @@ class Car:
         self.borderBounce = True  # whether the bounce from borders depends on the player's velocity
         self.borderBounciness = 0.9
         self.WASD_steering = False  # For debug only
-        self.collision_draw = False
+        self.collision_draw = True
         self.mass = 1
         self.backDifference = 0.5
 
@@ -533,7 +533,7 @@ class Car:
         dy = other.y - self.y
         distance = lolino.sqrt(dx ** 2 + dy ** 2)
         if distance == 0:
-            return ">:("
+            return "GET OUT"
 
         sum_radii = (self.playerWidth + other.playerWidth) / 2
         overlap = sum_radii - distance
@@ -549,6 +549,16 @@ class Car:
             other.x += nx * separation
             other.y += ny * separation
 
+        coll_x, coll_y = self.get_coordinates(other.car_mask, other.rect.topleft[0], other.rect.topleft[1])
+        # print(coll_x, coll_y)
+
+        r = (coll_x - other.x, coll_y - other.y)
+        px = self.mass * self.velLeft
+        py = self.mass * self.velUp
+        Lb = r[0] * py - r[1] * px
+        Ib = 1/12 * other.mass * (self.playerWidth ** 2 + self.playerHeight ** 2)
+        omega = Lb / Ib
+        other.rotation += lolino.degrees(omega * 1/60)
         n = ((other.x - self.x) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2), (other.y - self.y) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2))
         t = (-n[1], n[0])
         v1n = self.velLeft * n[0] + self.velUp * n[1]
@@ -564,9 +574,23 @@ class Car:
         self.velLeft, other.velLeft = v1[0], v2[0]
         self.velUp, other.velUp = v1[1], v2[1]
 
+
     def collision_detection(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
         return self.car_mask.overlap(mask, offset)
+    def get_coordinates(self, mask, x, y):
+        xs = []
+        xy = []
+        offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
+        sharedMask = self.car_mask.overlap_mask(mask, offset)
+        sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
+        sharedSurface.set_colorkey((0, 0, 0))
+        for x in range(sharedSurface.get_size()[0]):
+            for y in range(sharedSurface.get_size()[1]):
+                if sharedSurface.get_at((x, y))[1] == 200:
+                    xs.append(x + self.rect.topleft[0])
+                    xy.append(y + self.rect.topleft[1])
+        return sum(xs) // len(xs), sum(xy) // len(xy)
 
     def collision_render(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
