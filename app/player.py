@@ -6,7 +6,7 @@ from app.car import Car
 
 class Player(Car):
     def __init__(self, display, image, coordinates):
-        super().__init__(display, image, coordinates, isPlayer=True)
+        super().__init__(display, image, coordinates)
 
     def events(self, event):
 
