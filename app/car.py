@@ -75,6 +75,7 @@ class Car:
         self.in_oil = False
         self.tireHealth = 1
         self.min_tireHealth = 0.2
+        self.invincibility = 0
         self.rotation = 0
         self.recentCollisions = {}
         self.timeToCheck = 5
@@ -450,7 +451,11 @@ class Car:
 
     def loop(self):
         self.movement()
+        self.invincibility -= self.display.game.delta_time
 
+        if self.isPlayer:
+            print(int(self.invincibility))
+        # print(self.display.game.delta_time)
         if len(self.recentCollisions) != len(self.display.cars) - 1:
             for car in self.display.cars:
                 if not self == car:
@@ -467,10 +472,8 @@ class Car:
         for obstacle in self.display.obstacles:
             if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
                 if obstacle.type == 1:
-                    obstacle.destroy()
-                    self.tireHealth -= self.min_tireHealth
-                    if self.tireHealth < self.min_tireHealth:
-                        self.tireHealth = self.min_tireHealth
+                    if self.prickWheels():
+                        obstacle.destroy()
                 elif obstacle.type == 2:
                     self.block(obstacle.rect.topleft[0], obstacle.rect.topleft[1])
                     self.velUp *= -0.5
@@ -489,6 +492,16 @@ class Car:
             self.particle_color = (100, 100, 100)
             self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],blue=self.particle_color[2])
             self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],blue=self.particle_color[2])
+
+    def prickWheels(self):
+        if self.invincibility < 1 and self.tireHealth > self.min_tireHealth:
+            self.invincibility = 2
+            self.tireHealth -= 0.2
+            if self.tireHealth < self.min_tireHealth:
+                self.tireHealth = self.min_tireHealth
+            return True
+        else:
+            return False
 
     def handle_bumping(self, other):
         dx = other.x - self.x
@@ -589,6 +602,7 @@ class Car:
                         self.particle_color = self.spike_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+                        self.prickWheels()
                     # elif tile == 1:
                     #     self.velUp *= -1
                     #     self.velLeft *= -1
