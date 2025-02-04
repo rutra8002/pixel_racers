@@ -147,7 +147,7 @@ class Car:
             if not self == c:
                 if self.collision_detection(c.car_mask, c.rect.topleft[0], c.rect.topleft[1]):
                     self.collision_render(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
-                    self.block(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
+                    self.block(c.rect.topleft[0], c.rect.topleft[1])
                     try:
                         if self.recentCollisions[c] == 0:
                             self.handle_bumping(c)
@@ -405,7 +405,7 @@ class Car:
             angle -= 360
         return angle
 
-    def block(self, mask, x, y):
+    def block(self, x, y):
         dx = x - self.rect.centerx
         dy = y - self.rect.centery
         distance = lolino.sqrt(dx ** 2 + dy ** 2)
@@ -467,7 +467,7 @@ class Car:
                     obstacle.destroy()
                     self.velUp, self.velLeft = 0, 0
                 elif obstacle.type == 2:
-                    self.block(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1])
+                    self.block(obstacle.rect.topleft[0], obstacle.rect.topleft[1])
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
 
