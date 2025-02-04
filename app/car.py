@@ -110,6 +110,7 @@ class Car:
         self.backwheel2_pgen.start()
 
         self.num_of_sprites = 9
+        self.car3d_size = 2
 
         self.car3d_image = images.car3d
         self.car3d_sprites = self.load_car_sprites()
@@ -124,7 +125,7 @@ class Car:
         sprite_height = 16
         for i in range(self.num_of_sprites):
             sprite = self.car3d_image.subsurface((0, i * sprite_height, sprite_width, sprite_height))
-            scaled_sprite = pygame.transform.scale(sprite, (sprite_width * 2, sprite_height * 2))
+            scaled_sprite = pygame.transform.scale(sprite, (sprite_width * self.car3d_size, sprite_height * self.car3d_size))
             car_sprites.append(scaled_sprite)
         return car_sprites
 
@@ -141,7 +142,7 @@ class Car:
         # self.display.screen.blit(self.newImg, self.rect)
         for i in range(len(self.car3d_sprites)):
             rotated_sprite = pygame.transform.rotate(self.car3d_sprites[i], self.rotation - 90)
-            self.display.screen.blit(rotated_sprite, (self.rect.topleft[0], self.rect.topleft[1] - i * 3))
+            self.display.screen.blit(rotated_sprite, (self.rect.topleft[0], self.rect.topleft[1] - i * self.car3d_size))
 
         back_wheel_offset = self.playerHeight / 2
         angle_rad = lolino.radians(-self.rotation)
