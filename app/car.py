@@ -29,7 +29,7 @@ class Car:
         self.particle_color = [0, 0, 0]
 
         self.normalAcceleration = 0.2 * self.display.game.calibration
-        self.oilAcceleration = 0.1 * self.display.game.calibration
+        self.oilAcceleration = 0 * self.display.game.calibration
         self.iceAcceleration = 0.04 * self.display.game.calibration
 
         self.normalRotationSpeed = 0.03 * self.display.game.calibration
@@ -41,7 +41,7 @@ class Car:
 
         self.normalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
         self.iceSlowdown = 0.02 * self.display.game.calibration # when the player doesn't press W or S
-        self.oilSlowdown = 0.02 * self.display.game.calibration # when the player doesn't press W or S
+        self.oilSlowdown = 0 * self.display.game.calibration # when the player doesn't press W or S
 
 
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
@@ -148,11 +148,13 @@ class Car:
                 if self.collision_detection(c.car_mask, c.rect.topleft[0], c.rect.topleft[1]):
                     self.collision_render(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
                     self.block(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
-                    if self.recentCollisions[c] == 0:
-                        self.handle_bumping(c)
-                        self.recentCollisions[c] = time.time()
-                        c.recentCollisions[self] = time.time()
-
+                    try:
+                        if self.recentCollisions[c] == 0:
+                            self.handle_bumping(c)
+                            self.recentCollisions[c] = time.time()
+                            c.recentCollisions[self] = time.time()
+                    except:
+                        pass
 
         if self.display.game.debug:
             pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
@@ -220,26 +222,26 @@ class Car:
         self.prevPos = [self.x, self.y]
         self.prevRotation = self.rotation
         c, d = self.velLeft, self.velUp
-        if self.w:
+        if self.w and not self.in_oil:
             if self.WASD_steering:
                 self.velUp += self.currentAcceleration
             else:
                 a, b = self.get_acceleration_with_trigonometry(1, self.currentAcceleration * self.display.game.delta_time * self.display.game.calibration / 2)
                 self.velLeft += a
                 self.velUp += b
-        if self.s:
+        if self.s and not self.in_oil:
             if self.WASD_steering:
                 self.velUp -= self.currentAcceleration
             else:
                 a, b = self.get_acceleration_with_trigonometry(-1, self.currentAcceleration * self.backDifference * self.display.game.delta_time * self.display.game.calibration / 2)
                 self.velLeft += a
                 self.velUp += b
-        if self.a:
+        if self.a and not self.in_oil:
             if self.WASD_steering:
                 self.velLeft += self.currentAcceleration
             else:
                 self.steer_rotation += self.delta_rotation * self.display.game.delta_time * self.steering_speed
-        if self.d:
+        if self.d and not self.in_oil:
             if self.WASD_steering:
                 self.velLeft -= self.currentAcceleration
             else:
@@ -248,7 +250,7 @@ class Car:
             self.steer_rotation += self.delta_rotation * self.display.game.delta_time * self.steering_speed
         if self.e and self.WASD_steering:
             self.steer_rotation += -self.delta_rotation * self.display.game.delta_time * self.steering_speed
-        if not self.a and not self.d:
+        if not self.a and not self.d and not self.in_oil:
             self.steer_rotation -= 10*self.steer_rotation * self.display.game.delta_time
         if abs(self.steer_rotation) < 0.01:
             self.steer_rotation = 0
