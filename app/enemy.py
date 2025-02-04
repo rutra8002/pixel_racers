@@ -10,7 +10,7 @@ class Enemy(Car):
     def loop(self):
         super().loop()
 
-        if self.crazy:
+        if self.crazy and not self.in_oil:
             self.a = random.choice((True, False))
             self.w = random.choice((True, False))
             self.s = random.choice((True, False))

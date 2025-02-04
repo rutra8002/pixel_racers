@@ -9,6 +9,7 @@ class Player(Car):
         super().__init__(display, image, coordinates, isPlayer=True)
 
     def events(self, event):
+
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_w, pygame.K_UP):
                 self.w = True

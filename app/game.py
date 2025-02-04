@@ -9,7 +9,6 @@ class Game:
 
         self.sound_manager = sounds.SoundManager()
         self.sound_manager.load_music('sounds/stildre.wav')
-        self.sound_manager.set_music_volume(0)
 
         config.set_config()
 
