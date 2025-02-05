@@ -75,7 +75,7 @@ class Car:
         # self.image.set_colorkey((0, 0, 0))
         # self.image.fill(self.color)
 
-        self.velUp, self.velLeft = 0, 0
+        self.velUp, self.velLeft, self.velAng = 0, 0, 0
         self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
         self.in_oil = False
         self.tireHealth = 1
@@ -348,6 +348,8 @@ class Car:
         self.archiveCords = [self.x, self.y]
         self.x -= self.velLeft * self.display.game.delta_time
         self.y -= self.velUp * self.display.game.delta_time
+        self.rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
+        self.velAng *= 0.9
 
     def slow_down(self, slowdown):
         self.velLeft -= self.velLeft * slowdown * self.display.game.delta_time * self.display.game.calibration
@@ -548,14 +550,23 @@ class Car:
 
         coll_x, coll_y = self.get_coordinates(other.car_mask, other.rect.topleft[0], other.rect.topleft[1])
         # print(coll_x, coll_y)
-
-        r = (coll_x - other.x, coll_y - other.y)
-        px = self.mass * self.velLeft
-        py = self.mass * self.velUp
-        Lb = r[0] * py - r[1] * px
-        Ib = 1/12 * other.mass * (self.playerWidth ** 2 + self.playerHeight ** 2)
-        omega = Lb / Ib
-        other.rotation += lolino.degrees(omega * 1/60)
+        r_self = (coll_x - self.x, coll_y - self.y)
+        r_other = (coll_x - other.x, coll_y - other.y)
+        px_self = self.mass * self.velLeft
+        py_self = self.mass * self.velUp
+        px_other = self.mass * self.velLeft
+        py_other = self.mass * self.velUp
+        La = r_self[0] * py_self - r_self[1] * px_self
+        Lb = r_other[0] * py_other - r_other[1] * px_self
+        Ia = 1/12 * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2)
+        Ib = 1/12 * other.mass * (other.playerWidth ** 2 + other.playerHeight ** 2)
+        omega_A = La / Ia
+        omega_B = Lb / Ib
+        self.velAng = omega_A
+        other.velAng = omega_B
+        # self.rotation += lolino.degrees(omega_A * self.display.game.delta_time)
+        # other.rotation += lolino.degrees(omega_B * self.display.game.delta_time)
+        print(self.display.game.delta_time)
         n = ((other.x - self.x) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2), (other.y - self.y) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2))
         t = (-n[1], n[0])
         v1n = self.velLeft * n[0] + self.velUp * n[1]
