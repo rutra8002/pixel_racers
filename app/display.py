@@ -58,9 +58,9 @@ class game_display(basic_display):
 
         for i in range(1, 6):
             if i == 5:
-                self.e = enemy.Enemy(self, images.car3d, (100 * i, 700), False)
+                self.e = enemy.Enemy(self, images.enemy3d, (100 * i, 700), False)
             else:
-                self.e = enemy.Enemy(self, images.car3d, (100 * i, 100 * i), False)
+                self.e = enemy.Enemy(self, images.enemy3d, (100 * i, 100 * i), False)
             self.objects.append(self.e)
             self.cars.append(self.e)
 
