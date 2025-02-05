@@ -389,11 +389,16 @@ class map_display(basic_display):
             if self.valid_grid_pos(grid_x, grid_y):
                 if self.is_painting(event) and self.tool != 'c' and self.tool != 'm':
                     self.apply_brush(grid_x, grid_y, self.tool)
-                elif self.is_erasing(event) and self.tool != 'c' and self.tool != 'm':
+                elif self.is_erasing(event):
                     self.apply_brush(grid_x, grid_y, 0)
                     if self.player_position != None:
                         if (grid_x >= self.player_position[0] and grid_x <= self.player_position[0] + self.player_width_blocks * self.block_width) and (grid_y >= self.player_position[1] and grid_y <= self.player_position[1] + self.player_height_blocks * self.block_height):
                             self.player_position = None
+
+                    for chpo in self.checkpoints:
+                        if pygame.Rect(grid_x, grid_y, 5 * self.block_width, 5 * self.block_width).clipline(chpo):
+                            self.checkpoints.remove(chpo)
+
                 elif self.checkpoint_placing(event):
                     self.current_checkpoint.append((grid_x, grid_y))
                     if len(self.current_checkpoint) == 2:

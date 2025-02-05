@@ -15,9 +15,13 @@ class checkpoint: # A checkpoint is a line with 2 points
         else:
             self.color = self.display.color_map['c']
 
-    def render(self):
-        pygame.draw.line(self.display.screen, self.color, (self.start_pos[0] * self.display.block_width, self.start_pos[1] * self.display.block_height), (self.end_pos[0] * self.display.block_width, self.end_pos[1] * self.display.block_height), width=self.display.block_width)
+    def render(self, cx=0, cy=0):
+        pygame.draw.line(self.display.screen, self.color, (self.start_pos[0] * self.display.block_width + cx, self.start_pos[1] * self.display.block_height + cy), (self.end_pos[0] * self.display.block_width + cx, self.end_pos[1] * self.display.block_height + cy), width=self.display.block_width)
         self.text.render()
 
     def collision(self):
         pass
+
+    def delete(self):
+        self.text.delete()
+        del self
