@@ -15,8 +15,9 @@ class Car:
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
-        self.borderBounce = True  # whether the bounce from borders depends on the player's velocity
+        self.borderBounce = False  # whether the bounce from borders depends on the player's velocity
         self.borderBounciness = 0.9
+        self.borderForce = 0.5 * self.display.game.calibration
         self.WASD_steering = False  # For debug only
         self.collision_draw = True
         self.mass = 1
@@ -42,14 +43,13 @@ class Car:
         self.gravelMaxSpeed = 2 * self.display.game.calibration
         self.iceMaxSpeed = 25 * self.display.game.calibration
 
-        self.normalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
+        self.normalSlowdown = 0.15 * self.display.game.calibration # when the player doesn't press W or S
         self.iceSlowdown = 0.02 * self.display.game.calibration # when the player doesn't press W or S
         self.oilSlowdown = 0 * self.display.game.calibration # when the player doesn't press W or S
 
 
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
-        self.borderForce = 2 * self.display.game.calibration
         self.bumpingCooldown = 0.3
 
         self.x, self.y = coordinates[0], coordinates[1]
@@ -117,6 +117,8 @@ class Car:
 
     def render(self):
         self.center = self.rect.center
+        if self.inviFlicker:
+            pygame.draw.circle(self.display.screen, (102, 100, 100), self.center, 25)
         # self.display.screen.blit(self.mask_image, self.rect)
         self.nitroAmount += 1
         self.rect = self.car3d_sprite.rect
@@ -226,8 +228,8 @@ class Car:
                 for text_obj in self.debug_texts:
                     text_obj.hidden = True
 
-        if self.inviFlicker:
-            pygame.draw.rect(self.display.screen, (202, 0, 0), (400, 400, 100, 100))
+        # if self.inviFlicker:
+        #     pygame.draw.rect(self.display.screen, (202, 0, 0), (400, 400, 100, 100))
         # else:
         #     pygame.draw.rect(self.display.screen, (0, 202, 0), (400, 400, 100, 100))
 
@@ -331,12 +333,16 @@ class Car:
 
         else:
             if self.x < 0:
+                self.x += 2
                 self.velLeft = -self.borderForce
             if self.x > self.display.screenWidth:
+                self.x -= 2
                 self.velLeft = self.borderForce
             if self.y < 0:
+                self.y += 2
                 self.velUp = -self.borderForce
             if self.y > self.display.screenHeight:
+                self.y -= 2
                 self.velUp = self.borderForce
 
         self.archiveCords = [self.x, self.y]
@@ -565,10 +571,10 @@ class Car:
         self.velLeft, other.velLeft = v1[0], v2[0]
         self.velUp, other.velUp = v1[1], v2[1]
 
-
     def collision_detection(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
         return self.car_mask.overlap(mask, offset)
+
     def get_coordinates(self, mask, x, y):
         xs = []
         xy = []
