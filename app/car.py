@@ -351,7 +351,7 @@ class Car:
         self.rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
         self.velAng *= 0.9
 
-        self.check_collision_with_checkpoints()
+
 
     def slow_down(self, slowdown):
         self.velLeft -= self.velLeft * slowdown * self.display.game.delta_time * self.display.game.calibration
@@ -666,6 +666,3 @@ class Car:
                     #     self.velUp *= -1
                     #     self.velLeft *= -1
 
-    def check_collision_with_checkpoints(self):
-        for checkpoint in self.display.checkpoints:
-            checkpoint.collision(self.rect)

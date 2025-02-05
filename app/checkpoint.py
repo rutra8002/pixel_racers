@@ -19,11 +19,10 @@ class checkpoint: # A checkpoint is a line with 2 points
         pygame.draw.line(self.display.screen, self.color, self.start_pos, self.end_pos, width=self.display.block_width)
         self.text.render()
 
-    def collision(self, rect):
-        if rect.clipline(self.start_pos, self.end_pos):
+    def collision(self):
+        if any(car.rect.clipline(self.start_pos, self.end_pos) for car in self.display.cars):
             self.color = (0, 0, 255)
             return True
-
         if self.i == 0:
             self.color = self.display.color_map['m']
         else:

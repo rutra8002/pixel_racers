@@ -174,6 +174,9 @@ class game_display(basic_display):
         self.particle_system.update(self.game.delta_time)
         for c in self.cars:
             c.loop()
+
+        for chpo in self.checkpoints:
+            chpo.collision()
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
 class map_display(basic_display):
