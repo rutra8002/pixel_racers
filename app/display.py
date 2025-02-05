@@ -5,7 +5,7 @@ import random
 import math as lolekszcz
 import pygame
 import json
-from app import car, enemy, obstacle, images, player, enemy
+from app import car, enemy, obstacle, images, player, enemy, checkpoint
 from particle_system import ParticleSystem
 from datetime import datetime
 import os
@@ -26,6 +26,22 @@ class basic_display:
         self.ice_color = (63, 208, 212)
         self.spike_color = (255, 0, 0)
 
+        self.color_map = {
+            0: self.asphalt_color,
+            1: self.wall_color,
+            2: self.oil_color,
+            3: self.gravel_color,
+            4: self.ice_color,
+            5: self.spike_color,
+            'c': (0, 255, 0),
+            'm': (255, 0, 0)
+        }
+
+        self.map_data = {
+            'map': [],
+            'player_position': None,
+            'checkpoints': []
+        }
 
         self.loading_error = custom_text.Custom_text(self, self.game.width/2, self.game.height/2, 'Error, no display found!', text_color='white')
         self.loading_error.hidden = True
@@ -47,14 +63,14 @@ class game_display(basic_display):
     def __init__(self, game, difficulty):
         basic_display.__init__(self, game)
         self.difficulty = difficulty
+
         self.import_map()
         if self.player_position:
             print(self.player_position)
         self.obstacles = []
         self.cars = [] #the physical cars of enemies and of the player
         self.particle_system = ParticleSystem()
-        self.block_width = self.game.width // len(self.map[0])
-        self.block_height = self.game.height // len(self.map)
+
 
         for i in range(1, 6):
             if i == 5:
@@ -104,11 +120,22 @@ class game_display(basic_display):
         with open(f"{self.game.map_dir}/{self.difficulty}.json", 'r') as f:
             map_data = json.load(f)
             if isinstance(map_data, dict):
-                self.map = map_data['map']
-                self.player_position = map_data.get('player_position')
+                self.map_data.update(map_data)
+                self.map = self.map_data['map']
+
+                self.block_width = self.game.width // len(self.map[0])
+                self.block_height = self.game.height // len(self.map)
+
+                self.player_position = self.map_data.get('player_position')
+                temp_list_of_checkpoints = self.map_data['checkpoints']
+                self.checkpoints = []
+                for i, chekpoint in enumerate(temp_list_of_checkpoints):
+                    self.checkpoints.append(checkpoint.checkpoint(self, i, chekpoint[0], chekpoint[1]))
+
             else:
                 self.map = map_data
                 self.player_position = None
+                self.checkpoints = []
             f.close()
 
 
@@ -120,6 +147,10 @@ class game_display(basic_display):
             obj.render()
         for o in self.obstacles:
             o.render()
+
+        if self.game.debug:
+            for chpo in self.checkpoints:
+                chpo.render()
 
     def events(self, event):
         for obj in self.objects:
@@ -168,25 +199,8 @@ class map_display(basic_display):
         self.brush_size = 1
         self.dragging = False
 
-        self.color_map = {
-            0: self.asphalt_color,
-            1: self.wall_color,
-            2: self.oil_color,
-            3: self.gravel_color,
-            4: self.ice_color,
-            5: self.spike_color,
-            'c': (0, 255, 0)
-        }
-
-        self.check_points = []
-        self.current_check_point  = []
-
-        self.map_data = {
-            'map': self.map,
-            'player_position': self.player_position,
-            'check_points': self.check_points
-
-        }
+        self.checkpoints = []
+        self.current_checkpoint = []
 
 
         self.brushtext = custom_text.Custom_text(self, 10, 70, f'Brush size: {self.brush_size}', text_color='white', font_height=30, center=False)
@@ -215,6 +229,8 @@ class map_display(basic_display):
         self.temp_height = self.game.height // self.gcd
 
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
+        self.checkpoints = []
+        self.current_checkpoint = []
 
 
     def load_map(self, map_data):
@@ -224,10 +240,11 @@ class map_display(basic_display):
             self.player_position = self.map_data.get('player_position')
             self.player_position = (self.player_position[0] * self.zoom_level / self.block_width, self.player_position[
                 1] * self.zoom_level / self.block_height) if self.player_position else None
-            self.check_points = self.map_data['check_points']
+            self.checkpoints = self.map_data['checkpoints']
         else:
             self.map = map_data
             self.player_position = None
+            self.checkpoints = []
 
         self.temp_width = len(self.map[0])
         self.temp_height = len(self.map)
@@ -255,7 +272,15 @@ class map_display(basic_display):
             self.cx -= speed
 
         self.brushtext.update_text(f'Brush size: {self.brush_size}')
-        self.tooltext.update_text(f'Tool: {self.tool}')
+
+        if self.tool == 'p':
+            self.tooltext.update_text(f'Tool: Place player')
+        elif self.tool == 'c':
+            self.tooltext.update_text(f'Tool: Place checkpoint')
+        elif self.tool == 'm':
+            self.tooltext.update_text(f'Tool: Place finish/start line')
+        else:
+            self.tooltext.update_text(f'Tool: {self.tool}')
 
         self.player_pos_text.update_text(f'Player position: {self.player_position}')
 
@@ -298,10 +323,23 @@ class map_display(basic_display):
         for obj in self.objects:
             obj.render()
         b = self.brush_size * self.block_width
-        if self.tool != 'p' and self.tool != 'c':
+        if self.tool != 'p' and self.tool != 'c' and self.tool != 'm':
             c = self.color_map.get(self.tool)
             pygame.draw.rect(self.screen, c, (pygame.mouse.get_pos()[0] - b / 2, pygame.mouse.get_pos()[1] - b / 2, b, b), 2)
 
+        for i in range(len(self.checkpoints)):
+            if i == 0:
+                color = self.color_map['m']
+            else:
+                color = self.color_map['c']
+            pygame.draw.line(self.screen, color, (self.checkpoints[i][0][0] * self.block_width + self.cx, self.checkpoints[i][0][1] * self.block_height + self.cy), (self.checkpoints[i][1][0] * self.block_width + self.cx, self.checkpoints[i][1][1] * self.block_height + self.cy), width=int(self.block_width))
+
+        if (self.tool == 'c' or self.tool == 'm') and len(self.current_checkpoint) == 1:
+
+            pygame.draw.line(self.screen, self.color_map[self.tool], (self.current_checkpoint[0][0] * self.block_width + self.cx,
+                                                  self.current_checkpoint[0][1] * self.block_height + self.cy), (
+                             pygame.mouse.get_pos()[0],
+                             pygame.mouse.get_pos()[1]), width=int(self.block_width))
 
     def events(self, event):
         for obj in self.objects:
@@ -329,7 +367,12 @@ class map_display(basic_display):
                 self.brush_size = max(self.brush_size - 1, 1)
             elif event.key == pygame.K_c:
                 self.tool = 'c'
-                self.current_check_point = []
+                self.current_checkpoint = []
+                if len(self.checkpoints) == 0:
+                    self.tool = 'm'
+            elif event.key == pygame.K_m:
+                self.tool = 'm'
+                self.current_checkpoint = []
         self.handle_mouse_events(event)
         self.handle_zoom(event)
 
@@ -344,18 +387,22 @@ class map_display(basic_display):
         # Handle painting tools
         if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION]:
             if self.valid_grid_pos(grid_x, grid_y):
-                if self.is_painting(event) and self.tool != 'c':
+                if self.is_painting(event) and self.tool != 'c' and self.tool != 'm':
                     self.apply_brush(grid_x, grid_y, self.tool)
-                elif self.is_erasing(event) and self.tool != 'c':
+                elif self.is_erasing(event) and self.tool != 'c' and self.tool != 'm':
                     self.apply_brush(grid_x, grid_y, 0)
                     if self.player_position != None:
                         if (grid_x >= self.player_position[0] and grid_x <= self.player_position[0] + self.player_width_blocks * self.block_width) and (grid_y >= self.player_position[1] and grid_y <= self.player_position[1] + self.player_height_blocks * self.block_height):
                             self.player_position = None
-                else:
-                    self.current_check_point.append((mouse_pos[0], mouse_pos[1]))
-                    if len(self.current_check_point) == 2:
-                        self.check_points.append((self.current_check_point[0], self.current_check_point[1]))
-                        self.current_check_point = []
+                elif self.checkpoint_placing(event):
+                    self.current_checkpoint.append((grid_x, grid_y))
+                    if len(self.current_checkpoint) == 2:
+                        if self.tool != 'm':
+                            self.checkpoints.append((self.current_checkpoint[0], self.current_checkpoint[1]))
+                        else:
+                            self.checkpoints.insert(0, (self.current_checkpoint[0], self.current_checkpoint[1]))
+                            self.tool = 'c'
+                        self.current_checkpoint = []
 
 
 
@@ -397,7 +444,8 @@ class map_display(basic_display):
 
         map_data = {
             'map': self.map,
-            'player_position': self.player_position
+            'player_position': self.player_position,
+            'checkpoints': self.checkpoints
         }
 
         self.map_data.update(map_data)
@@ -427,6 +475,11 @@ class map_display(basic_display):
     def is_erasing(self, event):
         return (event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT) or \
                (event.type == pygame.MOUSEMOTION and event.buttons[2])
+
+    def checkpoint_placing(self, event):
+        if (self.tool == 'c' or self.tool == 'm') and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            return True
+        return False
 
 
 class main_menu_display(basic_display):
