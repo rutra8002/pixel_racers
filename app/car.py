@@ -1,4 +1,4 @@
-
+from operator import invert
 
 import pygame
 import math as lolino
@@ -81,6 +81,7 @@ class Car:
         self.tireHealth = 1
         self.min_tireHealth = 0.2
         self.invincibility = 0
+        self.inviFlicker = False
         self.rotation = 0
         self.recentCollisions = {}
         self.timeToCheck = 5
@@ -224,6 +225,12 @@ class Car:
             if hasattr(self, 'debug_texts'):
                 for text_obj in self.debug_texts:
                     text_obj.hidden = True
+
+        if self.inviFlicker:
+            pygame.draw.rect(self.display.screen, (202, 0, 0), (400, 400, 100, 100))
+        # else:
+        #     pygame.draw.rect(self.display.screen, (0, 202, 0), (400, 400, 100, 100))
+
 
 
     def events(self, event):
@@ -458,11 +465,13 @@ class Car:
 
     def loop(self):
         self.movement()
-        self.invincibility -= self.display.game.delta_time
-
-        if self.isPlayer:
-            print(int(self.invincibility))
-        # print(self.display.game.delta_time)
+        self.invincibility -= 5 * self.display.game.delta_time
+        if self.invincibility > 0 and self.isPlayer:
+            if int(self.invincibility) % 2 == 0:
+                self.inviFlicker = not self.inviFlicker
+                self.invincibility -= 1
+        else:
+            self.inviFlicker = False
         if len(self.recentCollisions) != len(self.display.cars) - 1:
             for car in self.display.cars:
                 if not self == car:
@@ -502,7 +511,7 @@ class Car:
 
     def prickWheels(self):
         if self.invincibility < 1 and self.tireHealth > self.min_tireHealth:
-            self.invincibility = 2
+            self.invincibility = 20
             self.tireHealth -= 0.2
             if self.tireHealth < self.min_tireHealth:
                 self.tireHealth = self.min_tireHealth
