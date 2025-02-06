@@ -9,6 +9,7 @@ class Game:
 
         self.sound_manager = sounds.SoundManager()
         self.sound_manager.load_music('sounds/stildre.wav')
+        self.sound_manager.load_sound('boom','sounds/TireBoom.wav')
 
         config.set_config()
 
