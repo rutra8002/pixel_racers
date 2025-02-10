@@ -63,13 +63,13 @@ class Car:
 
         self.num_of_sprites = 9
         self.car3d_size = 2
-        self.car3d_sprite = stacked_sprite.StackedSprite(image, self.num_of_sprites, (16, 16), self.car3d_size)
+        self.car3d_sprite = stacked_sprite.StackedSprite(self.display, image, self.num_of_sprites, (16, 16), self.car3d_size)
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.rect = self.car3d_sprite.rect
         self.rect.center = self.x, self.y
 
-        self.car_mask = self.car3d_sprite.masks[self.num_of_sprites//2]
+        self.car_mask = self.car3d_sprite.mask
         self.mask_image = self.car_mask.to_surface()
 
         # self.image.set_colorkey((0, 0, 0))
@@ -511,6 +511,8 @@ class Car:
         self.currentRotationSpeed = self.normalRotationSpeed
         self.currentNaturalSlowdown = self.normalSlowdown
         self.in_oil = False
+
+        self.car3d_sprite.update_mask_rotation(self.rotation)
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.check_color(self.display.mapMask, 0, 0)
