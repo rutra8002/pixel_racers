@@ -525,6 +525,8 @@ class Car:
         if self.invincibility < 1 and self.tireHealth > self.min_tireHealth:
             self.invincibility = 20
             self.tireHealth -= 0.2
+            if not self.tireHealth == self.min_tireHealth:
+                self.display.game.sound_manager.play_sound('boom')
             if self.tireHealth < self.min_tireHealth:
                 self.tireHealth = self.min_tireHealth
             return True

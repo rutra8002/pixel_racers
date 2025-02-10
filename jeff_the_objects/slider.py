@@ -49,6 +49,7 @@ class Slider:
             write_config_to_file(config, 'config.ini')
             self.display.game.fps = int(self.val)
             self.display.game.cfg = read_config()  #Refresh config
+            self.display.game.debug_items[2].update_text(f'FPS cap: {self.display.game.fps}')
 
     def delete(self):
         self.display.objects_in_memory -= 1

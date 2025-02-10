@@ -136,6 +136,10 @@ class game_display(basic_display):
                 self.map = map_data
                 self.player_position = None
                 self.checkpoints = []
+                self.block_width = self.game.width // len(self.map[0])
+                self.block_height = self.game.height // len(self.map)
+
+
             f.close()
 
 
