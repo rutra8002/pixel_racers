@@ -172,6 +172,8 @@ class game_display(basic_display):
                 self.obstacles.append(obstacle.Obstacle(self, spawn_x, spawn_y, 'spikes', self.p.rotation - 90))
             if event.key == pygame.K_v:
                 self.obstacles.append(obstacle.Obstacle(self, spawn_x, spawn_y, 'barrier', self.p.rotation - 90))
+            if event.key == pygame.K_b:
+                self.obstacles.append(obstacle.Obstacle(self, spawn_x, spawn_y, 'ball', self.p.rotation - 90))
 
 
     def mainloop(self):
