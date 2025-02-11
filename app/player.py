@@ -2,11 +2,16 @@ import pygame
 import math as lolino
 import time
 from app.car import Car
-
+import math
 
 class Player(Car):
     def __init__(self, display, image, coordinates):
         super().__init__(display, image, coordinates, isPlayer=True)
+
+    def set_3d_parameters(self):
+        self.num_of_sprites = 9
+        self.img_size = (16, 16)
+        self.car3d_height = math.pi
 
     def events(self, event):
 

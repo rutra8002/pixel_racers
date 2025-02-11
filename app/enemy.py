@@ -7,6 +7,11 @@ class Enemy(Car):
         super().__init__(display, image, coordinates, isPlayer=False)
         self.crazy = crazy
 
+    def set_3d_parameters(self):
+        self.num_of_sprites = 9
+        self.img_size = (16, 16)
+        self.car3d_height = lolekszcz.e
+
     def loop(self):
         super().loop()
 

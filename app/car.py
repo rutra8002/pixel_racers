@@ -61,9 +61,9 @@ class Car:
         self.currentRotationSpeed = self.normalRotationSpeed
         self.currentNaturalSlowdown = self.normalSlowdown
 
-        self.num_of_sprites = 9
-        self.car3d_size = 2
-        self.car3d_sprite = stacked_sprite.StackedSprite(self.display, image, self.num_of_sprites, (16, 16), self.car3d_size)
+        self.set_3d_parameters()
+
+        self.car3d_sprite = stacked_sprite.StackedSprite(self.display, image, self.num_of_sprites, self.img_size, self.car3d_height)
 
         # self.image = pygame.Surface((self.playerWidth, self.playerHeight))
         self.rect = self.car3d_sprite.rect
@@ -114,6 +114,10 @@ class Car:
         self.backwheel1_pgen.start()
         self.backwheel2_pgen.start()
 
+    def set_3d_parameters(self):
+        self.num_of_sprites = 9
+        self.img_size = (16, 16)
+        self.car3d_height = 2
 
     def render(self):
         self.center = self.rect.center
