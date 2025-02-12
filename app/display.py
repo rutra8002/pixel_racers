@@ -456,8 +456,12 @@ class map_display(basic_display):
                 elif self.is_erasing(event):
                     self.apply_brush(grid_x, grid_y, 0)
                     if self.player_position != None:
-                        if (grid_x >= self.player_position[0] and grid_x <= self.player_position[0] + self.player_width_blocks * self.block_width) and (grid_y >= self.player_position[1] and grid_y <= self.player_position[1] + self.player_height_blocks * self.block_height):
+                        if (grid_x >= self.player_position[0] and grid_x <= self.player_position[0] + self.player_width_blocks) and (grid_y >= self.player_position[1] and grid_y <= self.player_position[1] + self.player_height_blocks):
                             self.player_position = None
+                    for e in self.enemies:
+                        print(self.enemies, e)
+                        if (grid_x >= e[0][0] and grid_x <= e[0][0] + self.player_width_blocks) and (grid_y >= e[0][1] and grid_y <= e[0][1] + self.player_height_blocks):
+                            self.enemies.remove(e)
 
                     for chpo in self.checkpoints:
                         if pygame.Rect(grid_x, grid_y, 5 * self.block_width, 5 * self.block_width).clipline(chpo):
