@@ -364,7 +364,7 @@ class Car:
         self.x -= self.velLeft * self.display.game.delta_time
         self.y -= self.velUp * self.display.game.delta_time
         self.rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
-        self.velAng *= 0.9
+        self.velAng *= 0.65
 
 
 
@@ -466,27 +466,27 @@ class Car:
         # Reset rotation to prevent clipping
         self.rotation = self.prevRotation
 
-    def get_penetration(self, mask, x, y):
-        xs = 0
-        ys = 0
-        offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
-        sharedMask = self.car_mask.overlap_mask(mask, offset)
-        sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
-        sharedSurface.set_colorkey((0, 0, 0))
-        size = sharedSurface.get_size()
-
-        for x in range(size[0]):
-            for y in range(size[1]):
-                if sharedSurface.get_at((x, y))[1] == 200:
-                    xs += 1
-                    break
-        for y in range(size[1]):
-            for x in range(size[0]):
-                if sharedSurface.get_at((x, y))[1] == 200:
-                    ys += 1
-                    break
-
-        return xs, ys
+    # def get_penetration(self, mask, x, y):
+    #     xs = 0
+    #     ys = 0
+    #     offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
+    #     sharedMask = self.car_mask.overlap_mask(mask, offset)
+    #     sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
+    #     sharedSurface.set_colorkey((0, 0, 0))
+    #     size = sharedSurface.get_size()
+    #
+    #     for x in range(size[0]):
+    #         for y in range(size[1]):
+    #             if sharedSurface.get_at((x, y))[1] == 200:
+    #                 xs += 1
+    #                 break
+    #     for y in range(size[1]):
+    #         for x in range(size[0]):
+    #             if sharedSurface.get_at((x, y))[1] == 200:
+    #                 ys += 1
+    #                 break
+    #
+    #     return xs, ys
 
     def loop(self):
         self.car_mask = self.car3d_sprite.update_mask_rotation(self.rotation)
@@ -576,19 +576,19 @@ class Car:
         r_other = (coll_x - other.x, coll_y - other.y)
         px_self = self.mass * self.velLeft
         py_self = self.mass * self.velUp
-        px_other = self.mass * self.velLeft
-        py_other = self.mass * self.velUp
+        px_other = other.mass * other.velLeft
+        py_other = other.mass * other.velUp
         La = r_self[0] * py_self - r_self[1] * px_self
-        Lb = r_other[0] * py_other - r_other[1] * px_self
+        Lb = r_other[0] * py_other - r_other[1] * px_other
         Ia = 1/12 * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2)
         Ib = 1/12 * other.mass * (other.playerWidth ** 2 + other.playerHeight ** 2)
         omega_A = La / Ia
         omega_B = Lb / Ib
         self.velAng = omega_A
         other.velAng = omega_B
+        print(self.velAng)
         # self.rotation += lolino.degrees(omega_A * self.display.game.delta_time)
         # other.rotation += lolino.degrees(omega_B * self.display.game.delta_time)
-        print(self.display.game.delta_time)
         n = ((other.x - self.x) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2), (other.y - self.y) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2))
         t = (-n[1], n[0])
         v1n = self.velLeft * n[0] + self.velUp * n[1]
@@ -683,7 +683,7 @@ class Car:
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.prickWheels()
-                    # elif tile == 1:
-                    #     self.velUp *= -1
-                    #     self.velLeft *= -1
+                    elif tile == 1:
+                        self.velUp *= -1
+                        self.velLeft *= -1
 
