@@ -267,8 +267,6 @@ class map_display(basic_display):
         player_info = self.temp_map_data.get('player')
         self.player_position = player_info[0]
         self.player_rotation = player_info[1]
-        self.player_position[0] = self.player_position[0]*self.zoom_level/self.block_width
-        self.player_position[1] = self.player_position[1]*self.zoom_level/self.block_height
         self.player_position = (self.player_position[0] * self.zoom_level / self.block_width, self.player_position[
             1] * self.zoom_level / self.block_height) if self.player_position else None
         self.checkpoints = self.temp_map_data['checkpoints']
