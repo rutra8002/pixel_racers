@@ -1,7 +1,7 @@
 import pygame
 
 class StackedSprite:
-    def __init__(self, display, image, num_of_sprites, sprite_size, scale_factor):
+    def __init__(self, display, image, num_of_sprites, sprite_size, scale_factor, rotation=0):
         self.display = display
         self.image = image
         self.num_of_sprites = num_of_sprites
@@ -13,6 +13,8 @@ class StackedSprite:
         self.masks = [pygame.mask.from_surface(sprite) for sprite in self.sprites]
         self.middle_sprite = self.num_of_sprites//2
         self.mask = self.masks[self.middle_sprite]
+        self.update_mask_rotation(rotation)
+        self.rotation = rotation
 
 
     def load_sprites(self):
@@ -24,10 +26,10 @@ class StackedSprite:
             sprites.append(scaled_sprite)
         return sprites
 
-    def render(self, screen, position, rotation):
+    def render(self, screen, position):
         x, y = position
         for i, sprite in enumerate(self.sprites):
-            rotated_sprite = pygame.transform.rotate(sprite, rotation-90)
+            rotated_sprite = pygame.transform.rotate(sprite, self.rotation-90)
             sprite_rect = rotated_sprite.get_rect(center=(x, y))
             screen.blit(rotated_sprite, (sprite_rect[0], sprite_rect[1] - i * self.scale_factor))
         if self.display.game.debug:
@@ -40,4 +42,5 @@ class StackedSprite:
     def update_mask_rotation(self, rotation):
         rotated_sprite = pygame.transform.rotate(self.sprites[self.middle_sprite], rotation-90)
         self.mask = pygame.mask.from_surface(rotated_sprite)
+        self.rotation = rotation
         return self.mask

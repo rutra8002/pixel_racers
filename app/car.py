@@ -142,7 +142,7 @@ class Car:
         self.mask_image = self.car_mask.to_surface()
         # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
         # self.display.screen.blit(self.newImg, self.rect)
-        self.car3d_sprite.render(self.display.screen, (self.x, self.y), self.rotation)
+        self.car3d_sprite.render(self.display.screen, (self.x, self.y))
 
         back_wheel_offset = self.playerHeight / 2
         angle_rad = lolino.radians(-self.rotation)

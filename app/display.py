@@ -1,5 +1,6 @@
 from customObjects import custom_images, custom_text, custom_button
 from jeff_the_objects.slider import Slider
+from jeff_the_objects.stacked_sprite import StackedSprite
 from app.config import read_config, write_config_to_file
 import random
 import math as lolekszcz
@@ -71,6 +72,10 @@ class game_display(basic_display):
         self.cars = [] #the physical cars of enemies and of the player
         self.particle_system = ParticleSystem()
 
+        self.environment_objects = [
+            {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359)), "coords": (200, 300)},
+            {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359)), "coords": (400, 500)},
+        ]
 
         for i in range(1, 6):
             if i == 5:
@@ -147,10 +152,15 @@ class game_display(basic_display):
         self.screen.fill(self.bgColor)
         self.screen.blit(self.map_surface, (0, 0))
         self.particle_system.draw(self.screen)
+
+
         for obj in self.objects:
             obj.render()
         for o in self.obstacles:
             o.render()
+        for obj in self.environment_objects:
+            if obj["type"] == "tree":
+                obj["sprite"].render(self.screen, obj["coords"])
 
         if self.game.debug:
             for chpo in self.checkpoints:
