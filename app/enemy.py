@@ -3,8 +3,8 @@ import math as lolekszcz
 from app.car import Car
 
 class Enemy(Car):
-    def __init__(self, display, image, coordinates, crazy=True):
-        super().__init__(display, image, coordinates, isPlayer=False)
+    def __init__(self, display, image, coordinates, rotation, crazy=True):
+        super().__init__(display, image, coordinates, rotation, isPlayer=False)
         self.crazy = crazy
 
     def set_3d_parameters(self):

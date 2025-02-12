@@ -125,6 +125,9 @@ class Car:
         self.backwheel1_pgen.start()
         self.backwheel2_pgen.start()
 
+        self.display.objects.append(self)
+        self.display.cars.append(self)
+
     def set_3d_parameters(self):
         self.num_of_sprites = 9
         self.img_size = (16, 16)

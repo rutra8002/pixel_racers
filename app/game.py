@@ -228,7 +228,6 @@ class Game:
         directories = self.get_level_names()
 
         for file in directories:
-            print(file)
             with open(f'{self.map_dir}/{file}.json', 'r') as f:
                 josn_obj = json.load(f)
 
