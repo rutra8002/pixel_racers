@@ -262,19 +262,18 @@ class map_display(basic_display):
 
     def load_map(self, map_data):
         self.reset_map()
-        if isinstance(map_data, dict):
-            self.temp_map_data.update(map_data)
-            self.map = self.temp_map_data['map']
-            player_info = self.temp_map_data.get('player')
-            self.player_position = player_info[0]
-            self.player_rotation = player_info[1]
-            self.player_position = (self.player_position[0] * self.zoom_level / self.block_width, self.player_position[
-                1] * self.zoom_level / self.block_height) if self.player_position else None
-            self.checkpoints = self.temp_map_data['checkpoints']
-        else:
-            self.map = map_data
-            self.player_position = None
-            self.checkpoints = []
+        self.temp_map_data.update(map_data)
+        self.map = self.temp_map_data['map']
+        player_info = self.temp_map_data.get('player')
+        self.player_position = player_info[0]
+        self.player_rotation = player_info[1]
+        self.player_position = (self.player_position[0] * self.zoom_level / self.block_width, self.player_position[
+            1] * self.zoom_level / self.block_height) if self.player_position else None
+        self.checkpoints = self.temp_map_data['checkpoints']
+        self.enemies = self.temp_map_data['enemies']
+        for e in self.enemies:
+            e[0][0] = e[0][0]*self.zoom_level/self.block_width
+            e[0][1] = e[0][1] * self.zoom_level / self.block_height
 
         self.temp_width = len(self.map[0])
         self.temp_height = len(self.map)
@@ -344,6 +343,10 @@ class map_display(basic_display):
                 ph
             ))
 
+        else:
+            self.noplayertext.render()
+
+
         for enemy in self.enemies:
             ex, ey = enemy[0]
             ew = self.player_width_blocks * self.block_width
@@ -354,9 +357,6 @@ class map_display(basic_display):
                 ew,
                 eh
             ))
-
-        else:
-            self.noplayertext.render()
 
 
         pygame.draw.rect(self.screen, (155, 0, 0),
