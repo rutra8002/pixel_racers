@@ -98,12 +98,23 @@ class Car:
 
         self.particle_system = self.display.particle_system
 
+        back_wheel_offset = self.playerHeight / 2
+        angle_rad = lolino.radians(-self.rotation)
+        back_wheel_x_offset = lolino.cos(angle_rad) * back_wheel_offset
+        back_wheel_y_offset = lolino.sin(angle_rad) * back_wheel_offset
 
-        self.backwheel1_pgen = ParticleGenerator(self.particle_system, 0, 0, self.velLeft, self.velUp, -0.01 * self.velLeft,
+        back_wheel1_x = self.x - back_wheel_x_offset - lolino.sin(angle_rad) * (self.playerWidth / 2)
+        back_wheel1_y = self.y - back_wheel_y_offset + lolino.cos(angle_rad) * (self.playerWidth / 2)
+        back_wheel2_x = self.x - back_wheel_x_offset + lolino.sin(angle_rad) * (self.playerWidth / 2)
+        back_wheel2_y = self.y - back_wheel_y_offset - lolino.cos(angle_rad) * (self.playerWidth / 2)
+        nitro_x = self.x - back_wheel_x_offset
+        nitro_y = self.y - back_wheel_y_offset
+
+        self.backwheel1_pgen = ParticleGenerator(self.particle_system, back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp, -0.01 * self.velLeft,
                                           -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
-        self.backwheel2_pgen = ParticleGenerator(self.particle_system, 0, 0, self.velLeft, self.velUp, -0.01 * self.velLeft,
+        self.backwheel2_pgen = ParticleGenerator(self.particle_system, back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp, -0.01 * self.velLeft,
                                           -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
-        self.nitrogen = ParticleGenerator(self.particle_system, 0, 0, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100,
+        self.nitrogen = ParticleGenerator(self.particle_system, nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100,
                                           30, 150, 'circle', True, 100)
 
 
