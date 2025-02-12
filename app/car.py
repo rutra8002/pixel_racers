@@ -478,6 +478,7 @@ class Car:
         return xs, ys
 
     def loop(self):
+        self.car_mask = self.car3d_sprite.update_mask_rotation(self.rotation)
         self.movement()
         self.invincibility -= 5 * self.display.game.delta_time
         if self.invincibility > 0 and self.isPlayer:
@@ -516,7 +517,7 @@ class Car:
         self.currentNaturalSlowdown = self.normalSlowdown
         self.in_oil = False
 
-        self.car3d_sprite.update_mask_rotation(self.rotation)
+
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.check_color(self.display.mapMask, 0, 0)
@@ -611,6 +612,7 @@ class Car:
         return sum(xs) // len(xs), sum(xy) // len(xy)
 
     def collision_render(self, mask, x, y):
+        self.car_mask = self.car3d_sprite.update_mask_rotation(self.rotation)
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
         sharedMask = self.car_mask.overlap_mask(mask, offset)
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
