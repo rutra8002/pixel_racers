@@ -459,7 +459,6 @@ class map_display(basic_display):
                         if (grid_x >= self.player_position[0] and grid_x <= self.player_position[0] + self.player_width_blocks) and (grid_y >= self.player_position[1] and grid_y <= self.player_position[1] + self.player_height_blocks):
                             self.player_position = None
                     for e in self.enemies:
-                        print(self.enemies, e)
                         if (grid_x >= e[0][0] and grid_x <= e[0][0] + self.player_width_blocks) and (grid_y >= e[0][1] and grid_y <= e[0][1] + self.player_height_blocks):
                             self.enemies.remove(e)
 
