@@ -11,7 +11,7 @@ from jeff_the_objects import stacked_sprite
 
 
 class Car:
-    def __init__(self, display, image, coordinates, isPlayer):
+    def __init__(self, display, image, coordinates, rotation, isPlayer):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
@@ -82,7 +82,7 @@ class Car:
         self.min_tireHealth = 0.2
         self.invincibility = 0
         self.inviFlicker = False
-        self.rotation = 0
+        self.rotation = rotation
         self.recentCollisions = {}
         self.timeToCheck = 5
         self.goingForward = True
