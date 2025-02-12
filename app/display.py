@@ -1,5 +1,6 @@
 from customObjects import custom_images, custom_text, custom_button
 from jeff_the_objects.slider import Slider
+from jeff_the_objects.stacked_sprite import StackedSprite
 from app.config import read_config, write_config_to_file
 import random
 import math as lolekszcz
@@ -39,9 +40,11 @@ class basic_display:
 
         self.map_data = {
             'map': [],
-            'player_position': None,
+            'player': None,
+            'enemies': [],
             'checkpoints': []
         }
+
 
         self.loading_error = custom_text.Custom_text(self, self.game.width/2, self.game.height/2, 'Error, no display found!', text_color='white')
         self.loading_error.hidden = True
@@ -71,21 +74,23 @@ class game_display(basic_display):
         self.cars = [] #the physical cars of enemies and of the player
         self.particle_system = ParticleSystem()
 
+        self.environment_objects = [
+            {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359)), "coords": (200, 300)},
+            {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359)), "coords": (400, 500)},
+        ]
 
-        for i in range(1, 6):
-            if i == 5:
-                self.e = enemy.Enemy(self, images.enemy3d, (100 * i, 700), False)
-            else:
-                self.e = enemy.Enemy(self, images.enemy3d, (100 * i, 100 * i), False)
-            self.objects.append(self.e)
-            self.cars.append(self.e)
+        # for i in range(1, 6):
+        #     if i == 5:
+        #         self.e = enemy.Enemy(self, images.enemy3d, (100 * i, 700), False)
+        #     else:
+        #         self.e = enemy.Enemy(self, images.enemy3d, (100 * i, 100 * i), False)
+        #     self.objects.append(self.e)
+        #     self.cars.append(self.e)
 
 
 
-        if self.player_position:
-            self.p = player.Player(self, images.car3d, self.player_position)
-        else:
-            self.p = player.Player(self, images.car3d, (100, 100))
+        self.p = player.Player(self, images.car3d, self.player_position, self.player_rotation)
+
         self.objects.append(self.p)
         self.cars.append(self.p)
 
@@ -119,6 +124,8 @@ class game_display(basic_display):
     def import_map(self):
         with open(f"{self.game.map_dir}/{self.difficulty}.json", 'r') as f:
             map_data = json.load(f)
+            self.player_position = [100, 100]
+            self.player_rotation = 0
             if isinstance(map_data, dict):
                 self.map_data.update(map_data)
                 self.map = self.map_data['map']
@@ -126,7 +133,17 @@ class game_display(basic_display):
                 self.block_width = self.game.width // len(self.map[0])
                 self.block_height = self.game.height // len(self.map)
 
-                self.player_position = self.map_data.get('player_position')
+                player_info = self.map_data.get('player')
+                if player_info != None:
+                    try:
+                        self.player_position = player_info[0]
+                        print(self.player_position)
+                        self.player_rotation = player_info[1]
+                    except:
+                        self.player_position = player_info
+                        self.player_rotation = 0
+
+                print(self.player_rotation)
                 temp_list_of_checkpoints = self.map_data['checkpoints']
                 self.checkpoints = []
                 for i, chekpoint in enumerate(temp_list_of_checkpoints):
@@ -134,7 +151,6 @@ class game_display(basic_display):
 
             else:
                 self.map = map_data
-                self.player_position = None
                 self.checkpoints = []
                 self.block_width = self.game.width // len(self.map[0])
                 self.block_height = self.game.height // len(self.map)
@@ -147,10 +163,15 @@ class game_display(basic_display):
         self.screen.fill(self.bgColor)
         self.screen.blit(self.map_surface, (0, 0))
         self.particle_system.draw(self.screen)
+
+
         for obj in self.objects:
             obj.render()
         for o in self.obstacles:
             o.render()
+        for obj in self.environment_objects:
+            if obj["type"] == "tree":
+                obj["sprite"].render(self.screen, obj["coords"])
 
         if self.game.debug:
             for chpo in self.checkpoints:
@@ -193,6 +214,7 @@ class map_display(basic_display):
         self.tool = 1
 
         self.player_position = None
+        self.player_rotation = 0
         self.player_width_blocks = 10
         self.player_height_blocks = 4
 
@@ -204,6 +226,9 @@ class map_display(basic_display):
 
         self.block_width = float(self.gcd)
         self.block_height = float(self.gcd)
+
+        self.enemies = []
+        self.enemy_rotation = 0
 
         self.brush_size = 1
         self.dragging = False
@@ -246,7 +271,9 @@ class map_display(basic_display):
         if isinstance(map_data, dict):
             self.map_data.update(map_data)
             self.map = self.map_data['map']
-            self.player_position = self.map_data.get('player_position')
+            player_info = self.map_data.get('player')
+            self.player_position = player_info[0]
+            self.player_rotation = player_info[1]
             self.player_position = (self.player_position[0] * self.zoom_level / self.block_width, self.player_position[
                 1] * self.zoom_level / self.block_height) if self.player_position else None
             self.checkpoints = self.map_data['checkpoints']
@@ -332,7 +359,7 @@ class map_display(basic_display):
         for obj in self.objects:
             obj.render()
         b = self.brush_size * self.block_width
-        if self.tool != 'p' and self.tool != 'c' and self.tool != 'm':
+        if self.tool != 'p' and self.tool != 'c' and self.tool != 'm' and self.tool != 'e':
             c = self.color_map.get(self.tool)
             pygame.draw.rect(self.screen, c, (pygame.mouse.get_pos()[0] - b / 2, pygame.mouse.get_pos()[1] - b / 2, b, b), 2)
 
@@ -382,6 +409,8 @@ class map_display(basic_display):
             elif event.key == pygame.K_m:
                 self.tool = 'm'
                 self.current_checkpoint = []
+            elif event.key == pygame.K_e:
+                self.tool = 'e'
         self.handle_mouse_events(event)
         self.handle_zoom(event)
 
@@ -425,6 +454,9 @@ class map_display(basic_display):
             if self.tool == 'p' and self.valid_grid_pos(grid_x, grid_y):
                 self.player_position = (grid_x, grid_y)
 
+            elif self.tool == 'e' and self.valid_grid_pos(grid_x, grid_y):
+                self.enemies.append(((grid_x, grid_y), self.enemy_rotation))
+
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_MIDDLE:
             self.dragging = True
             self.start_x, self.start_y = mouse_pos
@@ -458,7 +490,8 @@ class map_display(basic_display):
 
         map_data = {
             'map': self.map,
-            'player_position': self.player_position,
+            'player': [self.player_position, self.player_rotation],
+            'enemies': self.enemies,
             'checkpoints': self.checkpoints
         }
 

@@ -5,8 +5,8 @@ from app.car import Car
 import math
 
 class Player(Car):
-    def __init__(self, display, image, coordinates):
-        super().__init__(display, image, coordinates, isPlayer=True)
+    def __init__(self, display, image, coordinates, rotation):
+        super().__init__(display, image, coordinates, rotation, isPlayer=True)
 
     def set_3d_parameters(self):
         self.num_of_sprites = 9
