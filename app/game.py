@@ -1,3 +1,5 @@
+import json
+
 import pygame, sys, threading, code, os
 from app import config, display, sounds
 from customObjects import custom_text, custom_images, custom_button
@@ -32,6 +34,7 @@ class Game:
         self.displays = {'template_display': display.basic_display(self), 'game_display':display.game_display,'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self)}
         self.current_display = self.displays['main_menu_display']
 
+        self.upgrade_worlds()
         self.displays['level_selector'].load_maps()
 
         self.pointing_at = []
@@ -220,3 +223,26 @@ class Game:
             os.makedirs(self.map_dir)
     def get_level_names(self):
         return [file[:-5] for file in os.listdir(self.map_dir) if file.endswith('.json')]
+
+    def upgrade_worlds(self):
+        directories = self.get_level_names()
+
+        for file in directories:
+            print(file)
+            with open(f'{self.map_dir}/{file}.json', 'r') as f:
+                josn_obj = json.load(f)
+
+                f.close()
+
+                if 'version' not in josn_obj.keys() or ('version' in josn_obj.keys() and josn_obj['version'] != self.version):
+                    temp_map = dict(self.displays['template_display'].map_data)
+                    temp_map.update(josn_obj)
+                    if 'player_position' in josn_obj.keys():
+                        if isinstance(josn_obj['player_position'], list):
+                            temp_map['player'][0] = josn_obj['player_position']
+
+
+                    with open(f'{self.map_dir}/{file}.json', 'w') as f:
+                        json.dump(temp_map, f)
+                        f.close()
+

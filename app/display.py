@@ -39,8 +39,9 @@ class basic_display:
         }
 
         self.map_data = {
+            'version': self.game.version,
             'map': [],
-            'player': None,
+            'player': [[100, 100], 0],
             'enemies': [],
             'checkpoints': []
         }
@@ -68,8 +69,6 @@ class game_display(basic_display):
         self.difficulty = difficulty
 
         self.import_map()
-        if self.player_position:
-            print(self.player_position)
         self.obstacles = []
         self.cars = [] #the physical cars of enemies and of the player
         self.particle_system = ParticleSystem()
@@ -137,13 +136,12 @@ class game_display(basic_display):
                 if player_info != None:
                     try:
                         self.player_position = player_info[0]
-                        print(self.player_position)
                         self.player_rotation = player_info[1]
                     except:
                         self.player_position = player_info
                         self.player_rotation = 0
 
-                print(self.player_rotation)
+
                 temp_list_of_checkpoints = self.map_data['checkpoints']
                 self.checkpoints = []
                 for i, chekpoint in enumerate(temp_list_of_checkpoints):
@@ -218,6 +216,8 @@ class map_display(basic_display):
         self.player_width_blocks = 10
         self.player_height_blocks = 4
 
+        self.temp_map_data = dict(self.map_data)
+
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
         self.temp_height = self.game.height // self.gcd
@@ -265,18 +265,20 @@ class map_display(basic_display):
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
         self.checkpoints = []
         self.current_checkpoint = []
+        self.temp_map_data = dict(self.map_data)
 
 
     def load_map(self, map_data):
+        self.reset_map()
         if isinstance(map_data, dict):
-            self.map_data.update(map_data)
-            self.map = self.map_data['map']
-            player_info = self.map_data.get('player')
+            self.temp_map_data.update(map_data)
+            self.map = self.temp_map_data['map']
+            player_info = self.temp_map_data.get('player')
             self.player_position = player_info[0]
             self.player_rotation = player_info[1]
             self.player_position = (self.player_position[0] * self.zoom_level / self.block_width, self.player_position[
                 1] * self.zoom_level / self.block_height) if self.player_position else None
-            self.checkpoints = self.map_data['checkpoints']
+            self.checkpoints = self.temp_map_data['checkpoints']
         else:
             self.map = map_data
             self.player_position = None
@@ -486,7 +488,7 @@ class map_display(basic_display):
         current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         filename = f'maps/map_{current_time}.json'
 
-        self.player_position = (self.player_position[0]/self.zoom_level*self.block_width, self.player_position[1]/self.zoom_level*self.block_height) if self.player_position else None
+        self.player_position = (self.player_position[0]/self.zoom_level*self.block_width, self.player_position[1]/self.zoom_level*self.block_height) if self.player_position else self.map_data['player'][0]
 
         map_data = {
             'map': self.map,
@@ -495,11 +497,11 @@ class map_display(basic_display):
             'checkpoints': self.checkpoints
         }
 
-        self.map_data.update(map_data)
+        self.temp_map_data.update(map_data)
 
         # map_data = self.map
         with open(filename, 'w') as f:
-            json.dump(self.map_data, f)
+            json.dump(self.temp_map_data, f)
             f.close()
         self.game.displays['level_selector'].load_maps()
         self.game.change_display('map_maker_menu')
