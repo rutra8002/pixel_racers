@@ -236,6 +236,7 @@ class Game:
                 if 'version' not in josn_obj.keys() or ('version' in josn_obj.keys() and josn_obj['version'] != self.version):
                     temp_map = dict(self.displays['template_display'].map_data)
                     temp_map.update(josn_obj)
+                    temp_map['version'] = self.version
                     if 'player_position' in josn_obj.keys():
                         if isinstance(josn_obj['player_position'], list):
                             temp_map['player'][0] = josn_obj['player_position']
