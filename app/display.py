@@ -201,6 +201,7 @@ class map_display(basic_display):
         self.cx, self.cy = 0.0, 0.0
         self.zoom_level = 1.0
         self.tool = 1
+        self.shape = 1 # 0 is square, 1 is circle
 
         self.player_position = None
         self.player_rotation = 0
@@ -368,7 +369,10 @@ class map_display(basic_display):
         b = self.brush_size * self.block_width
         if self.tool != 'p' and self.tool != 'c' and self.tool != 'm' and self.tool != 'e':
             c = self.color_map.get(self.tool)
-            pygame.draw.rect(self.screen, c, (pygame.mouse.get_pos()[0] - b / 2, pygame.mouse.get_pos()[1] - b / 2, b, b), 2)
+            if self.shape == 0:
+                pygame.draw.rect(self.screen, c, (pygame.mouse.get_pos()[0] - b / 2, pygame.mouse.get_pos()[1] - b / 2, b, b), 2)
+            elif self.shape == 1:
+                pygame.draw.circle(self.screen, c, (int(pygame.mouse.get_pos()[0]), int(pygame.mouse.get_pos()[1])), self.brush_size * self.block_width / 2, 2)
 
         for i in range(len(self.checkpoints)):
             if i == 0:
@@ -436,8 +440,17 @@ class map_display(basic_display):
             elif event.key == pygame.K_m:
                 self.tool = 'm'
                 self.current_checkpoint = []
+            elif event.key == pygame.K_UP:
+                self.brush_size += 10
+            elif event.key == pygame.K_DOWN:
+                self.brush_size -= 10
             elif event.key == pygame.K_e:
                 self.tool = 'e'
+            elif event.key == pygame.K_LEFT or pygame.K_RIGHT:
+                if self.shape == 1:
+                    self.shape = 0
+                elif self.shape == 0:
+                    self.shape = 1
         self.handle_mouse_events(event)
         self.handle_zoom(event)
 
@@ -544,8 +557,9 @@ class map_display(basic_display):
         for dy in range(-half_brush, half_brush + 1):
             for dx in range(-half_brush, half_brush + 1):
                 nx, ny = x + dx, y + dy
-                if 0 <= nx < self.temp_width and 0 <= ny < self.temp_height:
-                    self.map[ny][nx] = value
+                if self.shape == 0 or (self.shape == 1 and (nx - x) ** 2 + (ny - y) ** 2 < half_brush ** 2):
+                    if 0 <= nx < self.temp_width and 0 <= ny < self.temp_height:
+                        self.map[ny][nx] = value
 
     def valid_grid_pos(self, x, y):
         return 0 <= x < self.temp_width and 0 <= y < self.temp_height
