@@ -74,8 +74,8 @@ class game_display(basic_display):
         self.particle_system = ParticleSystem()
 
         self.environment_objects = [
-            # {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=False), "coords": (200, 300)},
-            # {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=False), "coords": (400, 500)},
+            {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=False), "coords": (200, 300)},
+            {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=False), "coords": (400, 500)},
         ]
 
         # for i in range(1, 6):

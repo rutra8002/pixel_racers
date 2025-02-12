@@ -1,7 +1,7 @@
 import json
 
 import pygame, sys, threading, code, os
-from app import config, display, sounds
+from app import config, sounds
 from customObjects import custom_text, custom_images, custom_button
 import particle_system
 
@@ -19,6 +19,8 @@ class Game:
         self.map_dir = 'maps'
         self.update_settings()
 
+
+
         self.objects_in_memory = 0
         self.clock = pygame.time.Clock()
         self.font = None
@@ -31,6 +33,8 @@ class Game:
         self.objects = []
 
         self.menu_particle_system = particle_system.ParticleSystem()
+
+        from app import display
 
         self.displays = {'template_display': display.basic_display(self), 'game_display':display.game_display,'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self)}
         self.current_display = self.displays['main_menu_display']
