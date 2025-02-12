@@ -646,7 +646,7 @@ class Car:
         for x in range(size[0]):
             for y in range(size[1]):
                 if sharedSurface.get_at((x, y))[1] == 200:
-                    tile = self.display.map[(self.rect.topleft[1] + y) // self.display.block_height][(self.rect.topleft[0] + x) // self.display.block_width]
+                    tile = self.display.map[(self.rect.topleft[1] + y) // int(self.display.block_height)][(self.rect.topleft[0] + x) // int(self.display.block_width)]
                     if tile == 2:
                         self.currentAcceleration = self.oilAcceleration
                         self.currentNaturalSlowdown = self.oilSlowdown

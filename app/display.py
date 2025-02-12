@@ -129,8 +129,8 @@ class game_display(basic_display):
             self.map_data.update(map_data)
             self.map = self.map_data['map']
 
-            self.block_width = self.game.width // len(self.map[0])
-            self.block_height = self.game.height // len(self.map)
+            self.block_width = self.game.width / len(self.map[0])
+            self.block_height = self.game.height / len(self.map)
 
             player_info = self.map_data.get('player')
 
