@@ -42,7 +42,7 @@ class Obstacle:
             self.alpha = max(0, 255 - int((elapsed / 5) * 255))
         elif self.type == 3:
             self.angle += 1
-            self.sprite.render(self.display.screen, (self.x, self.y), self.angle)
+            self.sprite.render(self.display.screen, (self.x, self.y))
             self.sprite.update_mask_rotation(self.angle)
             return
         self.image.set_alpha(self.alpha)
