@@ -22,6 +22,7 @@ class Car:
         self.collision_draw = True
         self.mass = 1
         self.backDifference = 0.6
+        self.damping = 0.7
 
         self.gravel_color = (128, 128, 128)
         self.oil_color = (235, 180, 3)
@@ -360,7 +361,7 @@ class Car:
         self.x -= self.velLeft * self.display.game.delta_time
         self.y -= self.velUp * self.display.game.delta_time
         self.rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
-        self.velAng *= 0.65
+        self.velAng *= self.damping
 
 
 
@@ -543,6 +544,38 @@ class Car:
         else:
             return False
 
+    def wall_collision(self, mask, x, y):
+        dx = x - self.x
+        dy = y - self.y
+        distance = lolino.sqrt(dx ** 2 + dy ** 2)
+        if distance == 0:
+            n = (0, 0)
+        else:
+            n = (dx / distance, dy / distance)
+
+        sum_radii = (self.playerWidth + mask.get_size()[0]) / 2
+        overlap = sum_radii - distance
+        if overlap > 0:
+            nx = dx / distance
+            ny = dy / distance
+            separation = overlap * 0.5
+            self.x -= nx * separation
+            self.y -= ny * separation
+
+
+
+        t = (-n[1], n[0])
+
+        v1n = self.velLeft * n[0] + self.velUp * n[1]
+        v1t = self.velLeft * t[0] + self.velUp * t[1]
+
+        v1n_new = -v1n
+
+        self.velLeft = v1n_new * n[0] + v1t * t[0]
+        self.velUp = v1n_new * n[1] + v1t * t[1]
+
+
+
     def handle_bumping(self, other):
         dx = other.x - self.x
         dy = other.y - self.y
@@ -564,20 +597,38 @@ class Car:
             other.x += nx * separation
             other.y += ny * separation
 
+
+        # coll_x, coll_y = self.get_coordinates(other.car_mask, other.rect.topleft[0], other.rect.topleft[1])
+        # # print(coll_x, coll_y)
+        # r_self = (coll_x - self.x, coll_y - self.y)
+        # r_other = (coll_x - other.x, coll_y - other.y)
+        # px_self = self.mass * self.velLeft
+        # py_self = self.mass * self.velUp
+        # px_other = other.mass * other.velLeft
+        # py_other = other.mass * other.velUp
+        # La = r_self[0] * py_self - r_self[1] * px_self
+        # Lb = r_other[0] * py_other - r_other[1] * px_other
+        # Ia = 1/12 * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2)
+        # Ib = 1/12 * other.mass * (other.playerWidth ** 2 + other.playerHeight ** 2)
+        # omega_A = La / Ia
+        # omega_B = Lb / Ib
+        # self.velAng = omega_A
+        # other.velAng = omega_B
         coll_x, coll_y = self.get_coordinates(other.car_mask, other.rect.topleft[0], other.rect.topleft[1])
-        # print(coll_x, coll_y)
         r_self = (coll_x - self.x, coll_y - self.y)
         r_other = (coll_x - other.x, coll_y - other.y)
-        px_self = self.mass * self.velLeft
-        py_self = self.mass * self.velUp
-        px_other = other.mass * other.velLeft
-        py_other = other.mass * other.velUp
-        La = r_self[0] * py_self - r_self[1] * px_self
-        Lb = r_other[0] * py_other - r_other[1] * px_other
-        Ia = 1/12 * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2)
-        Ib = 1/12 * other.mass * (other.playerWidth ** 2 + other.playerHeight ** 2)
+        delta_px = (self.mass * self.velLeft) - (other.mass * other.velLeft)
+        delta_py = (self.mass * self.velUp) - (other.mass * other.velUp)
+        La = r_self[0] * delta_py - r_self[1] * delta_px
+        Lb = r_other[0] * delta_py - r_other[1] * delta_px
+        d_self = (r_self[0] ** 2 + r_self[1] ** 2) ** 0.5
+        d_other = (r_other[0] ** 2 + r_other[1] ** 2) ** 0.5
+        Ia = (1 / 12 * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2)) + self.mass * d_self ** 2
+        Ib = (1 / 12 * other.mass * (other.playerWidth ** 2 + other.playerHeight ** 2)) + other.mass * d_other ** 2
+
         omega_A = La / Ia
         omega_B = Lb / Ib
+
         self.velAng = omega_A
         other.velAng = omega_B
         print(self.velAng)
@@ -659,6 +710,12 @@ class Car:
                         self.particle_color = self.wall_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
+                        # center_x = ((self.rect.topleft[
+                        #                  0] + x) // self.display.block_width) * self.display.block_width + self.display.block_width // 2
+                        # center_y = ((self.rect.topleft[
+                        #                  1] + y) // self.display.block_height) * self.display.block_height + self.display.block_height // 2
+                        self.wall_collision(sharedMask, x + self.rect.topleft[0], y + self.rect.topleft[1])
+
                     elif tile == 3:
                         self.currentMaxSpeed = self.gravelMaxSpeed
                         self.currentRotationSpeed = self.gravelRotationSpeed
@@ -677,7 +734,5 @@ class Car:
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.prickWheels()
-                    elif tile == 1:
-                        self.velUp *= -1
-                        self.velLeft *= -1
+
 
