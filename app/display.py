@@ -39,8 +39,9 @@ class basic_display:
         }
 
         self.map_data = {
+            'version': self.game.version,
             'map': [],
-            'player': None,
+            'player': [[100, 100], 0],
             'enemies': [],
             'checkpoints': []
         }
@@ -68,8 +69,6 @@ class game_display(basic_display):
         self.difficulty = difficulty
 
         self.import_map()
-        if self.player_position:
-            print(self.player_position)
         self.obstacles = []
         self.cars = [] #the physical cars of enemies and of the player
         self.particle_system = ParticleSystem()
@@ -91,8 +90,9 @@ class game_display(basic_display):
 
         self.p = player.Player(self, images.car3d, self.player_position, self.player_rotation)
 
-        self.objects.append(self.p)
-        self.cars.append(self.p)
+        for e in self.enemies:
+            enemy.Enemy(self, images.enemy3d, e[0], e[1])
+
 
 
         self.map_surface = pygame.Surface((self.game.width, self.game.height))
@@ -126,34 +126,23 @@ class game_display(basic_display):
             map_data = json.load(f)
             self.player_position = [100, 100]
             self.player_rotation = 0
-            if isinstance(map_data, dict):
-                self.map_data.update(map_data)
-                self.map = self.map_data['map']
+            self.map_data.update(map_data)
+            self.map = self.map_data['map']
 
-                self.block_width = self.game.width // len(self.map[0])
-                self.block_height = self.game.height // len(self.map)
+            self.block_width = self.game.width // len(self.map[0])
+            self.block_height = self.game.height // len(self.map)
 
-                player_info = self.map_data.get('player')
-                if player_info != None:
-                    try:
-                        self.player_position = player_info[0]
-                        print(self.player_position)
-                        self.player_rotation = player_info[1]
-                    except:
-                        self.player_position = player_info
-                        self.player_rotation = 0
+            player_info = self.map_data.get('player')
 
-                print(self.player_rotation)
-                temp_list_of_checkpoints = self.map_data['checkpoints']
-                self.checkpoints = []
-                for i, chekpoint in enumerate(temp_list_of_checkpoints):
-                    self.checkpoints.append(checkpoint.checkpoint(self, i, chekpoint[0], chekpoint[1]))
+            self.player_position = player_info[0]
+            self.player_rotation = player_info[1]
 
-            else:
-                self.map = map_data
-                self.checkpoints = []
-                self.block_width = self.game.width // len(self.map[0])
-                self.block_height = self.game.height // len(self.map)
+            temp_list_of_checkpoints = self.map_data['checkpoints']
+            self.checkpoints = []
+            for i, chekpoint in enumerate(temp_list_of_checkpoints):
+                self.checkpoints.append(checkpoint.checkpoint(self, i, chekpoint[0], chekpoint[1]))
+
+            self.enemies = self.map_data['enemies']
 
 
             f.close()
@@ -218,6 +207,8 @@ class map_display(basic_display):
         self.player_width_blocks = 10
         self.player_height_blocks = 4
 
+        self.temp_map_data = dict(self.map_data)
+
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
         self.temp_height = self.game.height // self.gcd
@@ -265,18 +256,20 @@ class map_display(basic_display):
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
         self.checkpoints = []
         self.current_checkpoint = []
+        self.temp_map_data = dict(self.map_data)
 
 
     def load_map(self, map_data):
+        self.reset_map()
         if isinstance(map_data, dict):
-            self.map_data.update(map_data)
-            self.map = self.map_data['map']
-            player_info = self.map_data.get('player')
+            self.temp_map_data.update(map_data)
+            self.map = self.temp_map_data['map']
+            player_info = self.temp_map_data.get('player')
             self.player_position = player_info[0]
             self.player_rotation = player_info[1]
             self.player_position = (self.player_position[0] * self.zoom_level / self.block_width, self.player_position[
                 1] * self.zoom_level / self.block_height) if self.player_position else None
-            self.checkpoints = self.map_data['checkpoints']
+            self.checkpoints = self.temp_map_data['checkpoints']
         else:
             self.map = map_data
             self.player_position = None
@@ -315,6 +308,8 @@ class map_display(basic_display):
             self.tooltext.update_text(f'Tool: Place checkpoint')
         elif self.tool == 'm':
             self.tooltext.update_text(f'Tool: Place finish/start line')
+        elif self.tool == 'e':
+            self.tooltext.update_text(f'Tool: Place enemy')
         else:
             self.tooltext.update_text(f'Tool: {self.tool}')
 
@@ -348,6 +343,17 @@ class map_display(basic_display):
                 ph
             ))
 
+        for enemy in self.enemies:
+            ex, ey = enemy[0]
+            ew = self.player_width_blocks * self.block_width
+            eh = self.player_height_blocks * self.block_height
+            pygame.draw.rect(self.screen, (0, 255, 0), (
+                ex * self.block_width + self.cx,
+                ey * self.block_height + self.cy,
+                ew,
+                eh
+            ))
+
         else:
             self.noplayertext.render()
 
@@ -376,6 +382,26 @@ class map_display(basic_display):
                                                   self.current_checkpoint[0][1] * self.block_height + self.cy), (
                              pygame.mouse.get_pos()[0],
                              pygame.mouse.get_pos()[1]), width=int(self.block_width))
+
+        elif self.tool == 'p' or self.tool == 'e':
+            color = (120, 0, 0)
+            if self.tool == 'e':
+                color = (0, 120, 0)
+
+            mouse_pos = pygame.mouse.get_pos()
+
+            pw = self.player_width_blocks * self.block_width
+            ph = self.player_height_blocks * self.block_height
+
+            px = lolekszcz.floor((mouse_pos[0] - self.cx) / self.block_width)
+            py = lolekszcz.floor((mouse_pos[1] - self.cy) / self.block_height)
+
+            pygame.draw.rect(self.screen, color, (
+                px * self.block_width + self.cx,
+                py * self.block_height + self.cy,
+                pw,
+                ph
+            ))
 
     def events(self, event):
         for obj in self.objects:
@@ -430,8 +456,11 @@ class map_display(basic_display):
                 elif self.is_erasing(event):
                     self.apply_brush(grid_x, grid_y, 0)
                     if self.player_position != None:
-                        if (grid_x >= self.player_position[0] and grid_x <= self.player_position[0] + self.player_width_blocks * self.block_width) and (grid_y >= self.player_position[1] and grid_y <= self.player_position[1] + self.player_height_blocks * self.block_height):
+                        if (grid_x >= self.player_position[0] and grid_x <= self.player_position[0] + self.player_width_blocks) and (grid_y >= self.player_position[1] and grid_y <= self.player_position[1] + self.player_height_blocks):
                             self.player_position = None
+                    for e in self.enemies:
+                        if (grid_x >= e[0][0] and grid_x <= e[0][0] + self.player_width_blocks) and (grid_y >= e[0][1] and grid_y <= e[0][1] + self.player_height_blocks):
+                            self.enemies.remove(e)
 
                     for chpo in self.checkpoints:
                         if pygame.Rect(grid_x, grid_y, 5 * self.block_width, 5 * self.block_width).clipline(chpo):
@@ -486,20 +515,25 @@ class map_display(basic_display):
         current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         filename = f'maps/map_{current_time}.json'
 
-        self.player_position = (self.player_position[0]/self.zoom_level*self.block_width, self.player_position[1]/self.zoom_level*self.block_height) if self.player_position else None
+        temp_player_position = (self.player_position[0]/self.zoom_level*self.block_width, self.player_position[1]/self.zoom_level*self.block_height) if self.player_position else self.map_data['player'][0]
+
+        temp_enemies = []
+
+        for enemy in self.enemies:
+            temp_enemies.append(((enemy[0][0]/self.zoom_level*self.block_width, enemy[0][1]/self.zoom_level*self.block_height), enemy[1]))
 
         map_data = {
             'map': self.map,
-            'player': [self.player_position, self.player_rotation],
-            'enemies': self.enemies,
+            'player': [temp_player_position, self.player_rotation],
+            'enemies': temp_enemies,
             'checkpoints': self.checkpoints
         }
 
-        self.map_data.update(map_data)
+        self.temp_map_data.update(map_data)
 
         # map_data = self.map
         with open(filename, 'w') as f:
-            json.dump(self.map_data, f)
+            json.dump(self.temp_map_data, f)
             f.close()
         self.game.displays['level_selector'].load_maps()
         self.game.change_display('map_maker_menu')
