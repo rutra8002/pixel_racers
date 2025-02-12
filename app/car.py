@@ -1,6 +1,6 @@
+import pygame
 from operator import invert
 
-import pygame
 import math as lolino
 import time
 from particle_system import ParticleGenerator
@@ -21,7 +21,7 @@ class Car:
         self.WASD_steering = False  # For debug only
         self.collision_draw = True
         self.mass = 1
-        self.backDifference = 0.5
+        self.backDifference = 0.6
 
         self.gravel_color = (128, 128, 128)
         self.oil_color = (235, 180, 3)
@@ -32,24 +32,25 @@ class Car:
 
         self.particle_color = [0, 0, 0]
 
-        self.normalAcceleration = 0.2 * self.display.game.calibration
+        self.normalAcceleration = 0.4 * self.display.game.calibration
         self.oilAcceleration = 0 * self.display.game.calibration
-        self.iceAcceleration = 0.04 * self.display.game.calibration
+        self.iceAcceleration = 0.1 * self.display.game.calibration
 
         self.normalRotationSpeed = 0.03 * self.display.game.calibration
-        self.gravelRotationSpeed = 0.01 * self.display.game.calibration
+        self.gravelRotationSpeed = 0.018 * self.display.game.calibration
 
         self.normalMaxSpeed = 12 * self.display.game.calibration
-        self.gravelMaxSpeed = 2 * self.display.game.calibration
+        self.gravelMaxSpeed = 3 * self.display.game.calibration
         self.iceMaxSpeed = 25 * self.display.game.calibration
 
-        self.normalSlowdown = 0.15 * self.display.game.calibration # when the player doesn't press W or S
+        self.normalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
         self.iceSlowdown = 0.02 * self.display.game.calibration # when the player doesn't press W or S
         self.oilSlowdown = 0 * self.display.game.calibration # when the player doesn't press W or S
 
 
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
+        self.borderForce = 2 * self.display.game.calibration
         self.bumpingCooldown = 0.3
 
         self.x, self.y = coordinates[0], coordinates[1]
@@ -92,7 +93,7 @@ class Car:
         self.max_steer_rotation = 60
         self.min_steer_rotation = -self.max_steer_rotation
 
-        self.steering_speed = 10 * self.display.game.calibration
+        self.steering_speed = 9 * self.display.game.calibration
 
         self.nitroAmount = 0
 
@@ -243,13 +244,6 @@ class Car:
                 for text_obj in self.debug_texts:
                     text_obj.hidden = True
 
-        # if self.inviFlicker:
-        #     pygame.draw.rect(self.display.screen, (202, 0, 0), (400, 400, 100, 100))
-        # else:
-        #     pygame.draw.rect(self.display.screen, (0, 202, 0), (400, 400, 100, 100))
-
-
-
     def events(self, event):
         pass
 
@@ -306,9 +300,9 @@ class Car:
         magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
         if magnitude > self.currentMaxSpeed:
             self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
-        elif self.velLeft == c and self.velUp == d:
-            if self.velLeft != 0 or self.velUp != 0:
-                self.slow_down(self.currentNaturalSlowdown / magnitude / (self.tireHealth ** 0.2))
+        # elif self.velLeft == c and self.velUp == d:
+        if self.velLeft != 0 or self.velUp != 0:
+            self.slow_down(self.currentNaturalSlowdown / magnitude / (self.tireHealth ** 0.2))
 
         if magnitude > self.currentNaturalSlowdown:
             modifier = magnitude / 200
@@ -528,8 +522,6 @@ class Car:
         self.currentNaturalSlowdown = self.normalSlowdown
         self.in_oil = False
 
-
-
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.check_color(self.display.mapMask, 0, 0)
         else:
@@ -588,7 +580,7 @@ class Car:
         other.velAng = omega_B
         # self.rotation += lolino.degrees(omega_A * self.display.game.delta_time)
         # other.rotation += lolino.degrees(omega_B * self.display.game.delta_time)
-        print(self.display.game.delta_time)
+        print(self.velAng)
         n = ((other.x - self.x) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2), (other.y - self.y) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2))
         t = (-n[1], n[0])
         v1n = self.velLeft * n[0] + self.velUp * n[1]
@@ -686,4 +678,3 @@ class Car:
                     # elif tile == 1:
                     #     self.velUp *= -1
                     #     self.velLeft *= -1
-
