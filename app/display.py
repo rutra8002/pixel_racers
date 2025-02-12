@@ -329,8 +329,8 @@ class map_display(basic_display):
                 pygame.draw.rect(self.screen, color, (
                     x * self.block_width + self.cx,
                     y * self.block_height + self.cy,
-                    self.block_width,
-                    self.block_height
+                    self.block_width+1,
+                    self.block_height+1
                 ))
 
         if self.player_position:
