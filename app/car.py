@@ -52,6 +52,8 @@ class Car:
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
         self.nitroPower = 0.4 * self.display.game.calibration
         self.bumpingCooldown = 0.3
+        self.wallCollisionCooldown = 0.05
+        self.wallCollTime = 0
 
         self.x, self.y = coordinates[0], coordinates[1]
         self.archiveCords = [self.x, self.y]
@@ -87,6 +89,7 @@ class Car:
         self.recentCollisions = {}
         self.timeToCheck = 5
         self.goingForward = True
+        # self.wall = False
 
         self.steer_rotation = 0
         self.delta_rotation = 0.01*self.display.game.calibration
@@ -140,7 +143,7 @@ class Car:
             pygame.draw.circle(self.display.screen, (102, 100, 100), self.center, 25)
         # self.display.screen.blit(self.mask_image, self.rect)
         self.nitroAmount += 1
-        
+
 
         self.mask_image = self.car_mask.to_surface()
         # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
@@ -504,6 +507,10 @@ class Car:
                 if time.time() - self.recentCollisions[car] > self.bumpingCooldown:
                     self.recentCollisions[car] = 0
 
+        if self.wallCollTime != 0:
+            if time.time() - self.wallCollTime > self.wallCollisionCooldown:
+                self.wallCollTime = 0
+
 
 
         for obstacle in self.display.obstacles:
@@ -526,6 +533,7 @@ class Car:
         self.car_mask = self.car3d_sprite.update_mask_rotation(self.rotation)
         self.rect = self.car3d_sprite.rect
         self.rect.center = self.x, self.y
+        # self.wall = False
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.check_color(self.display.mapMask, 0, 0)
         else:
@@ -554,17 +562,6 @@ class Car:
         else:
             n = (dx / distance, dy / distance)
 
-        sum_radii = (self.playerWidth + mask.get_size()[0]) / 2
-        overlap = sum_radii - distance
-        if overlap > 0:
-            nx = dx / distance
-            ny = dy / distance
-            separation = overlap * 0.5
-            self.x -= nx * separation
-            self.y -= ny * separation
-
-
-
         t = (-n[1], n[0])
 
         v1n = self.velLeft * n[0] + self.velUp * n[1]
@@ -574,7 +571,38 @@ class Car:
 
         self.velLeft = v1n_new * n[0] + v1t * t[0]
         self.velUp = v1n_new * n[1] + v1t * t[1]
+        r = (self.x - x, self.y - y)
+        delta_px = self.mass * self.velLeft
+        delta_py = self.mass * self.velUp
+        L =  r[0] * delta_py - r[1] * delta_px
+        d = (r[0] ** 2 + r[1] ** 2) ** 0.5
+        I = (1 / 12) * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2) + self.mass * d ** 2
+        impulse = 2 * self.mass * abs(v1n)
 
+        self.velAng = L / I
+        # self.x += n[0]
+        # self.y += n[1]
+        self.wall_separation(x, y)
+
+
+
+    def wall_separation(self, x, y):
+        dx = x - self.x
+        dy = y - self.y
+        distance = lolino.sqrt(dx ** 2 + dy ** 2)
+
+        if distance == 0:
+            return
+
+        sum_radii = (self.playerWidth / 2 + self.display.block_width / 2)
+        overlap = sum_radii - distance
+
+        if overlap > 0:
+            nx = dx / distance
+            ny = dy / distance
+
+            self.x -= nx * overlap
+            self.y -= ny * overlap
 
 
     def handle_bumping(self, other):
@@ -708,14 +736,19 @@ class Car:
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                     elif tile == 1:
+                        # self.wall = True
                         self.particle_color = self.wall_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
-                        # center_x = ((self.rect.topleft[
-                        #                  0] + x) // self.display.block_width) * self.display.block_width + self.display.block_width // 2
-                        # center_y = ((self.rect.topleft[
-                        #                  1] + y) // self.display.block_height) * self.display.block_height + self.display.block_height // 2
-                        self.wall_collision(sharedMask, x + self.rect.topleft[0], y + self.rect.topleft[1])
+                        center_x = ((self.rect.topleft[
+                                         0] + x) // self.display.block_width) * self.display.block_width + self.display.block_width // 2
+                        center_y = ((self.rect.topleft[
+                                         1] + y) // self.display.block_height) * self.display.block_height + self.display.block_height // 2
+                        if self.wallCollTime == 0:
+                            self.wallCollTime = time.time()
+                            self.wall_collision(sharedMask, center_x, center_y)
+                        else:
+                            self.wall_separation(center_x, center_y)
 
                     elif tile == 3:
                         self.currentMaxSpeed = self.gravelMaxSpeed
