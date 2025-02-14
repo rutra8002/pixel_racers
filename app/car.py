@@ -140,9 +140,8 @@ class Car:
             pygame.draw.circle(self.display.screen, (102, 100, 100), self.center, 25)
         # self.display.screen.blit(self.mask_image, self.rect)
         self.nitroAmount += 1
-        self.rect = self.car3d_sprite.rect
-        self.rect.center = self.x, self.y
-        self.car_mask = self.car3d_sprite.masks[self.num_of_sprites//2]
+        
+
         self.mask_image = self.car_mask.to_surface()
         # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
         # self.display.screen.blit(self.newImg, self.rect)
@@ -486,7 +485,6 @@ class Car:
     #     return xs, ys
 
     def loop(self):
-        self.car_mask = self.car3d_sprite.update_mask_rotation(self.rotation)
         self.movement()
         self.invincibility -= 5 * self.display.game.delta_time
         if self.invincibility > 0 and self.isPlayer:
@@ -525,6 +523,9 @@ class Car:
         self.currentNaturalSlowdown = self.normalSlowdown
         self.in_oil = False
 
+        self.car_mask = self.car3d_sprite.update_mask_rotation(self.rotation)
+        self.rect = self.car3d_sprite.rect
+        self.rect.center = self.x, self.y
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.check_color(self.display.mapMask, 0, 0)
         else:
@@ -668,7 +669,7 @@ class Car:
         return sum(xs) // len(xs), sum(xy) // len(xy)
 
     def collision_render(self, mask, x, y):
-        self.car_mask = self.car3d_sprite.update_mask_rotation(self.rotation)
+
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
         sharedMask = self.car_mask.overlap_mask(mask, offset)
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))

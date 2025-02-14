@@ -47,5 +47,6 @@ class StackedSprite:
     def update_mask_rotation(self, rotation):
         rotated_sprite = pygame.transform.rotate(self.sprites[self.middle_sprite], rotation-90)
         self.mask = pygame.mask.from_surface(rotated_sprite)
+        self.rect = rotated_sprite.get_rect()
         self.rotation = rotation
         return self.mask
