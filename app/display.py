@@ -1,3 +1,5 @@
+import copy
+
 from customObjects import custom_images, custom_text, custom_button
 from jeff_the_objects.slider import Slider
 from jeff_the_objects.stacked_sprite import StackedSprite
@@ -216,13 +218,16 @@ class map_display(basic_display):
         # print(self.game.width // self.gcd, self.game.height // self.gcd)
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
 
+        self.archiveStates = []
+        self.archiveStates.append(copy.deepcopy(self.map))
+
         self.block_width = float(self.gcd)
         self.block_height = float(self.gcd)
 
         self.enemies = []
         self.enemy_rotation = 0
 
-        self.brush_size = 1
+        self.brush_size = 30
         self.dragging = False
 
         self.checkpoints = []
@@ -246,6 +251,7 @@ class map_display(basic_display):
         self.start_y = 0
         self.start_cx = 0
         self.start_cy = 0
+
 
         self.noplayertext = custom_text.Custom_text(self, self.game.width/2, self.game.height/20, 'No player position set!', text_color='white', font_height=30, center=True, append=False)
 
@@ -325,7 +331,11 @@ class map_display(basic_display):
 
         for y in range(vis_y_start, vis_y_end):
             for x in range(vis_x_start, vis_x_end):
-                color = self.color_map.get(self.map[y][x], self.asphalt_color)
+                try:
+                    color = self.color_map.get(self.map[y][x], self.asphalt_color)
+                except:
+                    print(self.map)
+                    print('ok', self.map[y])
                 pygame.draw.rect(self.screen, color, (
                     x * self.block_width + self.cx,
                     y * self.block_height + self.cy,
@@ -446,6 +456,11 @@ class map_display(basic_display):
                 self.brush_size -= 10
             elif event.key == pygame.K_e:
                 self.tool = 'e'
+            elif event.key == pygame.K_z:
+                if len(self.archiveStates) > 1:
+                    self.map = self.archiveStates[-1]
+                    self.archiveStates.pop(-1)
+
             elif event.key == pygame.K_LEFT or pygame.K_RIGHT:
                 if self.shape == 1:
                     self.shape = 0
@@ -553,6 +568,7 @@ class map_display(basic_display):
         self.game.change_display('map_maker_menu')
 
     def apply_brush(self, x, y, value):
+        self.archiveStates.append(copy.deepcopy(self.map))
         half_brush = self.brush_size // 2
         for dy in range(-half_brush, half_brush + 1):
             for dx in range(-half_brush, half_brush + 1):
@@ -560,6 +576,9 @@ class map_display(basic_display):
                 if self.shape == 0 or (self.shape == 1 and (nx - x) ** 2 + (ny - y) ** 2 < half_brush ** 2):
                     if 0 <= nx < self.temp_width and 0 <= ny < self.temp_height:
                         self.map[ny][nx] = value
+        if self.archiveStates[-1] == self.map and len(self.archiveStates) > 1:
+            self.archiveStates.pop(-1)
+            # print('added')
 
     def valid_grid_pos(self, x, y):
         return 0 <= x < self.temp_width and 0 <= y < self.temp_height
