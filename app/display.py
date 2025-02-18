@@ -1,5 +1,5 @@
 import copy
-
+from configparser import ConfigParser
 from customObjects import custom_images, custom_text, custom_button
 from jeff_the_objects.slider import Slider
 from jeff_the_objects.stacked_sprite import StackedSprite
@@ -647,6 +647,15 @@ class settings_display(basic_display):
         self.fps_text = custom_text.Custom_text(self, self.game.width/4, self.game.height/2 - 50, f'FPS: {current_fps}', text_color='white', font_height=30)
         self.fps_slider = Slider(self, 'fps_slider', self.game.width/4 - 100, self.game.height/2, 200, 20, 30, 144, current_fps)
 
+        # Add resolution options
+        self.resolutions = pygame.display.list_modes()
+        self.current_resolution = (self.game.width, self.game.height)
+        self.resolution_text = custom_text.Custom_text(self, self.game.width/4, self.game.height/2 + 50, f'Resolution: {self.current_resolution[0]}x{self.current_resolution[1]}', text_color='white', font_height=32)
+        self.resolution_buttons = []
+        self.scroll_offset = 0
+        for i, res in enumerate(self.resolutions):
+            button = custom_button.Button(self, f'set_resolution_{i}', self.game.width/4 - 100, self.game.height/2 + 100 + i*40, 200, 30, text=f'{res[0]}x{res[1]}', text_color='white', color=(26, 26, 26), outline_color=(50, 50, 50), outline_width=2)
+            self.resolution_buttons.append(button)
 
         self.particle_system = self.game.menu_particle_system
 
@@ -658,6 +667,7 @@ class settings_display(basic_display):
         self.particle_system.draw(self.screen)
 
         self.fps_text.update_text(f'FPS: {self.game.fps}')
+        self.resolution_text.update_text(f'Resolution: {self.current_resolution[0]}x{self.current_resolution[1]}')
 
         for obj in self.objects:
             obj.render()
@@ -669,7 +679,46 @@ class settings_display(basic_display):
     def events(self, event):
         for obj in self.objects:
             obj.events(event)
+        for i, res in enumerate(self.resolutions):
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.resolution_buttons[i].rect.collidepoint(event.pos):
+                self.set_resolution(res)
+        self.handle_scroll(event)
 
+    def set_resolution(self, resolution):
+        self.current_resolution = resolution
+        self.game.width, self.game.height = resolution
+        self.game.screen = pygame.display.set_mode(resolution)
+        cfg = read_config()
+        cfg['width'] = str(resolution[0])
+        cfg['height'] = str(resolution[1])
+
+        config = ConfigParser()
+        config['CONFIG'] = cfg
+        write_config_to_file(config, 'config.ini')
+
+        for display in self.game.displays.values():
+            if isinstance(display, game_display):
+                game_display.__init__(display, self.game, display.difficulty)
+            elif isinstance(display, map_display):
+                map_display.__init__(display, self.game)
+            elif isinstance(display, level_selector):
+                level_selector.__init__(display, self.game)
+            elif isinstance(display, main_menu_display):
+                main_menu_display.__init__(display, self.game)
+            elif isinstance(display, settings_display):
+                settings_display.__init__(display, self.game)
+            elif isinstance(display, pause_display):
+                pause_display.__init__(display, self.game)
+            elif isinstance(display, map_maker_menu):
+                map_maker_menu.__init__(display, self.game)
+
+    def handle_scroll(self, event):
+        if event.type == pygame.MOUSEWHEEL:
+            self.scroll_offset += event.y * 20
+
+        for i, button in enumerate(self.resolution_buttons):
+            button.update_rect()
+            button.update_position(button.x, self.game.height/2 + 100 + i*40 + self.scroll_offset)
 
 
 class pause_display(basic_display):
