@@ -4,7 +4,8 @@ import pygame, sys, threading, code, os
 from app import config, sounds
 from customObjects import custom_text, custom_images, custom_button
 import particle_system
-
+import ctypes
+ctypes.windll.user32.SetProcessDPIAware()
 class Game:
     def __init__(self):
         pygame.init()
