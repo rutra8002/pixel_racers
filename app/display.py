@@ -703,6 +703,7 @@ class settings_display(basic_display):
                 map_display.__init__(display, self.game)
             elif isinstance(display, level_selector):
                 level_selector.__init__(display, self.game)
+                level_selector.reload_maps(display)
             elif isinstance(display, main_menu_display):
                 main_menu_display.__init__(display, self.game)
             elif isinstance(display, settings_display):
