@@ -50,7 +50,7 @@ class StackedSprite:
             rotated_sprite = self.get_rotated_sprite(sprite, rotation - 90)
             self.masks[i] = pygame.mask.from_surface(rotated_sprite)
         self.mask = self.masks[self.middle_sprite]
-        self.rect = self.sprites[self.middle_sprite].get_rect()
+        self.rect = self.mask.get_rect()
         self.rotation = rotation
         return self.mask
 
