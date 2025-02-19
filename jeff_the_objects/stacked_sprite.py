@@ -13,6 +13,7 @@ class StackedSprite:
         self.masks = [pygame.mask.from_surface(sprite) for sprite in self.sprites]
         self.middle_sprite = self.num_of_sprites//2
         self.mask = self.masks[self.middle_sprite]
+        self.rotation_cache = {}
         self.update_mask_rotation(rotation)
         self.rotation = rotation
         self.rotate = rotate
@@ -31,22 +32,29 @@ class StackedSprite:
         x, y = position
         for i, sprite in enumerate(self.sprites):
             if self.rotate:
-                rotated_sprite = pygame.transform.rotate(sprite, self.rotation-90)
+                rotated_sprite = self.get_rotated_sprite(sprite, self.rotation - 90)
                 sprite_rect = rotated_sprite.get_rect(center=(x, y))
                 screen.blit(rotated_sprite, (sprite_rect[0], sprite_rect[1] - i * self.scale_factor))
             else:
                 sprite_rect = sprite.get_rect(center=(x, y))
                 screen.blit(sprite, (sprite_rect[0], sprite_rect[1] - i * self.scale_factor))
         if self.display.game.debug:
-            #render self.mask
+            # render self.mask
             mask_surface = self.mask.to_surface()
             mask_surface.set_colorkey((0, 0, 0))
             mask_rect = mask_surface.get_rect(center=(x, y))
             screen.blit(mask_surface, (mask_rect[0], mask_rect[1]))
 
     def update_mask_rotation(self, rotation):
-        rotated_sprite = pygame.transform.rotate(self.sprites[self.middle_sprite], rotation-90)
-        self.mask = pygame.mask.from_surface(rotated_sprite)
-        self.rect = rotated_sprite.get_rect()
+        for i, sprite in enumerate(self.sprites):
+            rotated_sprite = self.get_rotated_sprite(sprite, rotation - 90)
+            self.masks[i] = pygame.mask.from_surface(rotated_sprite)
+        self.mask = self.masks[self.middle_sprite]
+        self.rect = self.sprites[self.middle_sprite].get_rect()
         self.rotation = rotation
         return self.mask
+
+    def get_rotated_sprite(self, sprite, rotation):
+        if (sprite, rotation) not in self.rotation_cache:
+            self.rotation_cache[(sprite, rotation)] = pygame.transform.rotate(sprite, rotation)
+        return self.rotation_cache[(sprite, rotation)]

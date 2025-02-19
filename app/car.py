@@ -530,7 +530,7 @@ class Car:
         self.currentNaturalSlowdown = self.normalSlowdown
         self.in_oil = False
 
-        self.car_mask = self.car3d_sprite.update_mask_rotation(self.rotation)
+        self.car_mask = self.car3d_sprite.update_mask_rotation(int(self.rotation))
         self.rect = self.car3d_sprite.rect
         self.rect.center = self.x, self.y
         # self.wall = False
