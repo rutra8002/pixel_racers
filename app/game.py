@@ -35,6 +35,8 @@ class Game:
 
         self.menu_particle_system = particle_system.ParticleSystem()
 
+        self.hotbar_dimentions = (self.width, self.height/5)
+
         from app import display
 
         self.displays = {'template_display': display.basic_display(self), 'game_display':display.game_display,'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self)}
@@ -113,9 +115,9 @@ class Game:
         while self.run:
             self.music()
             self.current_display.mainloop()
-            self.events()
             self.render()
             self.update()
+            self.events()
             self.clock.tick(self.fps)
 
         pygame.quit()

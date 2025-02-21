@@ -8,7 +8,7 @@ import random
 import math as lolekszcz
 import pygame
 import json
-from app import car, enemy, obstacle, images, player, enemy, checkpoint
+from app import car, enemy, obstacle, images, player, enemy, checkpoint, hotbar
 from particle_system import ParticleSystem
 from datetime import datetime
 import os
@@ -70,6 +70,7 @@ class game_display(basic_display):
         basic_display.__init__(self, game)
         self.difficulty = difficulty
 
+        self.hotbar = hotbar.Hotbar(self)
         self.import_map()
         self.obstacles = []
         self.cars = [] #the physical cars of enemies and of the player
@@ -96,8 +97,7 @@ class game_display(basic_display):
             enemy.Enemy(self, images.enemy3d, e[0], e[1])
 
 
-
-        self.map_surface = pygame.Surface((self.game.width, self.game.height))
+        self.map_surface = pygame.Surface((self.game.width, self.game.height - self.hotbar.h))
         self.draw_map()
         self.map_surface.set_colorkey(self.bgColor)
         self.mapMask = pygame.mask.from_surface(self.map_surface)
@@ -132,7 +132,7 @@ class game_display(basic_display):
             self.map = self.map_data['map']
 
             self.block_width = self.game.width // len(self.map[0])
-            self.block_height = self.game.height // len(self.map)
+            self.block_height = (self.game.height - self.hotbar.h) // len(self.map)
 
             player_info = self.map_data.get('player')
 
@@ -189,12 +189,17 @@ class game_display(basic_display):
 
 
     def mainloop(self):
+        if self.hotbar.stopwatch.start_time == 0:
+            self.hotbar.start_counting_time()
+        self.hotbar.mainloop()
+
         self.particle_system.update(self.game.delta_time)
         for c in self.cars:
             c.loop()
 
         for chpo in self.checkpoints:
             chpo.collision()
+
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
 class map_display(basic_display):
@@ -763,7 +768,7 @@ class level_selector(basic_display):
         self.currently_selected = 0
 
         self.selected_surface_width = self.game.width/self.descaling_factor
-        self.selected_surface_height = self.game.height/self.descaling_factor
+        self.selected_surface_height = (self.game.height - self.game.hotbar_dimentions[1])/self.descaling_factor
 
         self.not_selected_surface_width = self.selected_surface_width/2
         self.not_selected_surface_height = self.selected_surface_height/2
