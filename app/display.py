@@ -701,6 +701,8 @@ class settings_display(basic_display):
         config['CONFIG'] = cfg
         write_config_to_file(config, 'config.ini')
 
+        self.game.hotbar_dimentions = (self.game.width, self.game.height / 5)
+
         for display in self.game.displays.values():
             if isinstance(display, game_display):
                 game_display.__init__(display, self.game, display.difficulty)
