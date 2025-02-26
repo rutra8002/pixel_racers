@@ -341,7 +341,7 @@ class Car:
             if self.y < 0:
                 self.velUp *= -self.borderBounciness
                 self.y += 1
-            if self.y > self.display.screenHeight:
+            if self.y > self.display.screenHeight_without_hotbar:
                 self.velUp *= -self.borderBounciness
                 self.y -= 1
 
@@ -355,7 +355,7 @@ class Car:
             if self.y < 0:
                 self.y += 2
                 self.velUp = -self.borderForce
-            if self.y > self.display.screenHeight:
+            if self.y > self.display.screenHeight_without_hotbar:
                 self.y -= 2
                 self.velUp = self.borderForce
 

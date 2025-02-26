@@ -35,7 +35,7 @@ class Game:
 
         self.menu_particle_system = particle_system.ParticleSystem()
 
-        self.hotbar_dimentions = (self.width, self.height/5)
+        self.hotbar_dimentions = (self.width, self.height/6)
 
         from app import display
 
