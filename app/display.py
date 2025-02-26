@@ -210,6 +210,8 @@ class map_display(basic_display):
         self.tool = 1
         self.shape = 1 # 0 is square, 1 is circle
 
+        self.height = 5/6*self.game.height
+
         self.player_position = None
         self.player_rotation = 0
         self.player_width_blocks = 10
@@ -219,7 +221,7 @@ class map_display(basic_display):
 
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
-        self.temp_height = self.game.height // self.gcd
+        self.temp_height = int(self.height // self.gcd)
         # print(self.game.width // self.gcd, self.game.height // self.gcd)
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
 
@@ -258,12 +260,12 @@ class map_display(basic_display):
         self.start_cy = 0
 
 
-        self.noplayertext = custom_text.Custom_text(self, self.game.width/2, self.game.height/20, 'No player position set!', text_color='white', font_height=30, center=True, append=False)
+        self.noplayertext = custom_text.Custom_text(self, self.game.width/2, self.height/20, 'No player position set!', text_color='white', font_height=30, center=True, append=False)
 
     def reset_map(self):
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
-        self.temp_height = self.game.height // self.gcd
+        self.temp_height = int(self.height // self.gcd)
 
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
         self.checkpoints = []

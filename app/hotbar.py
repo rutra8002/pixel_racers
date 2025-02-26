@@ -57,4 +57,11 @@ class StopWatch:
             self.current_time = str(datetime.timedelta(seconds=self.current_time))
 
             split_str = self.current_time.split(":")
-            self.text.update_text(f'Time: {split_str[1]}:{int(float(split_str[2]))}')
+
+            seconds_time = int(float(split_str[2]))
+            if seconds_time < 10:
+                seconds_time = f'0{seconds_time}'
+            else:
+                seconds_time = f'{seconds_time}'
+
+            self.text.update_text(f'Time: {split_str[1]}:{seconds_time}')
