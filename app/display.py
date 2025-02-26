@@ -71,6 +71,9 @@ class game_display(basic_display):
         self.difficulty = difficulty
 
         self.hotbar = hotbar.Hotbar(self)
+
+        self.screenHeight_without_hotbar = self.screenHeight - self.hotbar.h
+
         self.import_map()
         self.obstacles = []
         self.cars = [] #the physical cars of enemies and of the player
