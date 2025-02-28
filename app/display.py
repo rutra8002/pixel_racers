@@ -105,6 +105,16 @@ class game_display(basic_display):
         self.map_surface.set_colorkey(self.bgColor)
         self.mapMask = pygame.mask.from_surface(self.map_surface)
 
+    #check collision between particles and map
+    def check_particle_collision(self, particle):
+        if particle.x < 0 or particle.x > self.game.width or particle.y < 0 or particle.y > self.screenHeight_without_hotbar:
+            return True
+        overlap_point = self.mapMask.overlap(particle.mask, (particle.x, particle.y))
+        if overlap_point:
+            self.overlap_point = overlap_point
+            if self.map_surface.get_at(overlap_point)[:3] == self.wall_color:
+                return True
+        return False
 
     def draw_map(self):
         self.map_surface.fill(self.bgColor)
@@ -171,6 +181,9 @@ class game_display(basic_display):
             for chpo in self.checkpoints:
                 chpo.render()
 
+            if hasattr(self, 'overlap_point') and self.overlap_point:
+                pygame.draw.circle(self.screen, (255, 0, 0), self.overlap_point, 50)
+
     def events(self, event):
         for obj in self.objects:
             obj.events(event)
@@ -197,6 +210,11 @@ class game_display(basic_display):
         self.hotbar.mainloop()
 
         self.particle_system.update(self.game.delta_time)
+
+        for particle in self.particle_system.particles:
+            if self.check_particle_collision(particle):
+                self.particle_system.particles.remove(particle)
+
         for c in self.cars:
             c.loop()
 
