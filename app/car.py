@@ -11,7 +11,7 @@ from jeff_the_objects import stacked_sprite
 
 
 class Car:
-    def __init__(self, display, image, coordinates, rotation, isPlayer):
+    def __init__(self, display, image, coordinates, rotation, isPlayer, model):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
@@ -20,8 +20,8 @@ class Car:
         self.borderForce = 0.5 * self.display.game.calibration
         self.WASD_steering = False  # For debug only
         self.collision_draw = True
-        self.mass = 1
-        self.backDifference = 0.6
+        self.model = model
+
         self.damping = 0.7
 
         self.gravel_color = (128, 128, 128)
@@ -33,24 +33,31 @@ class Car:
 
         self.particle_color = [0, 0, 0]
 
-        self.normalAcceleration = 0.4 * self.display.game.calibration
-        self.oilAcceleration = 0 * self.display.game.calibration
-        self.iceAcceleration = 0.1 * self.display.game.calibration
+        if self.model == 1:
+            self.backDifference = 0.6
+            self.mass = 1
+            self.nitroPower = 0.4 * self.display.game.calibration
+            self.tireHealth = 1
+            self.tireDamage = 0.2
+            self.min_tireHealth = 0.2
 
-        self.normalRotationSpeed = 0.03 * self.display.game.calibration
-        self.gravelRotationSpeed = 0.018 * self.display.game.calibration
+            self.normalAcceleration = 0.4 * self.display.game.calibration
+            self.oilAcceleration = 0 * self.display.game.calibration
+            self.iceAcceleration = 0.1 * self.display.game.calibration
 
-        self.normalMaxSpeed = 12 * self.display.game.calibration
-        self.gravelMaxSpeed = 3 * self.display.game.calibration
-        self.iceMaxSpeed = 25 * self.display.game.calibration
+            self.normalRotationSpeed = 0.03 * self.display.game.calibration
+            self.gravelRotationSpeed = 0.018 * self.display.game.calibration
 
-        self.normalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
-        self.iceSlowdown = 0.02 * self.display.game.calibration # when the player doesn't press W or S
-        self.oilSlowdown = 0 * self.display.game.calibration # when the player doesn't press W or S
+            self.normalMaxSpeed = 12 * self.display.game.calibration
+            self.gravelMaxSpeed = 3 * self.display.game.calibration
+            self.iceMaxSpeed = 25 * self.display.game.calibration
+
+            self.normalSlowdown = 0.08 * self.display.game.calibration # when the player doesn't press W or S
+            self.iceSlowdown = 0.02 * self.display.game.calibration # when the player doesn't press W or S
+            self.oilSlowdown = 0 * self.display.game.calibration # when the player doesn't press W or S
 
 
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
-        self.nitroPower = 0.4 * self.display.game.calibration
         self.bumpingCooldown = 0.3
         self.wallCollisionCooldown = 0.05
         self.wallCollTime = 0
@@ -81,8 +88,6 @@ class Car:
         self.velUp, self.velLeft, self.velAng = 0, 0, 0
         self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
         self.in_oil = False
-        self.tireHealth = 1
-        self.min_tireHealth = 0.2
         self.invincibility = 0
         self.inviFlicker = False
         self.rotation = rotation
@@ -544,7 +549,7 @@ class Car:
     def prickWheels(self):
         if self.invincibility < 1 and self.tireHealth > self.min_tireHealth:
             self.invincibility = 20
-            self.tireHealth -= 0.2
+            self.tireHealth -= self.tireDamage
             if not self.tireHealth == self.min_tireHealth:
                 self.display.game.sound_manager.play_sound('boom')
             if self.tireHealth < self.min_tireHealth:
