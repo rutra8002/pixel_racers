@@ -584,7 +584,10 @@ class Car:
         # self.y += n[1]
         self.wall_separation(x, y)
 
-
+    def teleport(self, coords):
+        if self.isPlayer:
+            self.x = coords[0]
+            self.y = coords[1]
 
     def wall_separation(self, x, y):
         dx = x - self.x
@@ -660,7 +663,6 @@ class Car:
 
         self.velAng = omega_A
         other.velAng = omega_B
-        print(self.velAng)
         # self.rotation += lolino.degrees(omega_A * self.display.game.delta_time)
         # other.rotation += lolino.degrees(omega_B * self.display.game.delta_time)
         n = ((other.x - self.x) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2), (other.y - self.y) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2))
@@ -768,5 +770,6 @@ class Car:
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.prickWheels()
+
 
 

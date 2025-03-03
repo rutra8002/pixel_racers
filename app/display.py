@@ -71,7 +71,6 @@ class game_display(basic_display):
         self.difficulty = difficulty
 
         self.hotbar = hotbar.Hotbar(self)
-
         self.screenHeight_without_hotbar = self.screenHeight - self.hotbar.h
 
         self.import_map()
@@ -100,7 +99,7 @@ class game_display(basic_display):
             enemy.Enemy(self, images.enemy3d, e[0], e[1])
 
 
-        self.map_surface = pygame.Surface((self.game.width, self.game.height - self.hotbar.h))
+        self.map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))
         self.draw_map()
         self.map_surface.set_colorkey(self.bgColor)
         self.mapMask = pygame.mask.from_surface(self.map_surface)
@@ -145,7 +144,7 @@ class game_display(basic_display):
             self.map = self.map_data['map']
 
             self.block_width = self.game.width // len(self.map[0])
-            self.block_height = (self.game.height - self.hotbar.h) // len(self.map)
+            self.block_height = (self.screenHeight_without_hotbar) // len(self.map)
 
             player_info = self.map_data.get('player')
 
@@ -203,6 +202,10 @@ class game_display(basic_display):
             if event.key == pygame.K_b:
                 self.obstacles.append(obstacle.Obstacle(self, spawn_x, spawn_y, 'ball', self.p.rotation - 90))
 
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if 0 < pygame.mouse.get_pos()[0] < self.screenWidth and 0 < pygame.mouse.get_pos()[1] < self.screenHeight_without_hotbar:
+                self.p.teleport(pygame.mouse.get_pos())
+
 
     def mainloop(self):
         if self.hotbar.stopwatch.start_time == 0:
@@ -243,7 +246,6 @@ class map_display(basic_display):
         self.gcd = 5
         self.temp_width = self.game.width // self.gcd
         self.temp_height = int(self.height // self.gcd)
-        # print(self.game.width // self.gcd, self.game.height // self.gcd)
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
 
         self.archiveStates = []
@@ -606,7 +608,6 @@ class map_display(basic_display):
                         self.map[ny][nx] = value
         if self.archiveStates[-1] == self.map and len(self.archiveStates) > 1:
             self.archiveStates.pop(-1)
-            # print('added')
 
     def valid_grid_pos(self, x, y):
         return 0 <= x < self.temp_width and 0 <= y < self.temp_height
@@ -724,7 +725,7 @@ class settings_display(basic_display):
         config['CONFIG'] = cfg
         write_config_to_file(config, 'config.ini')
 
-        self.game.hotbar_dimentions = (self.game.width, self.game.height / 5)
+        self.game.hotbar_dimentions = (self.game.width, self.game.height / 6)
 
         for display in self.game.displays.values():
             if isinstance(display, game_display):
@@ -933,7 +934,6 @@ class map_maker_menu(basic_display):
 
                 else:
                     for _ in range(l - self.lists_len):
-                        print(l - self.lists_len)
                         self.text_list.append(custom_text.Custom_text(self, 0, 0, '', text_color=(150, 150, 150)))
                         self.edit_button_list.append(custom_button.Button(self, 'blank', 0, 0, 100, 50, self.bgColor, text='Edit', text_color=(150, 150, 150), outline_color=(150, 150, 150), border_radius=0, outline_width=1))
 
