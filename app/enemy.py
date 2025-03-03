@@ -4,7 +4,7 @@ from app.car import Car
 
 class Enemy(Car):
     def __init__(self, display, image, coordinates, rotation, crazy=False):
-        super().__init__(display, image, coordinates, rotation, isPlayer=False)
+        super().__init__(display, image, coordinates, rotation, isPlayer=False, model=1)
         self.crazy = crazy
 
     def set_3d_parameters(self):
