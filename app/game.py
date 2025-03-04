@@ -13,7 +13,7 @@ class Game:
         self.sound_manager = sounds.SoundManager()
         self.sound_manager.load_music('sounds/music/Neon Rush.wav')
         self.sound_manager.load_sound('boom','sounds/TireBoom.wav')
-        self.sound_manager.set_music_volume(0.5)
+        self.sound_manager.set_music_volume(1)
 
         config.set_config()
 

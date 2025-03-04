@@ -9,6 +9,10 @@ from customObjects.custom_text import Custom_text
 from app import images
 from jeff_the_objects import stacked_sprite
 
+#TO DO:
+#powerups - Tobiasz
+#leaderboard - ???
+
 
 class Car:
     def __init__(self, display, image, coordinates, rotation, isPlayer, model):
@@ -55,9 +59,9 @@ class Car:
             self.gravelMaxSpeed = 3 * self.display.game.calibration
             self.iceMaxSpeed = 25 * self.display.game.calibration
 
-            self.normalSlowdown = 0.08 * self.display.game.calibration
-            self.iceSlowdown = 0.02 * self.display.game.calibration
-            self.oilSlowdown = 0 * self.display.game.calibration
+            self.normalFriction = 0.08 * self.display.game.calibration
+            self.iceFriction = 0.02 * self.display.game.calibration
+            self.oilFriction = 0 * self.display.game.calibration
         #tank/offroad:
         elif self.model == 2:
             self.backDifference = 0.7
@@ -78,9 +82,9 @@ class Car:
             self.gravelMaxSpeed = 5 * self.display.game.calibration
             self.iceMaxSpeed = 23 * self.display.game.calibration
 
-            self.normalSlowdown = 0.1 * self.display.game.calibration
-            self.iceSlowdown = 0.03 * self.display.game.calibration
-            self.oilSlowdown = 0 * self.display.game.calibration
+            self.normalFriction = 0.1 * self.display.game.calibration
+            self.iceFriction = 0.03 * self.display.game.calibration
+            self.oilFriction = 0 * self.display.game.calibration
         #accelerator:
         elif self.model == 3:
             self.backDifference = 0.65
@@ -101,9 +105,9 @@ class Car:
             self.gravelMaxSpeed = 2.5 * self.display.game.calibration
             self.iceMaxSpeed = 20 * self.display.game.calibration
 
-            self.normalSlowdown = 0.08 * self.display.game.calibration
-            self.iceSlowdown = 0.02 * self.display.game.calibration
-            self.oilSlowdown = 0 * self.display.game.calibration
+            self.normalFriction = 0.08 * self.display.game.calibration
+            self.iceFriction = 0.02 * self.display.game.calibration
+            self.oilFriction = 0 * self.display.game.calibration
         #mater:
         elif self.model == 4:
             self.backDifference = 1.4
@@ -124,9 +128,9 @@ class Car:
             self.gravelMaxSpeed = 4 * self.display.game.calibration
             self.iceMaxSpeed = 25 * self.display.game.calibration
 
-            self.normalSlowdown = 0.14 * self.display.game.calibration
-            self.iceSlowdown = 0.03 * self.display.game.calibration
-            self.oilSlowdown = 0 * self.display.game.calibration
+            self.normalFriction = 0.14 * self.display.game.calibration
+            self.iceFriction = 0.03 * self.display.game.calibration
+            self.oilFriction = 0 * self.display.game.calibration
 
         # elif self.model == 5 paweł jumper
 
@@ -143,7 +147,7 @@ class Car:
         self.currentAcceleration = self.normalAcceleration
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentRotationSpeed = self.normalRotationSpeed
-        self.currentNaturalSlowdown = self.normalSlowdown
+        self.currentFriction = self.normalFriction
 
         self.set_3d_parameters()
 
@@ -383,9 +387,9 @@ class Car:
             self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
         # elif self.velLeft == c and self.velUp == d:
         if self.velLeft != 0 or self.velUp != 0:
-            self.slow_down(self.currentNaturalSlowdown / magnitude / (self.tireHealth ** 0.2))
+            self.slow_down(self.currentFriction / magnitude / (self.tireHealth ** 0.2))
 
-        if magnitude > self.currentNaturalSlowdown:
+        if magnitude > self.currentFriction:
             modifier = magnitude / 200
             if modifier > 2:
                 modifier = 2
@@ -606,7 +610,7 @@ class Car:
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentAcceleration = self.normalAcceleration
         self.currentRotationSpeed = self.normalRotationSpeed
-        self.currentNaturalSlowdown = self.normalSlowdown
+        self.currentFriction = self.normalFriction
         self.in_oil = False
 
         self.car_mask = self.car3d_sprite.update_mask_rotation(int(self.rotation))
@@ -799,7 +803,7 @@ class Car:
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentRotationSpeed = self.normalRotationSpeed
         self.currentAcceleration = self.normalAcceleration
-        self.currentNaturalSlowdown = self.normalSlowdown
+        self.currentFriction = self.normalFriction
         self.in_oil = False
 
         for x in range(size[0]):
@@ -808,7 +812,7 @@ class Car:
                     tile = self.display.map[int((self.rect.topleft[1] + y) // self.display.block_height)][(self.rect.topleft[0] + x) // self.display.block_width]
                     if tile == 2:
                         self.currentAcceleration = self.oilAcceleration
-                        self.currentNaturalSlowdown = self.oilSlowdown
+                        self.currentFriction = self.oilFriction
                         self.in_oil = True
                         self.steer_rotation = 0
                         self.particle_color = self.oil_color
@@ -824,7 +828,8 @@ class Car:
                         center_y = ((self.rect.topleft[
                                          1] + y) // self.display.block_height) * self.display.block_height + self.display.block_height // 2
                         if self.wallCollTime == 0:
-                            self.display.game.sound_manager.play_sound('boom')
+                            if self.isPlayer:
+                                self.display.game.sound_manager.play_sound('boom')
                             self.wallCollTime = time.time()
                             self.wall_collision(sharedMask, center_x, center_y)
                         else:
@@ -839,7 +844,7 @@ class Car:
                     elif tile == 4:
                         self.currentAcceleration = self.iceAcceleration
                         self.currentMaxSpeed = self.iceMaxSpeed
-                        self.currentNaturalSlowdown = self.iceSlowdown
+                        self.currentFriction = self.iceFriction
                         self.particle_color = self.ice_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
