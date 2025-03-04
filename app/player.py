@@ -6,7 +6,7 @@ import math
 
 class Player(Car):
     def __init__(self, display, image, coordinates, rotation):
-        super().__init__(display, image, coordinates, rotation, isPlayer=True, model=1)
+        super().__init__(display, image, coordinates, rotation, isPlayer=True, model=3)
 
     def set_3d_parameters(self):
         # self.num_of_sprites = 9
