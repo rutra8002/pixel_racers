@@ -93,7 +93,7 @@ class game_display(basic_display):
 
 
 
-        self.p = player.Player(self, images.car3d, self.player_position, self.player_rotation)
+        self.p = player.Player(self, images.police, self.player_position, self.player_rotation)
 
         for e in self.enemies:
             enemy.Enemy(self, images.enemy3d, e[0], e[1])
