@@ -40,6 +40,9 @@ class Car:
 
         #balanced:
         if self.model == 1:
+            self.set_3d_parameters(self.model)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, image, self.num_of_sprites, self.img_size,
+                                                             self.car3d_height)
             self.backDifference = 0.65
             self.mass = 1
             self.nitroPower = 0.4 * self.display.game.calibration
@@ -87,6 +90,8 @@ class Car:
             self.oilFriction = 0 * self.display.game.calibration
         #accelerator:
         elif self.model == 3:
+            self.set_3d_parameters(self.model)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, image, self.num_of_sprites, self.img_size, self.car3d_height)
             self.backDifference = 0.65
             self.mass = 0.8
             self.nitroPower = 0.5 * self.display.game.calibration
@@ -149,9 +154,6 @@ class Car:
         self.currentRotationSpeed = self.normalRotationSpeed
         self.currentFriction = self.normalFriction
 
-        self.set_3d_parameters()
-
-        self.car3d_sprite = stacked_sprite.StackedSprite(self.display, image, self.num_of_sprites, self.img_size, self.car3d_height)
 
         self.rect = self.car3d_sprite.rect
         self.rect.center = self.x, self.y
@@ -212,10 +214,15 @@ class Car:
         self.display.objects.append(self)
         self.display.cars.append(self)
 
-    def set_3d_parameters(self):
-        self.num_of_sprites = 9
-        self.img_size = (16, 16)
-        self.car3d_height = 2
+    def set_3d_parameters(self, model):
+        if model == 1:
+            self.num_of_sprites = 9
+            self.img_size = (16, 16)
+            self.car3d_height = 2.5
+        elif model == 3:
+            self.num_of_sprites = 13
+            self.img_size = (15, 34)
+            self.car3d_height = 1.5
 
     def render(self):
         self.center = self.rect.center
