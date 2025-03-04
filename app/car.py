@@ -836,7 +836,7 @@ class Car:
                                          1] + y) // self.display.block_height) * self.display.block_height + self.display.block_height // 2
                         if self.wallCollTime == 0:
                             if self.isPlayer:
-                                self.display.game.sound_manager.play_sound('boom')
+                                self.display.game.sound_manager.play_sound('bounce')
                             self.wallCollTime = time.time()
                             self.wall_collision(sharedMask, center_x, center_y)
                         else:
