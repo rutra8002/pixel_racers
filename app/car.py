@@ -15,7 +15,7 @@ from jeff_the_objects import stacked_sprite
 
 
 class Car:
-    def __init__(self, display, image, coordinates, rotation, isPlayer, model):
+    def __init__(self, display, coordinates, rotation, isPlayer, model):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
@@ -40,8 +40,9 @@ class Car:
 
         #balanced:
         if self.model == 1:
+            self.image = images.car3d
             self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, image, self.num_of_sprites, self.img_size,
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
                                                              self.car3d_height)
             self.backDifference = 0.65
             self.mass = 1
@@ -67,6 +68,9 @@ class Car:
             self.oilFriction = 0 * self.display.game.calibration
         #tank/offroad:
         elif self.model == 2:
+            self.image = images.bike
+            self.set_3d_parameters(self.model)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
             self.backDifference = 0.7
             self.mass = 1.5
             self.nitroPower = 0.35 * self.display.game.calibration
@@ -90,8 +94,9 @@ class Car:
             self.oilFriction = 0 * self.display.game.calibration
         #accelerator:
         elif self.model == 3:
+            self.image = images.police
             self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, image, self.num_of_sprites, self.img_size, self.car3d_height)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
             self.backDifference = 0.65
             self.mass = 0.8
             self.nitroPower = 0.5 * self.display.game.calibration
@@ -219,6 +224,10 @@ class Car:
             self.num_of_sprites = 9
             self.img_size = (16, 16)
             self.car3d_height = 2.5
+        elif model == 2:
+            self.num_of_sprites = 11
+            self.img_size = (4, 18)
+            self.car3d_height = 3
         elif model == 3:
             self.num_of_sprites = 13
             self.img_size = (15, 34)

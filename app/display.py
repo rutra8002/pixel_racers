@@ -93,10 +93,10 @@ class game_display(basic_display):
 
 
 
-        self.p = player.Player(self, images.police, self.player_position, self.player_rotation)
+        self.p = player.Player(self, self.player_position, self.player_rotation, 2)
 
         for e in self.enemies:
-            enemy.Enemy(self, images.enemy3d, e[0], e[1])
+            enemy.Enemy(self, e[0], e[1], 1)
 
 
         self.map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))

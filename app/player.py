@@ -5,8 +5,8 @@ from app.car import Car
 import math
 
 class Player(Car):
-    def __init__(self, display, image, coordinates, rotation):
-        super().__init__(display, image, coordinates, rotation, isPlayer=True, model=3)
+    def __init__(self, display, coordinates, rotation, model):
+        super().__init__(display, coordinates, rotation, isPlayer=True, model=model)
 
     def events(self, event):
 
