@@ -34,8 +34,8 @@ class Car:
         self.particle_color = [0, 0, 0]
         self.tireHealth = 1
 
-
-        if self.model == 1: #balanced
+        #balanced:
+        if self.model == 1:
             self.backDifference = 0.65
             self.mass = 1
             self.nitroPower = 0.4 * self.display.game.calibration
@@ -58,8 +58,8 @@ class Car:
             self.normalSlowdown = 0.08 * self.display.game.calibration
             self.iceSlowdown = 0.02 * self.display.game.calibration
             self.oilSlowdown = 0 * self.display.game.calibration
-
-        elif self.model == 2: #tank/offroad
+        #tank/offroad:
+        elif self.model == 2:
             self.backDifference = 0.7
             self.mass = 1.5
             self.nitroPower = 0.35 * self.display.game.calibration
@@ -81,12 +81,12 @@ class Car:
             self.normalSlowdown = 0.1 * self.display.game.calibration
             self.iceSlowdown = 0.03 * self.display.game.calibration
             self.oilSlowdown = 0 * self.display.game.calibration
-
-        elif self.model == 3: #accelerator
+        #accelerator:
+        elif self.model == 3:
             self.backDifference = 0.65
             self.mass = 0.8
             self.nitroPower = 0.5 * self.display.game.calibration
-            self.tireAmount = 4
+            self.tireAmount = 3
             self.deadTires = 0
             self.tireDamage = 0.15
 
@@ -104,8 +104,8 @@ class Car:
             self.normalSlowdown = 0.08 * self.display.game.calibration
             self.iceSlowdown = 0.02 * self.display.game.calibration
             self.oilSlowdown = 0 * self.display.game.calibration
-
-        elif self.model == 4: #mater
+        #mater:
+        elif self.model == 4:
             self.backDifference = 1.4
             self.mass = 1.1
             self.nitroPower = 0.3 * self.display.game.calibration
@@ -128,7 +128,7 @@ class Car:
             self.iceSlowdown = 0.03 * self.display.game.calibration
             self.oilSlowdown = 0 * self.display.game.calibration
 
-            # elif self.model == 5 paweł jumper
+        # elif self.model == 5 paweł jumper
 
 
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
@@ -503,7 +503,7 @@ class Car:
     def check_if_forward(self, direction):
         if direction >= 360:
             direction -= 360
-        if self.backDifference > 1:
+        if self.model == 4:
             min, max = direction - 90, direction + 90
         else:
             min, max = direction - 110, direction + 110
@@ -824,6 +824,7 @@ class Car:
                         center_y = ((self.rect.topleft[
                                          1] + y) // self.display.block_height) * self.display.block_height + self.display.block_height // 2
                         if self.wallCollTime == 0:
+                            self.display.game.sound_manager.play_sound('boom')
                             self.wallCollTime = time.time()
                             self.wall_collision(sharedMask, center_x, center_y)
                         else:
