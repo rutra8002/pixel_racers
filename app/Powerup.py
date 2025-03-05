@@ -1,6 +1,7 @@
 import pygame.draw
 from pygame import *
 from app import images
+from jeff_the_objects import stacked_sprite
 
 
 class Powerup:
@@ -9,11 +10,15 @@ class Powerup:
         self.x, self.y = int(x), int(y)
         self.x *= self.display.block_width
         self.y *= self.display.block_height
-        self.img = images.ball
+        self.angle = 0
+        self.sprite = stacked_sprite.StackedSprite(self.display, images.ball, 8, (8, 8), 5)
 
+    def update(self):
+        self.sprite.update_mask_rotation(self.angle)
+        self.angle += self.display.game.delta_time * self.display.game.calibration
 
     def render(self):
-        pygame.draw.circle(self.display.screen, (100, 100, 200), (self.x, self.y), 10)
+        self.sprite.render(self.display.screen, (self.x, self.y))
 
     def kill(self):
         self.display.objects.remove(self)

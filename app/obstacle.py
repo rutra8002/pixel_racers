@@ -23,7 +23,7 @@ class Obstacle:
             self.sprite = StackedSprite(display, images.ball, 8, (8, 8), 5)
             self.rect = self.sprite.rect
             self.rect.center = self.x, self.y
-            self.obstacle_mask = self.sprite.masks[self.sprite.middle_sprite]
+            self.obstacle_mask = self.sprite.mask
             return
         self.rect = self.image.get_rect()
         self.rect.center = self.x, self.y

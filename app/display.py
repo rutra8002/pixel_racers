@@ -241,6 +241,9 @@ class game_display(basic_display):
         for chpo in self.checkpoints:
             chpo.collision()
 
+        for pupo in self.powerups:
+            pupo.update()
+
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
 class map_display(basic_display):
