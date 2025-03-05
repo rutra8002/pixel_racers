@@ -542,7 +542,7 @@ class map_display(basic_display):
         # Handle painting tools
         if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION]:
             if self.valid_grid_pos(grid_x, grid_y):
-                if self.is_painting(event) and self.tool != 'c' and self.tool != 'm':
+                if self.is_painting(event) and self.tool != 'c' and self.tool != 'm' and self.tool != 'p' and self.tool != 'e' and self.tool != 'u':
                     self.apply_brush(grid_x, grid_y, self.tool)
                 elif self.is_erasing(event):
                     self.apply_brush(grid_x, grid_y, 0)
