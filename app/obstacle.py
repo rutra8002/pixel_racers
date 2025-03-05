@@ -41,7 +41,7 @@ class Obstacle:
         elif self.type == 2:
             self.alpha = max(0, 255 - int((elapsed / 5) * 255))
         elif self.type == 3:
-            self.angle += 1
+            self.angle += self.display.game.delta_time * self.display.game.calibration
             self.sprite.render(self.display.screen, (self.x, self.y))
             self.sprite.update_mask_rotation(self.angle)
             return
