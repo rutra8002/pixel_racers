@@ -167,8 +167,11 @@ class game_display(basic_display):
 
             temp_list_of_powerups =self.map_data['powerups']
             self.powerups = []
+            self.powerupsxy = []
+
             for i, pup in enumerate(temp_list_of_powerups):
                 self.powerups.append(Powerup.Powerup(pup[0], pup[1], self))
+                self.powerupsxy.append([pup[0], pup[1]])
 
             self.enemies = self.map_data['enemies']
 
