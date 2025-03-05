@@ -201,7 +201,7 @@ class game_display(basic_display):
 
 
             if hasattr(self, 'overlap_point') and self.overlap_point:
-                pygame.draw.circle(self.screen, (255, 0, 0), self.overlap_point, 50)
+                pygame.draw.circle(self.screen, (255, 0, 0), self.overlap_point, 5)
 
     def events(self, event):
         for obj in self.objects:
