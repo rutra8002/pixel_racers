@@ -8,7 +8,7 @@ import random
 import math as lolekszcz
 import pygame
 import json
-from app import car, enemy, obstacle, images, player, enemy, checkpoint, hotbar
+from app import car, enemy, obstacle, images, player, enemy, checkpoint, hotbar, Powerup
 from particle_system import ParticleSystem
 from datetime import datetime
 import os
@@ -45,7 +45,8 @@ class basic_display:
             'map': [],
             'player': [[100, 100], 0],
             'enemies': [],
-            'checkpoints': []
+            'checkpoints': [],
+            'powerups': []
         }
 
 
@@ -164,6 +165,11 @@ class game_display(basic_display):
             for i, chekpoint in enumerate(temp_list_of_checkpoints):
                 self.checkpoints.append(checkpoint.checkpoint(self, i, chekpoint[0], chekpoint[1]))
 
+            temp_list_of_powerups =self.map_data['powerups']
+            self.powerups = []
+            for i, pup in enumerate(temp_list_of_powerups):
+                self.powerups.append(Powerup.Powerup(pup[0], pup[1], self))
+
             self.enemies = self.map_data['enemies']
 
 
@@ -183,10 +189,13 @@ class game_display(basic_display):
         for obj in self.environment_objects:
             if obj["type"] == "tree":
                 obj["sprite"].render(self.screen, obj["coords"])
-
+        for pupo in self.powerups:
+            pupo.render()
         if self.game.debug:
             for chpo in self.checkpoints:
                 chpo.render()
+
+
 
             if hasattr(self, 'overlap_point') and self.overlap_point:
                 pygame.draw.circle(self.screen, (255, 0, 0), self.overlap_point, 50)
@@ -320,6 +329,7 @@ class map_display(basic_display):
             1] * self.zoom_level / self.block_height) if self.player_position else None
         self.checkpoints = self.temp_map_data['checkpoints']
         self.enemies = self.temp_map_data['enemies']
+        self.powerups = self.temp_map_data['powerups']
         for e in self.enemies:
             e[0][0] = e[0][0]*self.zoom_level/self.block_width
             e[0][1] = e[0][1] * self.zoom_level / self.block_height
@@ -603,11 +613,14 @@ class map_display(basic_display):
         for enemy in self.enemies:
             temp_enemies.append(((enemy[0][0]/self.zoom_level*self.block_width, enemy[0][1]/self.zoom_level*self.block_height), enemy[1]))
 
+        print(self.powerups)
+
         map_data = {
             'map': self.map,
             'player': [temp_player_position, self.player_rotation],
             'enemies': temp_enemies,
-            'checkpoints': self.checkpoints
+            'checkpoints': self.checkpoints,
+            'powerups': self.powerups
         }
 
         self.temp_map_data.update(map_data)
