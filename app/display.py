@@ -8,7 +8,7 @@ import random
 import math as lolekszcz
 import pygame
 import json
-from app import car, enemy, obstacle, images, player, enemy, checkpoint, hotbar, Powerup
+from app import car, enemy, obstacle, images, player, enemy, checkpoint, hotbar, powerup
 from particle_system import ParticleSystem
 from datetime import datetime
 import os
@@ -78,6 +78,8 @@ class game_display(basic_display):
         self.obstacles = []
         self.cars = [] #the physical cars of enemies and of the player
         self.particle_system = ParticleSystem()
+        self.powerup_placement_variance = 10
+        self.deadPowerups = []
 
         self.environment_objects = [
             {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=True), "coords": (200, 300)},
@@ -98,6 +100,7 @@ class game_display(basic_display):
 
         for e in self.enemies:
             enemy.Enemy(self, e[0], e[1], 1)
+
 
 
         self.map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))
@@ -167,11 +170,9 @@ class game_display(basic_display):
 
             temp_list_of_powerups =self.map_data['powerups']
             self.powerups = []
-            self.powerupsxy = []
 
             for i, pup in enumerate(temp_list_of_powerups):
-                self.powerups.append(Powerup.Powerup(pup[0], pup[1], self))
-                self.powerupsxy.append([pup[0], pup[1]])
+                self.powerups.append(powerup.Powerup(pup[0], pup[1], self))
 
             self.enemies = self.map_data['enemies']
 
@@ -231,6 +232,13 @@ class game_display(basic_display):
         if self.hotbar.stopwatch.start_time == 0:
             self.hotbar.start_counting_time()
         self.hotbar.mainloop()
+        if len(self.deadPowerups) > 0:
+            for p in self.deadPowerups:
+                if p[2] > 0:
+                    p[2] -= self.game.delta_time
+                else:
+                    self.powerups.append(powerup.Powerup(p[0], p[1], self))
+
 
         self.particle_system.update(self.game.delta_time)
 

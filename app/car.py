@@ -30,7 +30,7 @@ class Car:
 
         self.gravel_color = (128, 128, 128)
         self.oil_color = (235, 180, 3)
-        self.asphalt_color = (26,26,26)
+        self.asphalt_color = (26, 26, 26)
         self.wall_color = (255, 255, 255)
         self.ice_color = (63, 208, 212)
         self.spike_color = (255, 0, 0)
