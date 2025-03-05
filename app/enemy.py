@@ -3,14 +3,9 @@ import math as lolekszcz
 from app.car import Car
 
 class Enemy(Car):
-    def __init__(self, display, image, coordinates, rotation, crazy=False):
-        super().__init__(display, image, coordinates, rotation, isPlayer=False, model=1)
+    def __init__(self, display, coordinates, rotation, model, crazy=False):
+        super().__init__(display, coordinates, rotation, isPlayer=False, model=model)
         self.crazy = crazy
-
-    def set_3d_parameters(self):
-        self.num_of_sprites = 9
-        self.img_size = (16, 16)
-        self.car3d_height = lolekszcz.e
 
     def loop(self):
         super().loop()

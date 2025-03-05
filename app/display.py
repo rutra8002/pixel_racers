@@ -93,10 +93,10 @@ class game_display(basic_display):
 
 
 
-        self.p = player.Player(self, images.car3d, self.player_position, self.player_rotation)
+        self.p = player.Player(self, self.player_position, self.player_rotation, 2)
 
         for e in self.enemies:
-            enemy.Enemy(self, images.enemy3d, e[0], e[1])
+            enemy.Enemy(self, e[0], e[1], 1)
 
 
         self.map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))
@@ -133,6 +133,14 @@ class game_display(basic_display):
                     color = self.spike_color
                 else:
                     color = self.asphalt_color
+
+                # Add randomness to the color
+                color = (
+                    min(max(color[0] + random.randint(-10, 10), 0), 255),
+                    min(max(color[1] + random.randint(-10, 10), 0), 255),
+                    min(max(color[2] + random.randint(-10, 10), 0), 255)
+                )
+
                 pygame.draw.rect(self.map_surface, color,
                                  (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
     def import_map(self):

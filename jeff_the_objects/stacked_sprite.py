@@ -11,8 +11,8 @@ class StackedSprite:
         self.sprites.reverse()
         self.rect = self.sprites[0].get_rect()
         self.masks = [pygame.mask.from_surface(sprite) for sprite in self.sprites]
-        self.middle_sprite = self.num_of_sprites//2
-        self.mask = self.masks[self.middle_sprite]
+        self.largest_mask_index = self.get_largest_mask_index()
+        self.mask = self.masks[self.largest_mask_index]
         self.rotation_cache = {}
         self.update_mask_rotation(rotation)
         self.rotation = rotation
@@ -49,7 +49,7 @@ class StackedSprite:
         for i, sprite in enumerate(self.sprites):
             rotated_sprite = self.get_rotated_sprite(sprite, rotation - 90)
             self.masks[i] = pygame.mask.from_surface(rotated_sprite)
-        self.mask = self.masks[self.middle_sprite]
+        self.mask = self.masks[self.largest_mask_index]
         self.rect = self.mask.get_rect()
         self.rotation = rotation
         return self.mask
@@ -58,3 +58,6 @@ class StackedSprite:
         if (sprite, rotation) not in self.rotation_cache:
             self.rotation_cache[(sprite, rotation)] = pygame.transform.rotate(sprite, rotation)
         return self.rotation_cache[(sprite, rotation)]
+
+    def get_largest_mask_index(self):
+        return max(range(len(self.masks)), key=lambda i: self.masks[i].count())

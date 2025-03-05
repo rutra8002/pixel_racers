@@ -5,13 +5,8 @@ from app.car import Car
 import math
 
 class Player(Car):
-    def __init__(self, display, image, coordinates, rotation):
-        super().__init__(display, image, coordinates, rotation, isPlayer=True, model=1)
-
-    def set_3d_parameters(self):
-        self.num_of_sprites = 9
-        self.img_size = (16, 16)
-        self.car3d_height = math.pi
+    def __init__(self, display, coordinates, rotation, model):
+        super().__init__(display, coordinates, rotation, isPlayer=True, model=model)
 
     def events(self, event):
 
