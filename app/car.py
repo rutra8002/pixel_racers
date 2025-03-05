@@ -286,6 +286,10 @@ class Car:
                     except:
                         pass
 
+        for p in self.display.powerups:
+            if self.collision_detection(p.mask, p.rect.topleft[0], p.rect.topleft[1]):
+                p.kill()
+
         if self.display.game.debug:
             pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
 

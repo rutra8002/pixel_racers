@@ -238,6 +238,7 @@ class game_display(basic_display):
                     p[2] -= self.game.delta_time
                 else:
                     self.powerups.append(powerup.Powerup(p[0], p[1], self))
+                    self.deadPowerups.remove(p)
 
 
         self.particle_system.update(self.game.delta_time)
