@@ -271,6 +271,7 @@ class map_display(basic_display):
         self.checkpoints = []
         self.current_checkpoint = []
 
+        self.powerups = []
 
         self.brushtext = custom_text.Custom_text(self, 10, 70, f'Brush size: {self.brush_size}', text_color='white', font_height=30, center=False)
         self.tooltext = custom_text.Custom_text(self, 10, 100, f'Tool: {self.tool}', text_color='white', font_height=30, center=False)
@@ -299,6 +300,9 @@ class map_display(basic_display):
         self.temp_height = int(self.height // self.gcd)
 
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
+
+        self.powerups = []
+
         self.checkpoints = []
         self.current_checkpoint = []
         self.temp_map_data = dict(self.map_data)
@@ -360,6 +364,8 @@ class map_display(basic_display):
 
         self.player_pos_text.update_text(f'Player position: {self.player_position}')
 
+    def add_powerup(self, x, y):
+        self.powerups.append((x, y))
 
     def render(self):
         vis_x_start = max(0, lolekszcz.floor((-self.cx) / self.block_width))
@@ -415,7 +421,7 @@ class map_display(basic_display):
         for obj in self.objects:
             obj.render()
         b = self.brush_size * self.block_width
-        if self.tool != 'p' and self.tool != 'c' and self.tool != 'm' and self.tool != 'e':
+        if self.tool != 'p' and self.tool != 'c' and self.tool != 'm' and self.tool != 'e' and self.tool !='u':
             c = self.color_map.get(self.tool)
             if self.shape == 0:
                 pygame.draw.rect(self.screen, c, (pygame.mouse.get_pos()[0] - b / 2, pygame.mouse.get_pos()[1] - b / 2, b, b), 2)
@@ -429,6 +435,8 @@ class map_display(basic_display):
                 color = self.color_map['c']
             pygame.draw.line(self.screen, color, (self.checkpoints[i][0][0] * self.block_width + self.cx, self.checkpoints[i][0][1] * self.block_height + self.cy), (self.checkpoints[i][1][0] * self.block_width + self.cx, self.checkpoints[i][1][1] * self.block_height + self.cy), width=int(self.block_width))
 
+        for i in self.powerups:
+            pygame.draw.circle(self.screen, (0, 0, 255), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
         if (self.tool == 'c' or self.tool == 'm') and len(self.current_checkpoint) == 1:
 
             pygame.draw.line(self.screen, self.color_map[self.tool], (self.current_checkpoint[0][0] * self.block_width + self.cx,
@@ -480,6 +488,9 @@ class map_display(basic_display):
                 self.brush_size = min(self.brush_size + 1, max(self.temp_width, self.temp_height))
             elif event.key == pygame.K_MINUS:  # Decrease brush size
                 self.brush_size = max(self.brush_size - 1, 1)
+            elif event.key == pygame.K_u:
+                self.tool = 'u'
+
             elif event.key == pygame.K_c:
                 self.tool = 'c'
                 self.current_checkpoint = []
@@ -499,7 +510,7 @@ class map_display(basic_display):
                     self.map = self.archiveStates[-1]
                     self.archiveStates.pop(-1)
 
-            elif event.key == pygame.K_LEFT or pygame.K_RIGHT:
+            elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 if self.shape == 1:
                     self.shape = 0
                 elif self.shape == 0:
@@ -552,6 +563,9 @@ class map_display(basic_display):
 
             elif self.tool == 'e' and self.valid_grid_pos(grid_x, grid_y):
                 self.enemies.append(((grid_x, grid_y), self.enemy_rotation))
+
+            elif self.tool == 'u' and self.valid_grid_pos(grid_x, grid_y):
+                self.add_powerup(grid_x, grid_y)
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_MIDDLE:
             self.dragging = True
