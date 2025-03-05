@@ -66,7 +66,7 @@ class Car:
             self.normalFriction = 0.08 * self.display.game.calibration
             self.iceFriction = 0.02 * self.display.game.calibration
             self.oilFriction = 0 * self.display.game.calibration
-        #tank/offroad:
+        #tank(not literally) /offroad:
         elif self.model == 2:
             self.image = images.bike
             self.set_3d_parameters(self.model)
