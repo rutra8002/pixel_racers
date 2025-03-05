@@ -16,7 +16,7 @@ class Custom_text:  # A class that generates text
         self.hidden = False
 
         self.center = center
-        self.font = pygame.font.Font(font, self.font_height)
+        self.font = pygame.font.Font("fonts/joystix monospace.otf", self.font_height)
 
         self.text_to_render = self.font.render(self.text, True, self.text_color, self.background_color)
         self.rect = self.text_to_render.get_rect()
