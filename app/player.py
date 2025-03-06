@@ -28,6 +28,8 @@ class Player(Car):
                     self.velUp, self.velLeft = 0, 0
                 else:
                     self.boost = True
+            if event.key == pygame.K_c:
+                self.use_powerup()
         elif event.type == pygame.KEYUP:
             if event.key in (pygame.K_w, pygame.K_UP):
                 self.w = False

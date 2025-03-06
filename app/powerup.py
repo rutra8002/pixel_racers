@@ -18,7 +18,7 @@ class Powerup:
         self.trueX *= self.display.block_width
         self.trueY *= self.display.block_height
         self.angle = 0
-        self.sprite = stacked_sprite.StackedSprite(self.display, images.ball, 8, (8, 8), 3)
+        self.sprite = stacked_sprite.StackedSprite(self.display, images.ball, 8, (8, 8), 4)
         self.mask = self.sprite.mask
         self.rect = self.sprite.rect
 
@@ -31,6 +31,6 @@ class Powerup:
         self.sprite.render(self.display.screen, (self.trueX, self.trueY))
 
     def kill(self):
-        self.display.deadPowerups.append([self.x, self.y, 1])
+        self.display.deadPowerups.append([self.x, self.y, 2])
         self.display.powerups.remove(self)
         del self

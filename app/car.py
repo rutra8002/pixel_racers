@@ -1,3 +1,4 @@
+import random
 from operator import invert
 
 import pygame
@@ -6,7 +7,7 @@ import time
 from particle_system import ParticleGenerator
 from unicodedata import normalize
 from customObjects.custom_text import Custom_text
-from app import images
+from app import images, obstacle
 from jeff_the_objects import stacked_sprite
 
 #TO DO:
@@ -37,6 +38,12 @@ class Car:
 
         self.particle_color = [0, 0, 0]
         self.tireHealth = 1
+        self.inventory = [1, 2, 3, 4] # 1 to super siła, 2 to barierka, 3 to kolczatka, 4 to heal - leczy 1 oponę
+        self.inventory_size = 2
+
+        self.strength = False # następne zderzenie z autem nie daje tobie knockbacku. Przy zderzeniu ze ścianą znika i nic nie robi
+        self.infiNitro = True
+
 
         #balanced:
         if self.model == 1:
@@ -238,7 +245,6 @@ class Car:
         if self.inviFlicker:
             pygame.draw.circle(self.display.screen, (102, 100, 100), self.center, 25)
         # self.display.screen.blit(self.mask_image, self.rect)
-        self.nitroAmount += 1
 
 
         self.mask_image = self.car_mask.to_surface()
@@ -288,8 +294,17 @@ class Car:
 
         for p in self.display.powerups:
             if self.collision_detection(p.mask, p.rect.topleft[0], p.rect.topleft[1]):
-                self.display.game.sound_manager.play_sound('Powerup')
+                if self.isPlayer:
+                    self.display.game.sound_manager.play_sound('Powerup')
+                bonus = random.randint(0, 4)
+                if bonus == 0:
+                    self.nitroAmount += 20
+                    if self.nitroAmount > 100:
+                        self.nitroAmount = 100
+                elif len(self.inventory) < self.inventory_size:
+                    self.inventory.append(bonus)
                 p.kill()
+
 
         if self.display.game.debug:
             pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
@@ -398,7 +413,8 @@ class Car:
             self.rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed * 2
 
         if self.boost and self.nitroAmount >= 1 and not self.WASD_steering:
-            self.nitroAmount -= 1
+            if not self.infiNitro:
+                self.nitroAmount -= 1
             a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
             self.velLeft += a * self.display.game.delta_time * self.display.game.calibration
             self.velUp += b * self.display.game.delta_time * self.display.game.calibration
@@ -466,6 +482,27 @@ class Car:
         self.rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
         self.velAng *= self.damping
 
+    def use_powerup(self):
+        if len(self.inventory) == 0:
+            return
+        if self.inventory[0] == 1:
+            pass
+            self.strength = True
+        elif self.inventory[0] == 2:
+            pass
+            angle = lolino.radians(self.rotation)
+            spawn_x = self.x - (50 * lolino.cos(angle))
+            spawn_y = self.y + (50 * lolino.sin(angle))
+            self.display.obstacles.append(obstacle.Obstacle(self.display, spawn_x, spawn_y, 'barrier', self.rotation - 90))
+        elif self.inventory[0] == 3:
+            angle = lolino.radians(self.rotation)
+            spawn_x = self.x - (50 * lolino.cos(angle))
+            spawn_y = self.y + (50 * lolino.sin(angle))
+            self.display.obstacles.append(obstacle.Obstacle(self.display, spawn_x, spawn_y, 'spikes', self.rotation - 90))
+        elif self.inventory[0] == 4:
+            if self.deadTires > 0:
+                 self.deadTires -= 1
+        self.inventory.pop(0)
 
 
     def slow_down(self, slowdown):
@@ -647,7 +684,7 @@ class Car:
 
     def prickWheels(self):
         if self.invincibility < 1 and self.deadTires < self.tireAmount:
-            self.invincibility = 2
+            self.invincibility = 20
             self.deadTires += 1
             self.tireHealth -= self.tireDamage
             self.display.game.sound_manager.play_sound('boom')

@@ -211,17 +211,8 @@ class game_display(basic_display):
             o.events(event)
 
         if event.type == pygame.KEYDOWN:
-            angle = lolekszcz.radians(self.p.rotation)
-            spawn_x = self.p.x - (50 * lolekszcz.cos(angle))
-            spawn_y = self.p.y + (50 * lolekszcz.sin(angle))
             if event.key == pygame.K_ESCAPE:
                 self.game.change_display('pause_display')
-            if event.key == pygame.K_c:
-                self.obstacles.append(obstacle.Obstacle(self, spawn_x, spawn_y, 'spikes', self.p.rotation - 90))
-            if event.key == pygame.K_v:
-                self.obstacles.append(obstacle.Obstacle(self, spawn_x, spawn_y, 'barrier', self.p.rotation - 90))
-            if event.key == pygame.K_b:
-                self.obstacles.append(obstacle.Obstacle(self, spawn_x, spawn_y, 'ball', self.p.rotation - 90))
 
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if 0 < pygame.mouse.get_pos()[0] < self.screenWidth and 0 < pygame.mouse.get_pos()[1] < self.screenHeight_without_hotbar:
