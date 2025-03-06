@@ -10,11 +10,11 @@ from jeff_the_objects import stacked_sprite
 class Powerup:
     def __init__(self, x, y, display):
         self.display = display
-        self.variance = 10
+        self.variance = 8
         self.x = x
         self.y = y
         self.trueX, self.trueY = x + ran.randint(-self.variance, self.variance), y + ran.randint(-self.variance, self.variance)
-        self.trueX, self.trueY = int(x), int(y)
+        self.trueX, self.trueY = int(self.trueX), int(self.trueY)
         self.trueX *= self.display.block_width
         self.trueY *= self.display.block_height
         self.angle = 0

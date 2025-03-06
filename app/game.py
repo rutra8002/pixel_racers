@@ -15,7 +15,8 @@ class Game:
         self.sound_manager.load_music('sounds/music/Neon Rush.wav')
         self.sound_manager.load_sound('boom','sounds/TireBoom.wav')
         self.sound_manager.load_sound('bounce', 'sounds/bounce.wav')
-        self.sound_manager.set_music_volume(1)
+        self.sound_manager.load_sound('Powerup', 'sounds/Powerup_sound.wav')
+        self.sound_manager.set_music_volume(0.6)
 
         config.set_config()
 

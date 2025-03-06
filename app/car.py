@@ -288,6 +288,7 @@ class Car:
 
         for p in self.display.powerups:
             if self.collision_detection(p.mask, p.rect.topleft[0], p.rect.topleft[1]):
+                self.display.game.sound_manager.play_sound('Powerup')
                 p.kill()
 
         if self.display.game.debug:
