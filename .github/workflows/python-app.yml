@@ -22,7 +22,7 @@ jobs:
     - name: Update system and install dependencies
       run: |
         pacman -Syu --noconfirm
-        pacman -S --noconfirm python python-pip flake8 pytest
+        pacman -S --noconfirm python python-pip python-flake8 python-pytest base-devel git
 
     - name: Upgrade pip
       run: python -m pip install --upgrade pip
@@ -32,9 +32,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Lint with flake8
-      run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
     - name: Test with pytest
       run: pytest
