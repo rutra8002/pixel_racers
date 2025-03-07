@@ -18,6 +18,7 @@ class Game:
         self.sound_manager.load_sound('Powerup', 'sounds/Powerup_sound.wav')
         self.sound_manager.load_sound('Heal', 'sounds/Heal.wav')
         self.sound_manager.load_sound('Strength', 'sounds/Strength.wav')
+        self.sound_manager.load_sound('Pitstop', 'sounds/Pitstop.wav')
         self.sound_manager.set_music_volume(0.6)
 
         config.set_config()
