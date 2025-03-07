@@ -487,6 +487,8 @@ class Car:
             return
         if self.inventory[0] == 1:
             pass
+            self.display.game.sound_manager.play_sound('Strength')
+
             self.strength = True
         elif self.inventory[0] == 2:
             pass
@@ -502,6 +504,7 @@ class Car:
         elif self.inventory[0] == 4:
             if self.deadTires > 0:
                  self.deadTires -= 1
+                 self.display.game.sound_manager.play_sound('Heal')
         self.inventory.pop(0)
 
 
@@ -800,8 +803,6 @@ class Car:
         omega_A = La / Ia
         omega_B = Lb / Ib
 
-        self.velAng = omega_A
-        other.velAng = omega_B
         # self.rotation += lolino.degrees(omega_A * self.display.game.delta_time)
         # other.rotation += lolino.degrees(omega_B * self.display.game.delta_time)
         n = ((other.x - self.x) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2), (other.y - self.y) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2))
@@ -816,8 +817,15 @@ class Car:
 
         v1 = (v1n_new * n[0] + v1t * t[0], v1n_new * n[1] + v1t * t[1])
         v2 = (v2n_new * n[0] + v2t * t[0], v2n_new * n[1] + v2t * t[1])
-        self.velLeft, other.velLeft = v1[0], v2[0]
-        self.velUp, other.velUp = v1[1], v2[1]
+        if not self.strength:
+            self.velLeft, self.velUp, self.velAng = v1[0], v1[1], omega_A
+        else:
+            self.strength = False
+
+        if not other.strength:
+             other.velLeft, other.velUp, other.velAng = v2[0], v2[1], omega_B
+        else:
+            other.strength = False
 
     def collision_detection(self, mask, x, y):
         offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
@@ -888,6 +896,7 @@ class Car:
                         if self.wallCollTime == 0:
                             if self.isPlayer:
                                 self.display.game.sound_manager.play_sound('bounce')
+                                self.strength = False
                             self.wallCollTime = time.time()
                             self.wall_collision(sharedMask, center_x, center_y)
                         else:
