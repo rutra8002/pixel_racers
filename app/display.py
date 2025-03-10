@@ -850,14 +850,12 @@ class level_selector(basic_display):
         self.not_selected_surface_height = self.selected_surface_height/2
 
         custom_button.Button(self, 'move_selection_to_left', self.game.width / 2 - self.button_width - 7.5,
-                             (self.game.height - 150 - (self.game.height/2 - self.selected_surface_height/2 + self.selected_surface_height) - self.button_height)/2 + (self.game.height/2 - self.selected_surface_height/2 + self.selected_surface_height),
+                             (self.game.height - 150 -  self.button_height - 15),
                              self.button_width, self.button_height, text='<-', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
         custom_button.Button(self, 'move_selection_to_right', self.game.width / 2 + 7.5,
-                             (self.game.height - 150 - (
-                                         self.game.height / 2 - self.selected_surface_height / 2 + self.selected_surface_height) - self.button_height) / 2 + (
-                                         self.game.height / 2 - self.selected_surface_height / 2 + self.selected_surface_height),
+                             (self.game.height - 150  - self.button_height - 15),
                              self.button_width, self.button_height, text='->', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
@@ -1036,20 +1034,20 @@ class change_vehicle(basic_display):
                                 font_height=int(self.game.height * (19 / 216)))
 
         custom_button.Button(self, 'move_selected_car_to_left', self.game.width / 2 - self.button_width - 7.5,
-                             (self.game.height - 150),
+                             (self.game.height - 150) - self.button_height - 15,
                              self.button_width, self.button_height, text='<-', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
         custom_button.Button(self, 'move_selected_car_to_right', self.game.width / 2 + 7.5,
-                             (self.game.height - 150),
+                             (self.game.height - 150) - self.button_height - 15,
                              self.button_width, self.button_height, text='->', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
-        custom_button.Button(self, 'select_car', self.game.width / 2 + 7.5, self.game.height - 150 - self.button_height - 15, self.button_width,
+        custom_button.Button(self, 'select_car', self.game.width / 2 + 7.5, self.game.height - 150, self.button_width,
                              self.button_height, text='Select', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
         custom_button.Button(self, 'to_main_menu', self.game.width / 2 - self.button_width - 7.5,
-                             self.game.height - 150 - self.button_height - 15,
+                             self.game.height - 150,
                              self.button_width, self.button_height, text='BACK', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
