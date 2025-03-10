@@ -183,7 +183,6 @@ class Car:
         self.inviFlicker = False
         self.rotation = rotation
         self.recentCollisions = {}
-        self.timeToCheck = 5
         self.goingForward = True
         # self.wall = False
 
@@ -507,6 +506,7 @@ class Car:
         pass
 
     def movement(self):
+        global dir
         self.prevPos = [self.x, self.y]
         self.prevRotation = self.rotation
         c, d = self.velLeft, self.velUp
@@ -558,27 +558,25 @@ class Car:
             self.velUp += b * self.display.game.delta_time * self.display.game.calibration
 
         magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
-        if magnitude > self.currentMaxSpeed:
-            self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
-        # elif self.velLeft == c and self.velUp == d:
-        if self.velLeft != 0 or self.velUp != 0:
-            self.slow_down(self.currentFriction / magnitude / (self.tireHealth ** 0.2))
-
         if magnitude > self.currentFriction:
             modifier = magnitude / 200
             if modifier > 2:
                 modifier = 2
             if modifier < 0.2:
                 modifier = 0.2
-            if self.timeToCheck >= 0:
-                self.timeToCheck = 5
-                self.goingForward = self.check_if_forward(self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1])))
-            else:
-                self.timeToCheck -= 1
+            dir = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
+            self.goingForward = self.check_if_forward(dir)
             if self.goingForward:
                 self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
             else:
                 self.rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
+        if magnitude > self.currentMaxSpeed:
+            self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
+            # elif self.velLeft == c and self.velUp == d:
+        if self.velLeft != 0 or self.velUp != 0:
+            s = self.check_if_sideways(dir)
+            self.slow_down(self.currentFriction * s / magnitude / (self.tireHealth ** 0.2))
+
 
         # if not self.boost:
         #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
@@ -710,17 +708,43 @@ class Car:
             min, max = direction - 90, direction + 90
         else:
             min, max = direction - 110, direction + 110
+
         r = self.normalize_angle(self.rotation)
+        a = False
         if r < max and min < r:
-            return True
+            a = True
         else:
             if min < 0:
                 if r < max + 360 and min + 360 < r:
-                    return True
+                    a = True
             elif max > 360:
                 if r < max - 360 and min - 360 < r:
-                    return True
-        return False
+                    a = True
+        return a
+
+    def check_if_sideways(self, direction):
+        if direction >= 360:
+            direction -= 360  # Wrap around if the direction is greater than 360
+
+        # Normalize the player's current rotation
+        r = self.normalize_angle(self.rotation)
+
+        # Calculate the forward and backward angle differences
+        forward_diff = (direction - r) % 360  # Positive difference (forward)
+        backward_diff = (r - direction) % 360  # Positive difference (backward)
+
+        # Ensure the angle differences are in the correct range
+        if forward_diff > 180:  # Adjust to make sure it's in the [0, 180) range
+            forward_diff = 360 - forward_diff
+
+        if backward_diff > 180:  # Adjust to make sure it's in the [0, 180) range
+            backward_diff = 360 - backward_diff
+
+        # Check if the direction is more than 45 degrees away (either forward or backward)
+        if (forward_diff > 45 and forward_diff < 135) or (backward_diff > 45 and backward_diff < 135):
+            return 1.5
+
+        return 1
 
     def normalize_angle(self, angle):
         while angle <= 0:
