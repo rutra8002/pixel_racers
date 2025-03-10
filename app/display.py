@@ -671,7 +671,7 @@ class main_menu_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
 
-        self.amount_of_buttons = 4
+        self.amount_of_buttons = 5
         self.button_padding = self.game.height * (1/96)
         self.button_width_modifier = 45.5/256
         self.button_heigh_modifier = 10.4/144
@@ -680,9 +680,15 @@ class main_menu_display(basic_display):
 
         custom_text.Custom_text(self, self.game.width/2, self.game.height/5, 'VROOM!\n    VROOM!', text_color='white', font_height=int(self.game.height*(19/216)))
         custom_button.Button(self, 'to_level_selector', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * self.amount_of_buttons, self.button_width, self.button_height, text='Play', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-        custom_button.Button(self, 'settings', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 1), self.button_width, self.button_height, text='Settings', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-        custom_button.Button(self, 'to_map_maker_menu', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 2), self.button_width, self.button_height, text='Make a map', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-        custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 3), self.button_width, self.button_height, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'change_vehicle', self.button_padding,
+                             self.game.height + (- self.button_padding - self.button_height) * (
+                                         self.amount_of_buttons - 1), self.button_width, self.button_height,
+                             text='Change vehicle', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
+                             outline_color=(50, 50, 50), outline_width=2)
+
+        custom_button.Button(self, 'settings', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 2), self.button_width, self.button_height, text='Settings', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'to_map_maker_menu', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 3), self.button_width, self.button_height, text='Make a map', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 4), self.button_width, self.button_height, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
         self.particle_system = self.game.menu_particle_system
 
@@ -996,4 +1002,8 @@ class map_maker_menu(basic_display):
 
         for o in self.objects:
             o.render()
+
+class change_vehicle(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
 
