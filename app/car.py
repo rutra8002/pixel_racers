@@ -24,7 +24,7 @@ class Car:
         self.borderBounciness = 0.9
         self.borderForce = 0.5 * self.display.game.calibration
         self.WASD_steering = False  # For debug only
-        self.collision_draw = True
+        self.collision_draw = False
         self.model = model
         self.temp_car3d_height = temp_car3d_height
 
@@ -851,7 +851,9 @@ class Car:
                     self.block(obstacle.rect.topleft[0], obstacle.rect.topleft[1])
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
-
+                elif obstacle.type == 4:
+                    print('banana')
+                    self.velAng = 100
 
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentAcceleration = self.normalAcceleration

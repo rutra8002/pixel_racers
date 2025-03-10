@@ -11,7 +11,7 @@ class Obstacle:
         self.y = y
         self.start_time = time.time()
         self.angle = angle
-        types = {"spikes": 1, "barrier": 2, "ball": 3}
+        types = {"spikes": 1, "barrier": 2, "ball": 3, "banana": 4}
         self.type = types[type]
         if type == "spikes":
             self.image = images.spikes.convert_alpha()
@@ -25,6 +25,8 @@ class Obstacle:
             self.rect.center = self.x, self.y
             self.obstacle_mask = self.sprite.mask
             return
+        elif type == "banana":
+            pass
         self.rect = self.image.get_rect()
         self.rect.center = self.x, self.y
         self.obstacle_mask = pygame.mask.from_surface(self.image)
