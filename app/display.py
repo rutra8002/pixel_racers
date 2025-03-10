@@ -85,7 +85,7 @@ class game_display(basic_display):
 
         self.environment_objects = [
             {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=True), "coords": (200, 300)},
-            {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=True), "coords": (400, 500)},
+            {"type": "tree", "sprite": StackedSprite(self, images.castle, 21, (21, 21), 3, random.randint(0, 359), rotate=True), "coords": (400, 500)},
         ]
 
         # for i in range(1, 6):
@@ -1047,7 +1047,7 @@ class change_vehicle(basic_display):
         self.large_cars = []
         self.small_cars = []
         self.selected_car_model = 1
-        for _ in range(3):
+        for _ in range(4):
             large_car = car.Car(self, (self.game.width/2, self.game.height/2), 0, False, _ + 1, temp_car3d_height=10)
             small_car = car.Car(self, (500, self.game.height/2), 0, False, _ + 1)
 

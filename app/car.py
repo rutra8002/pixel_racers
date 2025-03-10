@@ -77,7 +77,7 @@ class Car:
             self.oilFriction = 0 * self.display.game.calibration
         #tank(not literally) /offroad:
         elif self.model == 2:
-            self.image = images.bike
+            self.image = images.newcar
             self.set_3d_parameters(self.model)
             self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
             self.backDifference = 0.7
@@ -129,6 +129,10 @@ class Car:
             self.oilFriction = 0 * self.display.game.calibration
         #mater:
         elif self.model == 4:
+            self.image = images.bike
+            self.set_3d_parameters(self.model)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites,
+                                                             self.img_size, self.car3d_height)
             self.backDifference = 1.4
             self.mass = 1.1
             self.nitroPower = 0.3 * self.display.game.calibration
@@ -240,10 +244,10 @@ class Car:
             else:
                 self.car3d_height = self.temp_car3d_height
         elif model == 2:
-            self.num_of_sprites = 11
-            self.img_size = (4, 18)
+            self.num_of_sprites = 14
+            self.img_size = (15, 32)
             if self.temp_car3d_height == None:
-                self.car3d_height = 3
+                self.car3d_height = 1.5
             else:
                 self.car3d_height = self.temp_car3d_height
         elif model == 3:
@@ -251,6 +255,13 @@ class Car:
             self.img_size = (15, 34)
             if self.temp_car3d_height == None:
                 self.car3d_height = 1.5
+            else:
+                self.car3d_height = self.temp_car3d_height
+        elif model == 4:
+            self.num_of_sprites = 11
+            self.img_size = (4, 18)
+            if self.temp_car3d_height == None:
+                self.car3d_height = 3
             else:
                 self.car3d_height = self.temp_car3d_height
 
@@ -420,7 +431,7 @@ class Car:
             self.oilFriction = 0 * self.display.game.calibration
         #tank(not literally) /offroad:
         elif self.model == 2:
-            self.image = images.bike
+            self.image = images.newcar
             self.set_3d_parameters(self.model)
             self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
             self.backDifference = 0.7
@@ -472,6 +483,9 @@ class Car:
             self.oilFriction = 0 * self.display.game.calibration
         #mater:
         elif self.model == 4:
+            self.image = images.bike
+            self.set_3d_parameters(self.model)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
             self.backDifference = 1.4
             self.mass = 1.1
             self.nitroPower = 0.3 * self.display.game.calibration
