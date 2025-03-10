@@ -137,6 +137,8 @@ class game_display(basic_display):
                     color = self.ice_color
                 elif self.map[y][x] == 5:
                     color = self.spike_color
+                elif self.map[y][x] == 6:
+                    color = self.pitstop_color
                 else:
                     color = self.asphalt_color
                 # Add randomness to the color
