@@ -1036,7 +1036,7 @@ class map_maker_menu(basic_display):
 class change_vehicle(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
-        self.particle_system = ParticleSystem()
+        self.particle_system = self.game.menu_particle_system
         self.cars = []
         self.large_cars = []
         self.small_cars = []
@@ -1081,9 +1081,15 @@ class change_vehicle(basic_display):
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
     def mainloop(self):
-        pass
+        self.particle_system.update(self.game.delta_time)
 
     def render(self):
+        self.particle_system.add_particle(random.randint(0, self.game.width), random.uniform(0, self.game.height),
+                                          random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
+                                          random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
+                                          random.randint(0, 255), 100, 'square')
+        self.particle_system.draw(self.game.screen)
+
         if self.selected_car_model < 1:
             self.selected_car_model = 1
         elif self.selected_car_model > self.amount_of_car:
