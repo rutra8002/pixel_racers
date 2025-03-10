@@ -20,7 +20,7 @@ class Hotbar:
         self.display.objects.append(self)
 
         self.stopwatch = StopWatch(self)
-        custom_text.Custom_text(self.display, self.x+self.w/10, self.y + self.h/2.5 + 50, 'Lap: 1/5', text_color='white')
+        custom_text.Custom_text(self.display, self.x+self.w/7, self.y + self.h/2.5 + 50, 'Lap: 1/5', text_color='white')
 
     def events(self, event):
         pass
@@ -42,7 +42,7 @@ class StopWatch:
         self.hotbar = hotbar
         self.display = self.hotbar.display
 
-        self.x = self.hotbar.x + self.hotbar.w / 10
+        self.x = self.hotbar.x + self.hotbar.w / 7
         self.y = self.hotbar.y + self.hotbar.h / 2.5
 
         self.text = custom_text.Custom_text(self.display, self.x, self.y, '', text_color='white')

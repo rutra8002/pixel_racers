@@ -16,7 +16,7 @@ from jeff_the_objects import stacked_sprite
 
 
 class Car:
-    def __init__(self, display, coordinates, rotation, isPlayer, model):
+    def __init__(self, display, coordinates, rotation, isPlayer, model, temp_car3d_height=None):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
@@ -26,6 +26,8 @@ class Car:
         self.WASD_steering = False  # For debug only
         self.collision_draw = True
         self.model = model
+        self.temp_car3d_height = temp_car3d_height
+
 
         self.damping = 0.7
 
@@ -232,15 +234,24 @@ class Car:
         if model == 1:
             self.num_of_sprites = 9
             self.img_size = (16, 16)
-            self.car3d_height = 2.5
+            if self.temp_car3d_height == None:
+                self.car3d_height = 2.5
+            else:
+                self.car3d_height = self.temp_car3d_height
         elif model == 2:
             self.num_of_sprites = 11
             self.img_size = (4, 18)
-            self.car3d_height = 3
+            if self.temp_car3d_height == None:
+                self.car3d_height = 3
+            else:
+                self.car3d_height = self.temp_car3d_height
         elif model == 3:
             self.num_of_sprites = 13
             self.img_size = (15, 34)
-            self.car3d_height = 1.5
+            if self.temp_car3d_height == None:
+                self.car3d_height = 1.5
+            else:
+                self.car3d_height = self.temp_car3d_height
 
     def render(self):
         self.center = self.rect.center
@@ -276,7 +287,6 @@ class Car:
                 self.nitrogen.start()
         elif self.nitrogen.active:
             self.nitrogen.stop()
-
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.collision_render(self.display.mapMask, 0, 0)
@@ -366,7 +376,135 @@ class Car:
             if hasattr(self, 'debug_texts'):
                 for text_obj in self.debug_texts:
                     text_obj.hidden = True
+    def render_model(self):
+        self.center = self.rect.center
+        if self.inviFlicker:
+            pygame.draw.circle(self.display.screen, (102, 100, 100), self.center, 25)
+        # self.display.screen.blit(self.mask_image, self.rect)
 
+        self.mask_image = self.car_mask.to_surface()
+        # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
+        # self.display.screen.blit(self.newImg, self.rect)
+        self.car3d_sprite.render(self.display.screen, (self.x, self.y))
+
+    def change_model(self, model):
+        self.model = model
+        if self.model == 1:
+            self.image = images.car3d
+            self.set_3d_parameters(self.model)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
+                                                             self.car3d_height)
+            self.backDifference = 0.65
+            self.mass = 1
+            self.nitroPower = 0.4 * self.display.game.calibration
+
+            self.tireAmount = 4
+            self.deadTires = 0
+            self.tireDamage = 0.09
+
+            self.normalAcceleration = 0.4 * self.display.game.calibration
+            self.oilAcceleration = 0 * self.display.game.calibration
+            self.iceAcceleration = 0.1 * self.display.game.calibration
+
+            self.normalRotationSpeed = 0.03 * self.display.game.calibration
+            self.gravelRotationSpeed = 0.018 * self.display.game.calibration
+
+            self.normalMaxSpeed = 12 * self.display.game.calibration
+            self.gravelMaxSpeed = 3 * self.display.game.calibration
+            self.iceMaxSpeed = 25 * self.display.game.calibration
+
+            self.normalFriction = 0.08 * self.display.game.calibration
+            self.iceFriction = 0.02 * self.display.game.calibration
+            self.oilFriction = 0 * self.display.game.calibration
+        #tank(not literally) /offroad:
+        elif self.model == 2:
+            self.image = images.bike
+            self.set_3d_parameters(self.model)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
+            self.backDifference = 0.7
+            self.mass = 1.5
+            self.nitroPower = 0.35 * self.display.game.calibration
+            self.tireAmount = 4
+            self.deadTires = 0
+            self.tireDamage = 0.06
+
+            self.normalAcceleration = 0.4 * self.display.game.calibration
+            self.oilAcceleration = 0 * self.display.game.calibration
+            self.iceAcceleration = 0.12 * self.display.game.calibration
+
+            self.normalRotationSpeed = 0.022 * self.display.game.calibration
+            self.gravelRotationSpeed = 0.020 * self.display.game.calibration
+
+            self.normalMaxSpeed = 11 * self.display.game.calibration
+            self.gravelMaxSpeed = 5 * self.display.game.calibration
+            self.iceMaxSpeed = 23 * self.display.game.calibration
+
+            self.normalFriction = 0.1 * self.display.game.calibration
+            self.iceFriction = 0.03 * self.display.game.calibration
+            self.oilFriction = 0 * self.display.game.calibration
+        #accelerator:
+        elif self.model == 3:
+            self.image = images.police
+            self.set_3d_parameters(self.model)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
+            self.backDifference = 0.65
+            self.mass = 0.8
+            self.nitroPower = 0.5 * self.display.game.calibration
+            self.tireAmount = 3
+            self.deadTires = 0
+            self.tireDamage = 0.15
+
+            self.normalAcceleration = 0.8 * self.display.game.calibration
+            self.oilAcceleration = 0 * self.display.game.calibration
+            self.iceAcceleration = 0.2 * self.display.game.calibration
+
+            self.normalRotationSpeed = 0.032 * self.display.game.calibration
+            self.gravelRotationSpeed = 0.02 * self.display.game.calibration
+
+            self.normalMaxSpeed = 10 * self.display.game.calibration
+            self.gravelMaxSpeed = 2.5 * self.display.game.calibration
+            self.iceMaxSpeed = 20 * self.display.game.calibration
+
+            self.normalFriction = 0.08 * self.display.game.calibration
+            self.iceFriction = 0.02 * self.display.game.calibration
+            self.oilFriction = 0 * self.display.game.calibration
+        #mater:
+        elif self.model == 4:
+            self.backDifference = 1.4
+            self.mass = 1.1
+            self.nitroPower = 0.3 * self.display.game.calibration
+            self.tireAmount = 4
+            self.deadTires = 0
+            self.tireDamage = 0.08
+
+            self.normalAcceleration = 0.39 * self.display.game.calibration
+            self.oilAcceleration = 0 * self.display.game.calibration
+            self.iceAcceleration = 0.09 * self.display.game.calibration
+
+            self.normalRotationSpeed = 0.025 * self.display.game.calibration
+            self.gravelRotationSpeed = 0.018 * self.display.game.calibration
+
+            self.normalMaxSpeed = 14 * self.display.game.calibration
+            self.gravelMaxSpeed = 4 * self.display.game.calibration
+            self.iceMaxSpeed = 25 * self.display.game.calibration
+
+            self.normalFriction = 0.14 * self.display.game.calibration
+            self.iceFriction = 0.03 * self.display.game.calibration
+            self.oilFriction = 0 * self.display.game.calibration
+
+
+        back_wheel_offset = self.playerHeight / 2
+        angle_rad = lolino.radians(-self.rotation)
+        back_wheel_x_offset = lolino.cos(angle_rad) * back_wheel_offset
+        back_wheel_y_offset = lolino.sin(angle_rad) * back_wheel_offset
+
+        back_wheel1_x = self.x - back_wheel_x_offset - lolino.sin(angle_rad) * (self.playerWidth / 2)
+        back_wheel1_y = self.y - back_wheel_y_offset + lolino.cos(angle_rad) * (self.playerWidth / 2)
+        back_wheel2_x = self.x - back_wheel_x_offset + lolino.sin(angle_rad) * (self.playerWidth / 2)
+        back_wheel2_y = self.y - back_wheel_y_offset - lolino.cos(angle_rad) * (self.playerWidth / 2)
+
+        self.backwheel1_pgen.edit(back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp)
+        self.backwheel2_pgen.edit(back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp)
     def events(self, event):
         pass
 

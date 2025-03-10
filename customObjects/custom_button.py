@@ -22,7 +22,7 @@ class Button:  # A button class
         self.text = text
         if self.text != None:  # if there is text it's put on the button
             self.text = custom_text.Custom_text(self.display, self.x + self.width / 2, self.y + self.height / 2, text, font=None,
-                                   font_height=int(self.height // 2), text_color=text_color,)
+                                   font_height=int(self.height // 3), text_color=text_color,)
 
         self.outline_color = outline_color
         self.outline_width = outline_width
@@ -77,6 +77,20 @@ class Button:  # A button class
             elif self.action == 'new_map':
                 self.display.game.displays['map_display'].reset_map()
                 self.display.game.change_display('map_display')
+
+            elif self.action == 'change_vehicle':
+                self.display.game.change_display('change_vehicle')
+
+            elif self.action == 'move_selected_car_to_left':
+                self.display.selected_car_model -= 1
+
+            elif self.action == 'move_selected_car_to_right':
+                self.display.selected_car_model += 1
+
+            elif self.action == 'select_car':
+                self.display.game.player_model = self.display.selected_car_model
+                self.display.game.update_player_model()
+                self.display.game.change_display('main_menu_display')
 
             elif 'edit_map_titled_' in self.action:
                 with open(f"{self.display.game.map_dir}/{self.action.removeprefix('edit_map_titled_')}.json", 'r') as f:
