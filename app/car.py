@@ -747,6 +747,8 @@ class Car:
         return a
 
     def check_if_sideways(self, dire):
+        if self.model == 3:
+            return 1
         if dire >= 360:
             dire -= 360  # Wrap around if the direction is greater than 360
 
