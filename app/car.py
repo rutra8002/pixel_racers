@@ -282,10 +282,12 @@ class Car:
         if self.boost and not self.WASD_steering:
             nitro_x = self.x - back_wheel_x_offset
             nitro_y = self.y - back_wheel_y_offset
-            if self.nitrogen.active:
-                self.nitrogen.edit(nitro_x, nitro_y, self.velLeft, self.velUp)
-            else:
-                self.nitrogen.start()
+            if self.nitroAmount > 0:
+                if self.nitrogen.active:
+                    self.nitrogen.edit(nitro_x, nitro_y, self.velLeft, self.velUp)
+                else:
+                    self.nitrogen.start()
+                    self.nitrogen.edit(nitro_x, nitro_y, self.velLeft, self.velUp)
         elif self.nitrogen.active:
             self.nitrogen.stop()
 
@@ -509,7 +511,7 @@ class Car:
         pass
 
     def movement(self):
-        global dir
+        global dire
         self.prevPos = [self.x, self.y]
         self.prevRotation = self.rotation
         self.x, self.y = self.next_x, self.next_y
@@ -563,14 +565,15 @@ class Car:
             self.velUp += b * self.display.game.delta_time * self.display.game.calibration
 
         magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
+        dire = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
+
         if magnitude > self.currentFriction:
             modifier = magnitude / 200
             if modifier > 2:
                 modifier = 2
             if modifier < 0.2:
                 modifier = 0.2
-            dir = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
-            self.goingForward = self.check_if_forward(dir)
+            self.goingForward = self.check_if_forward(dire)
             if self.goingForward:
                 self.next_rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
             else:
@@ -579,7 +582,7 @@ class Car:
             self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
             # elif self.velLeft == c and self.velUp == d:
         if self.velLeft != 0 or self.velUp != 0:
-            s = self.check_if_sideways(dir)
+            s = self.check_if_sideways(dire)
             self.slow_down(self.currentFriction * s / magnitude / (self.tireHealth ** 0.2))
 
 
@@ -728,16 +731,16 @@ class Car:
                     a = True
         return a
 
-    def check_if_sideways(self, direction):
-        if direction >= 360:
-            direction -= 360  # Wrap around if the direction is greater than 360
+    def check_if_sideways(self, dire):
+        if dire >= 360:
+            dire -= 360  # Wrap around if the direction is greater than 360
 
         # Normalize the player's current rotation
         r = self.normalize_angle(self.rotation)
 
         # Calculate the forward and backward angle differences
-        forward_diff = (direction - r) % 360  # Positive difference (forward)
-        backward_diff = (r - direction) % 360  # Positive difference (backward)
+        forward_diff = (dire - r) % 360  # Positive difference (forward)
+        backward_diff = (r - dire) % 360  # Positive difference (backward)
 
         # Ensure the angle differences are in the correct range
         if forward_diff > 180:  # Adjust to make sure it's in the [0, 180) range
@@ -1108,6 +1111,8 @@ class Car:
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.prickWheels()
-
-
+                    elif tile == 6:
+                        if self.deadTires > 0:
+                            self.display.game.sound_manager.play_sound('Pitstop')
+                            self.deadTires = 0
 

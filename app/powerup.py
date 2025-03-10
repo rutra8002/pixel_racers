@@ -18,7 +18,7 @@ class Powerup:
         self.trueX *= self.display.block_width
         self.trueY *= self.display.block_height
         self.angle = 0
-        self.sprite = stacked_sprite.StackedSprite(self.display, images.ball, 8, (8, 8), 4)
+        self.sprite = stacked_sprite.StackedSprite(self.display, images.ball, 15, (3, 11), 2)
         self.mask = self.sprite.mask
         self.rect = self.sprite.rect
 

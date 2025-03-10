@@ -28,6 +28,7 @@ class basic_display:
         self.wall_color = (255, 255, 255)
         self.ice_color = (63, 208, 212)
         self.spike_color = (255, 0, 0)
+        self.pitstop_color = (50, 50, 200)
 
         self.color_map = {
             0: self.asphalt_color,
@@ -36,6 +37,7 @@ class basic_display:
             3: self.gravel_color,
             4: self.ice_color,
             5: self.spike_color,
+            6: self.pitstop_color,
             'c': (0, 255, 0),
             'm': (255, 0, 0)
         }
@@ -135,6 +137,8 @@ class game_display(basic_display):
                     color = self.ice_color
                 elif self.map[y][x] == 5:
                     color = self.spike_color
+                elif self.map[y][x] == 6:
+                    color = self.pitstop_color
                 else:
                     color = self.asphalt_color
                 # Add randomness to the color
@@ -497,6 +501,8 @@ class map_display(basic_display):
                 self.tool = 4
             elif event.key == pygame.K_5:
                 self.tool = 5
+            elif event.key == pygame.K_6:
+                self.tool = 6
             elif event.key == pygame.K_p:
                 self.tool = 'p'
             elif event.key == pygame.K_b:
@@ -1096,7 +1102,7 @@ class change_vehicle(basic_display):
             self.selected_car_model = self.amount_of_car
         for i, car in enumerate(self.small_cars):
             if i == self.selected_car_model - 1:
-                self.large_cars[i].rotation -= 0.25 * (2 / 3)
+                self.large_cars[i].rotation -= 80 * self.game.delta_time
                 self.large_cars[i].car_mask = self.large_cars[i].car3d_sprite.update_mask_rotation(int(self.large_cars[i].rotation))
                 self.large_cars[i].render_model()
             else:
