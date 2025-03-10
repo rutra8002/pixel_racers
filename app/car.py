@@ -280,10 +280,12 @@ class Car:
         if self.boost and not self.WASD_steering:
             nitro_x = self.x - back_wheel_x_offset
             nitro_y = self.y - back_wheel_y_offset
-            if self.nitrogen.active:
-                self.nitrogen.edit(nitro_x, nitro_y, self.velLeft, self.velUp)
-            else:
-                self.nitrogen.start()
+            if self.nitroAmount > 0:
+                if self.nitrogen.active:
+                    self.nitrogen.edit(nitro_x, nitro_y, self.velLeft, self.velUp)
+                else:
+                    self.nitrogen.start()
+                    self.nitrogen.edit(nitro_x, nitro_y, self.velLeft, self.velUp)
         elif self.nitrogen.active:
             self.nitrogen.stop()
 
