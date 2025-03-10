@@ -508,7 +508,7 @@ class Car:
         pass
 
     def movement(self):
-        global dir
+        global dire
         self.prevPos = [self.x, self.y]
         self.prevRotation = self.rotation
         self.x, self.y = self.next_x, self.next_y
@@ -561,14 +561,15 @@ class Car:
             self.velUp += b * self.display.game.delta_time * self.display.game.calibration
 
         magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
+        dire = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
+
         if magnitude > self.currentFriction:
             modifier = magnitude / 200
             if modifier > 2:
                 modifier = 2
             if modifier < 0.2:
                 modifier = 0.2
-            dir = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
-            self.goingForward = self.check_if_forward(dir)
+            self.goingForward = self.check_if_forward(dire)
             if self.goingForward:
                 self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
             else:
@@ -577,7 +578,7 @@ class Car:
             self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
             # elif self.velLeft == c and self.velUp == d:
         if self.velLeft != 0 or self.velUp != 0:
-            s = self.check_if_sideways(dir)
+            s = self.check_if_sideways(dire)
             self.slow_down(self.currentFriction * s / magnitude / (self.tireHealth ** 0.2))
 
 
@@ -726,16 +727,16 @@ class Car:
                     a = True
         return a
 
-    def check_if_sideways(self, direction):
-        if direction >= 360:
-            direction -= 360  # Wrap around if the direction is greater than 360
+    def check_if_sideways(self, dire):
+        if dire >= 360:
+            dire -= 360  # Wrap around if the direction is greater than 360
 
         # Normalize the player's current rotation
         r = self.normalize_angle(self.rotation)
 
         # Calculate the forward and backward angle differences
-        forward_diff = (direction - r) % 360  # Positive difference (forward)
-        backward_diff = (r - direction) % 360  # Positive difference (backward)
+        forward_diff = (dire - r) % 360  # Positive difference (forward)
+        backward_diff = (r - dire) % 360  # Positive difference (backward)
 
         # Ensure the angle differences are in the correct range
         if forward_diff > 180:  # Adjust to make sure it's in the [0, 180) range
