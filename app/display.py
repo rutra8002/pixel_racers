@@ -1096,7 +1096,7 @@ class change_vehicle(basic_display):
             self.selected_car_model = self.amount_of_car
         for i, car in enumerate(self.small_cars):
             if i == self.selected_car_model - 1:
-                self.large_cars[i].rotation -= 0.25 * (2 / 3)
+                self.large_cars[i].rotation -= 80 * self.game.delta_time
                 self.large_cars[i].car_mask = self.large_cars[i].car3d_sprite.update_mask_rotation(int(self.large_cars[i].rotation))
                 self.large_cars[i].render_model()
             else:
