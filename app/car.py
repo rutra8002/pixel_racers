@@ -155,12 +155,13 @@ class Car:
 
 
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
-        self.bumpingCooldown = 0.3
-        self.wallCollisionCooldown = 0.1
+        self.bumpingCooldown = 0.03
+        self.wallCollisionCooldown = 0.03
         self.wallCollTime = 0
 
         self.x, self.y = coordinates[0], coordinates[1]
         self.next_x, self.next_y = coordinates[0], coordinates[1]
+
         self.delta_x, self.delta_y = 0, 0
         self.archiveCords = [self.x, self.y]
         self.prevPos = [self.x, self.y]
@@ -184,6 +185,7 @@ class Car:
         self.invincibility = 0
         self.inviFlicker = False
         self.rotation = rotation
+        self.next_rotation = self.rotation
         self.recentCollisions = {}
         self.goingForward = True
         # self.wall = False
@@ -292,16 +294,15 @@ class Car:
 
         for c in self.display.cars:
             if not self == c:
-                if self.collision_detection(c.car_mask, c.rect.topleft[0], c.rect.topleft[1]):
-                    self.collision_render(c.car_mask, c.rect.topleft[0], c.rect.topleft[1])
-                    self.block(c.rect.topleft[0], c.rect.topleft[1])
-                    try:
-                        if self.recentCollisions[c] == 0:
-                            self.handle_bumping(c)
-                            self.recentCollisions[c] = time.time()
-                            c.recentCollisions[self] = time.time()
-                    except:
-                        pass
+                if self.collision_detection(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y):
+                    self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
+                    self.block(c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
+                    if self.recentCollisions[c] == 0:
+                        self.velAng = 0
+                        self.handle_bumping(c)
+                        self.next_x, self.next_y = self.x, self.y
+                        self.recentCollisions[c] = time.time()
+                        c.recentCollisions[self] = time.time()
 
         for p in self.display.powerups:
             if self.collision_detection(p.mask, p.rect.topleft[0], p.rect.topleft[1]):
@@ -512,6 +513,7 @@ class Car:
         self.prevPos = [self.x, self.y]
         self.prevRotation = self.rotation
         self.x, self.y = self.next_x, self.next_y
+        self.rotation = self.next_rotation
         c, d = self.velLeft, self.velUp
         if self.w and not self.in_oil:
             if self.WASD_steering:
@@ -551,7 +553,7 @@ class Car:
         self.steer_rotation = max(self.min_steer_rotation, min(self.steer_rotation, self.max_steer_rotation))
 
         if self.WASD_steering:
-            self.rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed * 2
+            self.next_rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed * 2
 
         if self.boost and self.nitroAmount >= 1 and not self.WASD_steering:
             if not self.infiNitro:
@@ -570,9 +572,9 @@ class Car:
             dir = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
             self.goingForward = self.check_if_forward(dir)
             if self.goingForward:
-                self.rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
+                self.next_rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
             else:
-                self.rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
+                self.next_rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
         if magnitude > self.currentMaxSpeed:
             self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
             # elif self.velLeft == c and self.velUp == d:
@@ -619,7 +621,7 @@ class Car:
         self.next_x -= self.velLeft * self.display.game.delta_time
         self.next_y -= self.velUp * self.display.game.delta_time
         self.delta_x, self.delta_y = self.next_x - self.x, self.next_y - self.y
-        self.rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
+        self.next_rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
         self.velAng *= self.damping
 
     def use_powerup(self):
@@ -654,9 +656,9 @@ class Car:
 
     def get_acceleration_with_trigonometry(self, direction, acc):
         if direction == 1:
-            r = lolino.radians(self.rotation)
+            r = lolino.radians(self.next_rotation)
         else:
-            r = lolino.radians(self.rotation - 180)
+            r = lolino.radians(self.next_rotation - 180)
 
         x = lolino.cos(r)
         y = lolino.sin(r)
@@ -758,8 +760,8 @@ class Car:
         return angle
 
     def block(self, x, y):
-        dx = x - self.rect.centerx
-        dy = y - self.rect.centery
+        dx = x - self.rect.centerx + self.delta_x
+        dy = y - self.rect.centery + self.delta_y
         distance = lolino.sqrt(dx ** 2 + dy ** 2)
         if distance == 0:
             return
@@ -769,11 +771,11 @@ class Car:
 
         # Move car back along collision normal
         separation = 2  # Adjust this value based on penetration depth if available
-        self.x -= nx * separation
-        self.y -= ny * separation
+        self.next_x -= nx * separation
+        self.next_y -= ny * separation
 
         # Reset rotation to prevent clipping
-        self.rotation = self.prevRotation
+        self.next_rotation = self.prevRotation
 
     # def get_penetration(self, mask, x, y):
     #     xs = 0
@@ -897,45 +899,45 @@ class Car:
             self.next_x = coords[0]
             self.next_y = coords[1]
 
-    def wall_separation(self, x, y):
-        dx = x - self.x + self.delta_x
-        dy = y - self.y + self.delta_y
-        distance = lolino.sqrt(dx ** 2 + dy ** 2)
-
-        if distance == 0:
-            return
-
-        sum_radii = (self.playerWidth / 2 + self.display.block_width / 2)
-        overlap = sum_radii - distance
-
-        if overlap > 0:
-            nx = dx / distance
-            ny = dy / distance
-
-            self.x -= nx * overlap
-            self.y -= ny * overlap
+    # def wall_separation(self, x, y):
+    #     dx = x - self.next_x + self.delta_x
+    #     dy = y - self.next_y + self.delta_y
+    #     distance = lolino.sqrt(dx ** 2 + dy ** 2)
+    #
+    #     if distance == 0:
+    #         return
+    #
+    #     sum_radii = (self.playerWidth / 2 + self.display.block_width / 2)
+    #     overlap = sum_radii - distance
+    #
+    #     if overlap > 0:
+    #         nx = dx / distance
+    #         ny = dy / distance
+    #
+    #         self.next_x -= nx * overlap
+    #         self.next_y -= ny * overlap
 
 
     def handle_bumping(self, other):
-        dx = other.x - self.x
-        dy = other.y - self.y
+        dx = other.next_x - self.next_x
+        dy = other.next_y - self.next_y
         distance = lolino.sqrt(dx ** 2 + dy ** 2)
         if distance == 0:
             return "GET OUT"
-
-        sum_radii = (self.playerWidth + other.playerWidth) / 2
-        overlap = sum_radii - distance
-        if overlap > 0:
-            # Normalize direction vector
-            nx = dx / distance
-            ny = dy / distance
-
-            # Separate the cars
-            separation = overlap * 0.5
-            self.x -= nx * separation
-            self.y -= ny * separation
-            other.x += nx * separation
-            other.y += ny * separation
+        #
+        # sum_radii = (self.playerWidth + other.playerWidth) / 2
+        # overlap = sum_radii - distance
+        # if overlap > 0:
+        #     # Normalize direction vector
+        #     nx = dx / distance
+        #     ny = dy / distance
+        #
+        #     # Separate the cars
+        #     separation = overlap * 0.5
+        #     self.x -= nx * separation
+        #     self.y -= ny * separation
+        #     other.x += nx * separation
+        #     other.y += ny * separation
 
 
         # coll_x, coll_y = self.get_coordinates(other.car_mask, other.rect.topleft[0], other.rect.topleft[1])
@@ -954,9 +956,9 @@ class Car:
         # omega_B = Lb / Ib
         # self.velAng = omega_A
         # other.velAng = omega_B
-        coll_x, coll_y = self.get_coordinates(other.car_mask, other.rect.topleft[0], other.rect.topleft[1])
-        r_self = (coll_x - self.x, coll_y - self.y)
-        r_other = (coll_x - other.x, coll_y - other.y)
+        coll_x, coll_y = self.get_coordinates(other.car_mask, other.rect.topleft[0] + other.delta_x, other.rect.topleft[1] + other.delta_y)
+        r_self = (coll_x - self.next_x, coll_y - self.next_y)
+        r_other = (coll_x - other.next_x, coll_y - other.next_y)
         delta_px = (self.mass * self.velLeft) - (other.mass * other.velLeft)
         delta_py = (self.mass * self.velUp) - (other.mass * other.velUp)
         La = r_self[0] * delta_py - r_self[1] * delta_px
@@ -971,7 +973,7 @@ class Car:
 
         # self.rotation += lolino.degrees(omega_A * self.display.game.delta_time)
         # other.rotation += lolino.degrees(omega_B * self.display.game.delta_time)
-        n = ((other.x - self.x) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2), (other.y - self.y) / lolino.sqrt((other.x - self.x)**2 + (other.y - self.y)**2))
+        n = ((other.next_x - self.next_x) / lolino.sqrt((other.next_x - self.next_x)**2 + (other.next_y - self.next_y)**2), (other.next_y - self.next_y) / lolino.sqrt((other.next_x - self.next_x)**2 + (other.next_y - self.next_y)**2))
         t = (-n[1], n[0])
         v1n = self.velLeft * n[0] + self.velUp * n[1]
         v1t = self.velLeft * t[0] + self.velUp * t[1]
@@ -1000,20 +1002,20 @@ class Car:
     def get_coordinates(self, mask, x, y):
         xs = []
         xy = []
-        offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
+        offset = (x - self.rect.topleft[0] + self.delta_x, y - self.rect.topleft[1] + self.delta_y)
         sharedMask = self.car_mask.overlap_mask(mask, offset)
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
         for x in range(sharedSurface.get_size()[0]):
             for y in range(sharedSurface.get_size()[1]):
                 if sharedSurface.get_at((x, y))[1] == 200:
-                    xs.append(x + self.rect.topleft[0])
-                    xy.append(y + self.rect.topleft[1])
+                    xs.append(x + self.rect.topleft[0] + self.delta_x)
+                    xy.append(y + self.rect.topleft[1] + self.delta_y)
         return sum(xs) // len(xs), sum(xy) // len(xy)
 
     def collision_render(self, mask, x, y):
 
-        offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
+        offset = (x - self.rect.topleft[0] + self.delta_x, y - self.rect.topleft[1] + self.delta_y)
         sharedMask = self.car_mask.overlap_mask(mask, offset)
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
@@ -1026,7 +1028,7 @@ class Car:
             self.display.screen.blit(blue_surface, (0, 0))
 
     def check_color(self, mask, x, y):
-        offset = (x + self.delta_x - self.rect.topleft[0], y + self.delta_y- self.rect.topleft[1])
+        offset = (x + self.delta_x - self.rect.topleft[0], y + self.delta_y - self.rect.topleft[1])
         sharedMask = self.car_mask.overlap_mask(mask, offset)
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
@@ -1076,11 +1078,17 @@ class Car:
                                 self.display.game.sound_manager.play_sound('bounce')
                                 self.strength = False
                             self.wallCollTime = time.time()
+                            self.velAng = 0
                             self.wall_collision(sharedMask, center_x, center_y)
-                            self.next_x = self.x
-                            self.next_y = self.y
-                        else:
-                            self.wall_separation(center_x, center_y)
+                            self.next_x, self.next_y = self.x, self.y
+                            # if self.velUp > 0:
+                            #     self.next_y = self.y + 1
+                            # elif self.velUp < 0:
+                            #     self.next_y = self.y - 1
+                            # if self.velLeft > 0:
+                            #     self.next_x = self.x + 1
+                            # elif self.velLeft < 0:
+                            #     self.next_x = self.x - 1
 
                     elif tile == 3:
                         self.currentMaxSpeed = self.gravelMaxSpeed
