@@ -1048,7 +1048,7 @@ class change_vehicle(basic_display):
         self.small_cars = []
         self.selected_car_model = 1
         for _ in range(4):
-            large_car = car.Car(self, (self.game.width/2, self.game.height/2), 0, False, _ + 1, temp_car3d_height=10)
+            large_car = car.Car(self, (self.game.width/2, self.game.height/2), 0, False, _ + 1, temp_car3d_height=7)
             small_car = car.Car(self, (500, self.game.height/2), 0, False, _ + 1)
 
             self.large_cars.append(large_car)
