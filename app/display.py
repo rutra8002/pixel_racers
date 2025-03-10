@@ -96,7 +96,7 @@ class game_display(basic_display):
 
 
 
-        self.p = player.Player(self, self.player_position, self.player_rotation, 2)
+        self.p = player.Player(self, self.player_position, self.player_rotation, self.game.player_model)
 
         for e in self.enemies:
             enemy.Enemy(self, e[0], e[1], 1)
@@ -248,6 +248,9 @@ class game_display(basic_display):
             pupo.update()
 
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
+
+    def update_player_model(self, model):
+        self.p.change_model(model)
 
 class map_display(basic_display):
     def __init__(self, game):
@@ -896,7 +899,7 @@ class level_selector(basic_display):
         levels = self.game.get_level_names()
         self.levels = {}
         for i, lvl in enumerate(levels):
-            self.game.displays[lvl] = game_display(self.game, lvl)
+            self.game.displays[lvl] = game_display(self.game, lvl )
             if i - self.currently_selected == 0:
                 sur = pygame.transform.scale(self.game.displays[lvl].map_surface, (self.selected_surface_width, self.selected_surface_height))
             else:
@@ -1006,4 +1009,71 @@ class map_maker_menu(basic_display):
 class change_vehicle(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
+        self.particle_system = ParticleSystem()
+        self.cars = []
+        self.large_cars = []
+        self.small_cars = []
+        self.selected_car_model = 1
+        for _ in range(3):
+            large_car = car.Car(self, (self.game.width/2, self.game.height/2), 0, False, _ + 1, temp_car3d_height=10)
+            small_car = car.Car(self, (500, self.game.height/2), 0, False, _ + 1)
+
+            self.large_cars.append(large_car)
+            self.small_cars.append(small_car)
+            self.cars.remove(large_car)
+            self.cars.remove(small_car)
+            self.objects.remove(large_car)
+            self.objects.remove(small_car)
+
+        self.amount_of_car = len(self.large_cars)
+
+        self.button_width_modifier = 45.5 / 256
+        self.button_heigh_modifier = 10.4 / 144
+        self.button_width = self.game.width * self.button_width_modifier
+        self.button_height = self.game.height * self.button_heigh_modifier
+
+        custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5, 'SELECT A VEHICLE', text_color='white',
+                                font_height=int(self.game.height * (19 / 216)))
+
+        custom_button.Button(self, 'move_selected_car_to_left', self.game.width / 2 - self.button_width - 7.5,
+                             (self.game.height - 150),
+                             self.button_width, self.button_height, text='<-', border_radius=0, color=(26, 26, 26),
+                             text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+
+        custom_button.Button(self, 'move_selected_car_to_right', self.game.width / 2 + 7.5,
+                             (self.game.height - 150),
+                             self.button_width, self.button_height, text='->', border_radius=0, color=(26, 26, 26),
+                             text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+
+        custom_button.Button(self, 'select_car', self.game.width / 2 + 7.5, self.game.height - 150 - self.button_height - 15, self.button_width,
+                             self.button_height, text='Select', border_radius=0, color=(26, 26, 26),
+                             text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'to_main_menu', self.game.width / 2 - self.button_width - 7.5,
+                             self.game.height - 150 - self.button_height - 15,
+                             self.button_width, self.button_height, text='BACK', border_radius=0, color=(26, 26, 26),
+                             text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+
+    def mainloop(self):
+        pass
+
+    def render(self):
+        if self.selected_car_model < 1:
+            self.selected_car_model = 1
+        elif self.selected_car_model > self.amount_of_car:
+            self.selected_car_model = self.amount_of_car
+        for i, car in enumerate(self.small_cars):
+            if i == self.selected_car_model - 1:
+                self.large_cars[i].rotation += 0.25 * (2 / 3)
+                self.large_cars[i].car_mask = self.large_cars[i].car3d_sprite.update_mask_rotation(int(self.large_cars[i].rotation))
+                self.large_cars[i].render_model()
+            else:
+                car.x = self.game.width/2 + (i - self.selected_car_model+1)*250
+
+                car.render_model()
+
+
+        for obj in self.objects:
+            obj.render()
+
+
 
