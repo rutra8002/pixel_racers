@@ -82,6 +82,8 @@ class Slider:
                 self.display.game.debug_items[2].update_text(f'FPS cap: {self.display.game.fps}')
             else:  # volume type
                 self.display.game.sound_manager.set_music_volume(self.current_value / 100)
+                for sound in self.display.game.sound_manager.sounds.values():
+                    sound.set_volume(self.current_value / 100)
 
     def delete(self):
         self.display.objects_in_memory -= 1
