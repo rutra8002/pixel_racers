@@ -210,7 +210,7 @@ class Car:
             self.collision_render(self.display.mapMask, 0, 0)
 
         for c in self.display.cars:
-            if not self == c:
+            if not self == c and c in self.recentCollisions:
                 if self.collision_detection(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y):
                     self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
                     self.block(c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
