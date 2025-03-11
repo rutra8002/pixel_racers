@@ -1,5 +1,6 @@
 import random
 from operator import invert
+import string
 
 import pygame
 import math as lolino
@@ -47,6 +48,7 @@ class Car:
         self.strength = False # następne zderzenie z autem nie daje tobie knockbacku. Przy zderzeniu ze ścianą znika i nic nie robi
         self.infiNitro = True
 
+        self.player_name = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
         #balanced:
         if self.model == 1:
