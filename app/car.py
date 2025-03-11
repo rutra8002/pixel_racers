@@ -17,7 +17,7 @@ from jeff_the_objects import stacked_sprite
 
 
 class Car:
-    def __init__(self, display, coordinates, rotation, isPlayer, model, temp_car3d_height=None):
+    def __init__(self, display, coordinates, rotation, isPlayer, model, car3d_height_factor=None):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
@@ -29,7 +29,7 @@ class Car:
         self.wall = False
         self.barrier = False
         self.model = model
-        self.temp_car3d_height = temp_car3d_height
+        self.car3d_height_factor = car3d_height_factor
 
 
 
@@ -141,45 +141,45 @@ class Car:
         if model == 1:
             self.num_of_sprites = 9
             self.img_size = (16, 16)
-            if self.temp_car3d_height == None:
+            if self.car3d_height_factor == None:
                 self.car3d_height = 2.5
             else:
-                self.car3d_height = self.temp_car3d_height
+                self.car3d_height = 2.5 *self.car3d_height_factor
         elif model == 2:
             self.num_of_sprites = 14
             self.img_size = (15, 32)
-            if self.temp_car3d_height == None:
+            if self.car3d_height_factor == None:
                 self.car3d_height = 1.5
             else:
-                self.car3d_height = self.temp_car3d_height
+                self.car3d_height = 1.5 * self.car3d_height_factor
         elif model == 3:
             self.num_of_sprites = 13
             self.img_size = (15, 34)
-            if self.temp_car3d_height == None:
+            if self.car3d_height_factor == None:
                 self.car3d_height = 1.5
             else:
-                self.car3d_height = self.temp_car3d_height
+                self.car3d_height = 1.5 * self.car3d_height_factor
         elif model == 4:
             self.num_of_sprites = 11
             self.img_size = (4, 18)
-            if self.temp_car3d_height == None:
+            if self.car3d_height_factor == None:
                 self.car3d_height = 3
             else:
-                self.car3d_height = self.temp_car3d_height
+                self.car3d_height = 3 *self.car3d_height_factor
         elif model == 5:
             self.num_of_sprites = 6
             self.img_size = (33, 29)
-            if self.temp_car3d_height == None:
+            if self.car3d_height_factor == None:
                 self.car3d_height = 2
             else:
-                self.car3d_height = self.temp_car3d_height
+                self.car3d_height = 2 *self.car3d_height_factor
         elif model == 6:
             self.num_of_sprites = 5
             self.img_size=(10, 20)
-            if self.temp_car3d_height == None:
+            if self.car3d_height_factor == None:
                 self.car3d_height = 2.5
             else:
-                self.car3d_height = self.temp_car3d_height
+                self.car3d_height = 2.5 * self.car3d_height_factor
 
     def render(self):
         self.center = self.rect.center
