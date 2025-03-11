@@ -829,6 +829,33 @@ class settings_display(basic_display):
         self.fps_text = custom_text.Custom_text(self, self.game.width/4, self.game.height/2 - 50, f'FPS: {current_fps}', text_color='white', font_height=30)
         self.fps_slider = Slider(self, 'fps_slider', self.game.width/4 - 100, self.game.height/2, 200, 20, 30, 144, current_fps)
 
+        # Get current volume from first sound (if exists) or use default
+        current_volume = int(self.game.sound_manager.sounds[
+                                 "engine"].get_volume() * 100 if "engine" in self.game.sound_manager.sounds else 50)
+
+        # Add volume slider and text (positioned below FPS controls)
+        self.volume_text = custom_text.Custom_text(
+            self,
+            self.game.width / 4,
+            self.game.height / 2 + 100,
+            f'Volume: {current_volume}%',
+            text_color='white',
+            font_height=30
+        )
+
+        self.volume_slider = Slider(
+            self,
+            'volume_slider',
+            self.game.width / 4 - 100,
+            self.game.height / 2 + 150,
+            200,
+            20,
+            0,
+            100,
+            current_volume,
+            slider_type="volume"
+        )
+
         # Add resolution options
         self.resolutions = pygame.display.list_modes()
         self.current_resolution = (self.game.width, self.game.height)
@@ -850,6 +877,7 @@ class settings_display(basic_display):
 
         self.fps_text.update_text(f'FPS: {self.game.fps}')
         self.resolution_text.update_text(f'Resolution: {self.current_resolution[0]}x{self.current_resolution[1]}')
+        self.volume_text.update_text(f'Volume: {int(self.volume_slider.current_value)}%')
 
         for obj in self.objects:
             obj.render()
