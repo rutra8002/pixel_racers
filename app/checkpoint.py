@@ -24,8 +24,7 @@ class checkpoint: # A checkpoint is a line with 2 points
             if car.rect.clipline(self.start_pos, self.end_pos):
                 self.color = (0, 0, 255)
                 player_name = car.player_name
-                if player_name not in self.display.leaderboard or self.i > self.display.leaderboard[player_name]:
-                    self.display.leaderboard[player_name] = self.i
+                self.display.leaderboard[player_name] = self.i
                 return True
         if self.i == 0:
             self.color = self.display.color_map['m']
