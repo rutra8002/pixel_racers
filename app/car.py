@@ -876,6 +876,150 @@ class Car:
         else:
             return False
 
+
+    # def get_coordinates(self, mask, x, y):
+    #     xs = []
+    #     xy = []
+    #     offset = (x - (self.rect.topleft[0] + self.delta_x), y - (self.rect.topleft[1] + self.delta_y))
+    #     sharedMask = self.car_mask.overlap_mask(mask, offset)
+    #     sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
+    #     sharedSurface.set_colorkey((0, 0, 0))
+    #     for x in range(sharedSurface.get_size()[0]):
+    #         for y in range(sharedSurface.get_size()[1]):
+    #             if sharedSurface.get_at((x, y))[1] == 200:
+    #                 xs.append(x + self.rect.topleft[0] + self.delta_x)
+    #                 xy.append(y + self.rect.topleft[1] + self.delta_y)
+    #     return sum(xs) // len(xs), sum(xy) // len(xy)
+
+    def detect_collision_area(self, mask, x, y):
+        xs, ys = [], []
+        offset = (x - (self.rect.topleft[0] + self.delta_x), y - (self.rect.topleft[1] + self.delta_y))
+        sharedMask = self.car_mask.overlap_mask(mask, offset)
+        sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
+        sharedSurface.set_colorkey((0, 0, 0))
+        for x in range(sharedSurface.get_width()):
+            for y in range(sharedSurface.get_height()):
+                if sharedSurface.get_at((x, y))[1] == 200:
+                    xs.append(x + self.rect.topleft[0] + self.delta_x)
+                    ys.append(y + self.rect.topleft[1] + self.delta_y)
+
+        if xs and ys:
+            center_x = sum(xs) // len(xs)
+            center_y = sum(ys) // len(ys)
+            return center_x, center_y
+        return None, None
+
+    def compute_wall_normal(self, center_x, center_y):
+        # grid = []
+        # for dy in range(-1, 2):
+        #     row = []
+        #     for dx in range(-1, 2):
+        #         check_x = int((center_x // self.display.block_width) + dx)
+        #         check_y = int((center_y // self.display.block_height) + dy)
+        #         if 0 <= check_y < len(self.display.map) and 0 <= check_x < len(self.display.map[0]):
+        #             row.append(self.display.map[check_y][check_x] == 1)  # True if wall, False otherwise
+        #         else:
+        #             row.append(False)
+        #     grid.append(row)
+        #
+        # # Check patterns (horizontal, vertical, diagonal walls)
+        # if grid[1][0] and grid[1][2]:
+        #     normal = (0, 1)  # Horizontal wall
+        #     print('horizontal')
+        # elif grid[0][1] and grid[2][1]:
+        #     normal = (1, 0)  # Vertical wall
+        #     print('vertical')
+        # elif grid[0][0] and grid[2][2]:
+        #     normal = (lolino.sqrt(2) / 2, lolino.sqrt(2) / 2)  # Diagonal ↘
+        #     print("Diagonal ↘")
+        # elif grid[0][2] and grid[2][0]:
+        #     normal = (lolino.sqrt(2) / 2, -lolino.sqrt(2) / 2)  # Diagonal ↙
+        #     print("Diagonal ↙")
+        # else:
+        #     normal = (0, 1)  # Default to horizontal if unclear
+        #     print("Default to horizontal")
+        #
+        # tangent = (-normal[1], normal[0])  # Perpendicular to normal
+        # return normal, tangent
+        width, height = self.display.block_width, self.display.block_height
+        grid_size = 5  # Expand detection area
+        offset = grid_size // 2
+
+        map_width = len(self.display.map[0])
+        map_height = len(self.display.map)
+        map_x = int(center_x // width)
+        map_y = int(center_y // height)
+
+        if map_x <= 0:
+            return (1, 0), (0, 1)
+        if map_x >= map_width - 1:
+            return (-1, 0), (0, 1)
+        if map_y <= 0:
+            return (0, 1), (1, 0)
+        if map_y >= map_height - 1:
+            return (0, -1), (1, 0)
+
+        total_x, total_y = 0, 0
+        count = 0
+
+        for dy in range(-offset, offset + 1):
+            for dx in range(-offset, offset + 1):
+                check_x = map_x + dx
+                check_y = map_y + dy
+
+                if 0 <= check_y < map_height and 0 <= check_x < map_width:
+                    if self.display.map[check_y][check_x] == 1:  # If wall
+                        total_x += dx
+                        total_y += dy
+                        count += 1
+
+        if count == 0:
+            return (0, 1), (-1, 0)  # Default fallback normal and tangent
+
+        avg_x = total_x / count
+        avg_y = total_y / count
+
+        normal_length = (avg_x ** 2 + avg_y ** 2) ** 0.5
+
+        if normal_length < 1e-5:
+            if abs(total_x) > abs(total_y):
+                normal = (1, 0) if total_x > 0 else (-1, 0)
+            else:
+                normal = (0, 1) if total_y > 0 else (0, -1)
+        else:
+            normal = (avg_x / normal_length, avg_y / normal_length)
+
+        tangent = (-normal[1], normal[0])
+
+        return normal, tangent
+    def improved_wall_collision(self, mask, x, y):
+        center_x, center_y = x, y
+        if center_x is None or center_y is None:
+            return
+
+        normal, tangent = self.compute_wall_normal(center_x, center_y)
+
+        v1n = self.velLeft * normal[0] + self.velUp * normal[1]
+        v1t = self.velLeft * tangent[0] + self.velUp * tangent[1]
+
+        if abs(v1n) > abs(v1t):
+            v1n_new = -v1n * 0.6
+        else:
+            v1n_new = -v1n * 0.15
+
+        self.velLeft = (v1n_new * normal[0] + v1t * tangent[0] * 0.7) * 0.9
+        self.velUp = (v1n_new * normal[1] + v1t * tangent[1] * 0.7) * 0.9
+
+        r = (self.next_x - center_x, self.next_y - center_y)
+        delta_px = self.mass * self.velLeft
+        delta_py = self.mass * self.velUp
+        L = r[0] * delta_py - r[1] * delta_px
+        d = (r[0] ** 2 + r[1] ** 2) ** 0.5
+        I = (1 / 12) * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2) + self.mass * d ** 2
+
+        self.velAng = -L / I
+
+
     def wall_collision(self, mask, x, y):
         dx = x - self.next_x
         dy = y - self.next_y
@@ -912,23 +1056,6 @@ class Car:
             self.next_x = coords[0]
             self.next_y = coords[1]
 
-    # def wall_separation(self, x, y):
-    #     dx = x - self.next_x + self.delta_x
-    #     dy = y - self.next_y + self.delta_y
-    #     distance = lolino.sqrt(dx ** 2 + dy ** 2)
-    #
-    #     if distance == 0:
-    #         return
-    #
-    #     sum_radii = (self.playerWidth / 2 + self.display.block_width / 2)
-    #     overlap = sum_radii - distance
-    #
-    #     if overlap > 0:
-    #         nx = dx / distance
-    #         ny = dy / distance
-    #
-    #         self.next_x -= nx * overlap
-    #         self.next_y -= ny * overlap
 
 
     def handle_bumping(self, other):
@@ -937,38 +1064,7 @@ class Car:
         distance = lolino.sqrt(dx ** 2 + dy ** 2)
         if distance == 0:
             return "GET OUT"
-        #
-        # sum_radii = (self.playerWidth + other.playerWidth) / 2
-        # overlap = sum_radii - distance
-        # if overlap > 0:
-        #     # Normalize direction vector
-        #     nx = dx / distance
-        #     ny = dy / distance
-        #
-        #     # Separate the cars
-        #     separation = overlap * 0.5
-        #     self.x -= nx * separation
-        #     self.y -= ny * separation
-        #     other.x += nx * separation
-        #     other.y += ny * separation
 
-
-        # coll_x, coll_y = self.get_coordinates(other.car_mask, other.rect.topleft[0], other.rect.topleft[1])
-        # # print(coll_x, coll_y)
-        # r_self = (coll_x - self.x, coll_y - self.y)
-        # r_other = (coll_x - other.x, coll_y - other.y)
-        # px_self = self.mass * self.velLeft
-        # py_self = self.mass * self.velUp
-        # px_other = other.mass * other.velLeft
-        # py_other = other.mass * other.velUp
-        # La = r_self[0] * py_self - r_self[1] * px_self
-        # Lb = r_other[0] * py_other - r_other[1] * px_other
-        # Ia = 1/12 * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2)
-        # Ib = 1/12 * other.mass * (other.playerWidth ** 2 + other.playerHeight ** 2)
-        # omega_A = La / Ia
-        # omega_B = Lb / Ib
-        # self.velAng = omega_A
-        # other.velAng = omega_B
         coll_x, coll_y = self.get_coordinates(other.car_mask, other.rect.topleft[0] + other.delta_x, other.rect.topleft[1] + other.delta_y)
         r_self = (coll_x - self.next_x, coll_y - self.next_y)
         r_other = (coll_x - other.next_x, coll_y - other.next_y)
@@ -1046,6 +1142,7 @@ class Car:
         sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
         sharedSurface.set_colorkey((0, 0, 0))
         size = sharedSurface.get_size()
+        wall_count = 0
 
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentRotationSpeed = self.normalRotationSpeed
@@ -1079,21 +1176,28 @@ class Car:
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                     elif tile == 1:
                         self.wall = True
+                        wall_count += 1
                         self.particle_color = self.wall_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
 
-                        center_x = xx * self.display.block_width + self.display.block_width // 2
-                        center_y = yy * self.display.block_height + self.display.block_height // 2
+                        # center_x = xx * self.display.block_width + self.display.block_width // 2
+                        # center_y = yy * self.display.block_height + self.display.block_height // 2
                         if self.wallCollTime == 0:
+                            center_x, center_y = self.detect_collision_area(mask, 0, 0)
+                            if center_x and center_y:
+                                self.improved_wall_collision(mask, int(center_x), int(center_y))
                             if self.isPlayer:
                                 self.display.game.sound_manager.play_sound('bounce')
                                 self.strength = False
+                            back = 2
+                            self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back][0], self.archiveWall[-back][1]
+                            self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back][2]
                             self.wallCollTime = time.time()
 
-                            self.wall_collision(sharedMask, center_x, center_y)
-                            self.next_x, self.next_y, self.x, self.y = self.archiveWall[-1][0], self.archiveWall[-1][1], self.archiveWall[-1][0], self.archiveWall[-1][1]
-                            self.next_rotation, self.rotation = self.archiveWall[-1][2], self.archiveWall[-1][2]
+                            # self.wall_collision(sharedMask, center_x, center_y)
+                            # self.next_x, self.next_y, self.x, self.y = self.archiveWall[-1][0], self.archiveWall[-1][1], self.archiveWall[-1][0], self.archiveWall[-1][1]
+                            # self.next_rotation, self.rotation = self.archiveWall[-1][2], self.archiveWall[-1][2]
                             # self.next_rotation = self.rotation
                             # if self.velUp > 0:
                             #     self.next_y = self.y + 1
@@ -1127,4 +1231,7 @@ class Car:
                         if self.deadTires > 0:
                             self.display.game.sound_manager.play_sound('Pitstop')
                             self.deadTires = 0
-
+                    if wall_count > 15:
+                        back = 4
+                        self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back][0], self.archiveWall[-back][1]
+                        self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back][2]
