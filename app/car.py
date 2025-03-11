@@ -168,6 +168,13 @@ class Car:
                 self.car3d_height = 2
             else:
                 self.car3d_height = self.temp_car3d_height
+        elif model == 6:
+            self.num_of_sprites = 5
+            self.img_size=(10, 20)
+            if self.temp_car3d_height == None:
+                self.car3d_height = 2.5
+            else:
+                self.car3d_height = self.temp_car3d_height
 
     def render(self):
         self.center = self.rect.center
@@ -436,6 +443,34 @@ class Car:
             self.normalFriction = 0
             self.iceFriction = 0
             self.oilFriction = 0
+        #skateboard, temporarily basic parameters
+        elif self.model == 6:
+            self.image = images.skateboard
+            self.set_3d_parameters(self.model)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
+                                                             self.car3d_height)
+            self.backDifference = 0.65
+            self.mass = 1
+            self.nitroPower = 0.4 * self.display.game.calibration
+
+            self.tireAmount = 4
+            self.deadTires = 0
+            self.tireDamage = 0.09
+
+            self.normalAcceleration = 0.4 * self.display.game.calibration
+            self.oilAcceleration = 0 * self.display.game.calibration
+            self.iceAcceleration = 0.1 * self.display.game.calibration
+
+            self.normalRotationSpeed = 0.03 * self.display.game.calibration
+            self.gravelRotationSpeed = 0.018 * self.display.game.calibration
+
+            self.normalMaxSpeed = 12 * self.display.game.calibration
+            self.gravelMaxSpeed = 3 * self.display.game.calibration
+            self.iceMaxSpeed = 25 * self.display.game.calibration
+
+            self.normalFriction = 0.08 * self.display.game.calibration
+            self.iceFriction = 0.02 * self.display.game.calibration
+            self.oilFriction = 0 * self.display.game.calibration
 
 
         back_wheel_offset = self.playerHeight / 2
