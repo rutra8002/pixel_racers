@@ -86,7 +86,7 @@ class game_display(basic_display):
         self.particle_system = ParticleSystem()
         self.powerup_placement_variance = 10
         self.deadPowerups = []
-        self.hasBanana = 5
+        self.hasBanana = 1
         self.banana = None
 
         self.environment_objects = [
@@ -177,7 +177,7 @@ class game_display(basic_display):
             for i, pup in enumerate(temp_list_of_powerups):
                 self.powerups.append(powerup.Powerup(pup[0], pup[1], self))
 
-
+            self.bananas = self.map_data['bananas']
 
 
             self.enemies = self.map_data['enemies']
@@ -264,8 +264,12 @@ class game_display(basic_display):
 
         if self.hasBanana > 0:
             self.hasBanana -= self.game.delta_time
-        else:
-            self.banana
+        elif len(self.bananas) > 0 and self.banana == None:
+            a = random.choice(self.bananas)
+            self.banana = obstacle.Obstacle(self, a[0], a[1], 'banana')
+            self.obstacles.append(self.banana)
+
+
 
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
@@ -310,6 +314,10 @@ class map_display(basic_display):
         self.current_checkpoint = []
 
         self.powerups = []
+        self.bananas = []
+        self.bramas = []
+        self.speedBumps = []
+
 
         self.brushtext = custom_text.Custom_text(self, 10, 70, f'Brush size: {self.brush_size}', text_color='white', font_height=30, center=False)
         self.tooltext = custom_text.Custom_text(self, 10, 100, f'Tool: {self.tool}', text_color='white', font_height=30, center=False)
@@ -342,6 +350,9 @@ class map_display(basic_display):
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
 
         self.powerups = []
+        self.bananas = []
+        self.bramas = []
+        self.speedBumps = []
 
         self.checkpoints = []
         self.current_checkpoint = []
@@ -361,9 +372,8 @@ class map_display(basic_display):
         self.checkpoints = self.temp_map_data['checkpoints']
         self.enemies = self.temp_map_data['enemies']
         self.powerups = self.temp_map_data['powerups']
-        self.powerups = self.temp_map_data['powerups']
         self.bananas = self.temp_map_data['bananas']
-        self.barriers = self.temp_map_data['barriers']
+        self.bramas = self.temp_map_data['bramas']
         self.speedBumps = self.temp_map_data['speedBumps']
         for e in self.enemies:
             e[0][0] = e[0][0] * self.zoom_level / self.block_width
@@ -396,21 +406,39 @@ class map_display(basic_display):
 
         self.brushtext.update_text(f'Brush size: {self.brush_size}')
 
+        t = self.tool
         if self.tool == 'p':
-            self.tooltext.update_text(f'Tool: Place player')
-        elif self.tool == 'c':
-            self.tooltext.update_text(f'Tool: Place checkpoint')
-        elif self.tool == 'm':
-            self.tooltext.update_text(f'Tool: Place finish/start line')
-        elif self.tool == 'e':
-            self.tooltext.update_text(f'Tool: Place enemy')
-        else:
-            self.tooltext.update_text(f'Tool: {self.tool}')
+            t = 'player'
+        if self.tool == 'c':
+            t = 'checkpoint'
+        if self.tool == 'm':
+            t = 'checkpoint?'
+        if self.tool == 'e':
+            t = 'enemy'
+        if self.tool == 'u':
+            t = 'powerup'
+        if self.tool == 'v':
+            t = 'speedBump'
+        if self.tool == 'b':
+            t = 'banana'
+        if self.tool == 'n':
+            t = 'brama'
+
+        self.tooltext.update_text(f'Tool: {t}')
 
         self.player_pos_text.update_text(f'Player position: {self.player_position}')
 
     def add_powerup(self, x, y):
         self.powerups.append((x, y))
+
+    def add_banana(self, x, y):
+        self.bananas.append((x, y))
+
+    def add_brama(self, x, y):
+        self.bramas.append((x, y))
+
+    def add_speedBump(self, x, y):
+        self.speedBumps.append((x, y))
 
     def render(self):
         vis_x_start = max(0, lolekszcz.floor((-self.cx) / self.block_width))
@@ -466,7 +494,7 @@ class map_display(basic_display):
         for obj in self.objects:
             obj.render()
         b = self.brush_size * self.block_width
-        if self.tool != 'p' and self.tool != 'c' and self.tool != 'm' and self.tool != 'e' and self.tool !='u':
+        if self.tool not in ['p', 'c', 'm', 'e', 'u', 'v', 'b', 'n']:
             c = self.color_map.get(self.tool)
             if self.shape == 0:
                 pygame.draw.rect(self.screen, c, (pygame.mouse.get_pos()[0] - b / 2, pygame.mouse.get_pos()[1] - b / 2, b, b), 2)
@@ -482,6 +510,13 @@ class map_display(basic_display):
 
         for i in self.powerups:
             pygame.draw.circle(self.screen, (0, 0, 255), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
+        for i in self.bananas:
+            pygame.draw.circle(self.screen, (200, 200, 0), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
+        for i in self.bramas:
+            pygame.draw.circle(self.screen, (255, 0, 0), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
+        for i in self.speedBumps:
+            pygame.draw.circle(self.screen, (0, 255, 0), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
+
         if (self.tool == 'c' or self.tool == 'm') and len(self.current_checkpoint) == 1:
 
             pygame.draw.line(self.screen, self.color_map[self.tool], (self.current_checkpoint[0][0] * self.block_width + self.cx,
@@ -527,8 +562,6 @@ class map_display(basic_display):
                 self.tool = 6
             elif event.key == pygame.K_p:
                 self.tool = 'p'
-            elif event.key == pygame.K_b:
-                self.map = [[self.tool] * self.temp_width for _ in range(self.temp_height)]
             elif event.key == pygame.K_0:
                 self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
             elif event.key == pygame.K_PLUS or event.key == pygame.K_EQUALS:  # Increase brush size
@@ -546,6 +579,12 @@ class map_display(basic_display):
             elif event.key == pygame.K_m:
                 self.tool = 'm'
                 self.current_checkpoint = []
+            elif event.key == pygame.K_n:
+                self.tool = 'n'
+            elif event.key == pygame.K_b:
+                self.tool = 'b'
+            elif event.key == pygame.K_v:
+                self.tool = 'v'
             elif event.key == pygame.K_UP:
                 self.brush_size += 10
             elif event.key == pygame.K_DOWN:
@@ -613,6 +652,12 @@ class map_display(basic_display):
 
             elif self.tool == 'u' and self.valid_grid_pos(grid_x, grid_y):
                 self.add_powerup(grid_x, grid_y)
+            elif self.tool == 'b' and self.valid_grid_pos(grid_x, grid_y):
+                self.add_banana(grid_x, grid_y)
+            elif self.tool == 'n' and self.valid_grid_pos(grid_x, grid_y):
+                self.add_brama(grid_x, grid_y)
+            elif self.tool == 'v' and self.valid_grid_pos(grid_x, grid_y):
+                self.add_speedBump(grid_x, grid_y)
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_MIDDLE:
             self.dragging = True
@@ -696,14 +741,15 @@ class map_display(basic_display):
         for enemy in self.enemies:
             temp_enemies.append(((enemy[0][0]/self.zoom_level*self.block_width, enemy[0][1]/self.zoom_level*self.block_height), enemy[1]))
 
-        print(self.powerups)
-
         map_data = {
             'map': self.map,
             'player': [temp_player_position, self.player_rotation],
             'enemies': temp_enemies,
             'checkpoints': self.checkpoints,
-            'powerups': self.powerups
+            'powerups': self.powerups,
+            'bananas': self.bananas,
+            'bramas': self.bramas,
+            'speedBumps': self.speedBumps
         }
 
         self.temp_map_data.update(map_data)

@@ -109,6 +109,7 @@ class Car:
 
         self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
         self.in_oil = False
+        self.bananaTime = 0
         self.invincibility = 0
         self.inviFlicker = False
 
@@ -495,6 +496,9 @@ class Car:
 
     def movement(self):
         global dire
+        if self.bananaTime > 0:
+            self.bananaTime -= self.display.game.delta_time
+            self.velAng = 13
         self.prevPos = [self.x, self.y]
         self.prevRotation = self.rotation
         self.x, self.y = self.next_x, self.next_y
@@ -825,8 +829,11 @@ class Car:
                     self.velLeft *= -0.5
                 elif obstacle.type == 3:
                     print('banana')
-                    self.velAng = 100
+                    self.bananaTime = 0.91
                     obstacle.destroy()
+                    self.display.hasBanana = 1
+                    self.display.game.sound_manager.play_sound('Banana')
+
                 elif obstacle.type == 4:
                     self.block(obstacle.rect.topleft[0], obstacle.rect.topleft[1])
                     self.velUp *= -0.5
@@ -871,7 +878,7 @@ class Car:
             self.invincibility = 20
             self.deadTires += 1
             self.tireHealth -= self.tireDamage
-            self.display.game.sound_manager.play_sound('boom')
+            self.display.game.sound_manager.play_sound('Boom')
             return True
         else:
             return False
