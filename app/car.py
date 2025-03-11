@@ -31,6 +31,7 @@ class Car:
         self.temp_car3d_height = temp_car3d_height
 
 
+
         self.damping = 0.7
 
         self.gravel_color = (128, 128, 128)
@@ -88,6 +89,8 @@ class Car:
         self.archiveCords = [self.x, self.y]
         self.prevPos = [self.x, self.y]
         self.prevRotation = 0
+        self.archiveWall = [[self.x, self.y, self.rotation]]
+        self.archiveCars = [[self.x, self.y, self.rotation]]
         self.currentAcceleration = self.normalAcceleration
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentRotationSpeed = self.normalRotationSpeed
@@ -215,16 +218,17 @@ class Car:
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.collision_render(self.display.mapMask, 0, 0)
-
+        self.car = False
         for c in self.display.cars:
             if not self == c and c in self.recentCollisions:
                 if self.collision_detection(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y):
+                    self.car = True
                     self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
                     self.block(c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
                     if self.recentCollisions[c] == 0:
                         self.handle_bumping(c)
-                        self.next_x, self.next_y = self.x, self.y
-                        self.next_rotation = self.rotation
+                        self.next_x, self.next_y, self.x, self.y = self.archiveCars[-1][0], self.archiveCars[-1][1], self.archiveCars[-1][0], self.archiveCars[-1][1]
+                        self.next_rotation, self.rotation = self.archiveCars[-1][2], self.archiveCars[-1][2]
                         self.recentCollisions[c] = time.time()
                         c.recentCollisions[self] = time.time()
 
@@ -830,6 +834,7 @@ class Car:
         self.car_mask = self.car3d_sprite.update_mask_rotation(int(self.rotation))
         self.rect = self.car3d_sprite.rect
         self.rect.center = self.x, self.y
+
         self.wall = False
         if self.collision_detection(self.display.mapMask, 0, 0):
 
@@ -838,6 +843,16 @@ class Car:
             self.particle_color = (100, 100, 100)
             self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],blue=self.particle_color[2])
             self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],blue=self.particle_color[2])
+
+        if not self.wall:
+            self.archiveWall.append([self.x, self.y, self.rotation])
+            if len(self.archiveWall) > 10:
+                self.archiveWall.pop(0)
+
+        if not self.car:
+            self.archiveCars.append([self.x, self.y, self.rotation])
+            if len(self.archiveCars) > 10:
+                self.archiveCars.pop(0)
 
     def prickWheels(self):
         if self.invincibility < 1 and self.deadTires < self.tireAmount:
@@ -850,8 +865,8 @@ class Car:
             return False
 
     def wall_collision(self, mask, x, y):
-        dx = x - self.x
-        dy = y - self.y
+        dx = x - self.next_x
+        dy = y - self.next_y
         distance = lolino.sqrt(dx ** 2 + dy ** 2)
         if distance == 0:
             n = (0, 0)
@@ -867,7 +882,7 @@ class Car:
 
         self.velLeft = v1n_new * n[0] + v1t * t[0] * 0.2
         self.velUp = v1n_new * n[1] + v1t * t[1] * 0.2
-        r = (self.x - x, self.y - y)
+        r = (self.next_x - x, self.next_y - y)
         delta_px = self.mass * self.velLeft
         delta_py = self.mass * self.velUp
         L =  r[0] * delta_py - r[1] * delta_px
@@ -1065,8 +1080,9 @@ class Car:
                             self.wallCollTime = time.time()
 
                             self.wall_collision(sharedMask, center_x, center_y)
-                            self.next_x, self.next_y = self.x, self.y
-                            self.next_rotation = self.rotation
+                            self.next_x, self.next_y, self.x, self.y = self.archiveWall[-1][0], self.archiveWall[-1][1], self.archiveWall[-1][0], self.archiveWall[-1][1]
+                            self.next_rotation, self.rotation = self.archiveWall[-1][2], self.archiveWall[-1][2]
+                            # self.next_rotation = self.rotation
                             # if self.velUp > 0:
                             #     self.next_y = self.y + 1
                             # elif self.velUp < 0:
