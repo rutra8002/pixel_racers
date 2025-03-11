@@ -27,6 +27,7 @@ class Car:
         self.WASD_steering = False  # For debug only
         self.collision_draw = False
         self.wall = False
+        self.barrier = False
         self.model = model
         self.temp_car3d_height = temp_car3d_height
 
@@ -91,6 +92,7 @@ class Car:
         self.prevRotation = 0
         self.archiveWall = [[self.x, self.y, self.rotation]]
         self.archiveCars = [[self.x, self.y, self.rotation]]
+        self.archiveBarrier = [[self.x, self.y, self.rotation]]
         self.currentAcceleration = self.normalAcceleration
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentRotationSpeed = self.normalRotationSpeed
@@ -224,7 +226,6 @@ class Car:
                 if self.collision_detection(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y):
                     self.car = True
                     self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
-                    self.block(c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
                     if self.recentCollisions[c] == 0:
                         self.handle_bumping(c)
                         self.next_x, self.next_y, self.x, self.y = self.archiveCars[-1][0], self.archiveCars[-1][1], self.archiveCars[-1][0], self.archiveCars[-1][1]
@@ -746,23 +747,23 @@ class Car:
             angle -= 360
         return angle
 
-    def block(self, x, y):
-        dx = x - self.rect.centerx + self.delta_x
-        dy = y - self.rect.centery + self.delta_y
-        distance = lolino.sqrt(dx ** 2 + dy ** 2)
-        if distance == 0:
-            return
-
-        nx = dx / distance
-        ny = dy / distance
-
-        # Move car back along collision normal
-        separation = 2  # Adjust this value based on penetration depth if available
-        self.next_x -= nx * separation
-        self.next_y -= ny * separation
-
-        # Reset rotation to prevent clipping
-        self.next_rotation = self.prevRotation
+    # def block(self, x, y):
+    #     dx = x - self.rect.centerx + self.delta_x
+    #     dy = y - self.rect.centery + self.delta_y
+    #     distance = lolino.sqrt(dx ** 2 + dy ** 2)
+    #     if distance == 0:
+    #         return
+    #
+    #     nx = dx / distance
+    #     ny = dy / distance
+    #
+    #     # Move car back along collision normal
+    #     separation = 2  # Adjust this value based on penetration depth if available
+    #     self.next_x -= nx * separation
+    #     self.next_y -= ny * separation
+    #
+    #     # Reset rotation to prevent clipping
+    #     self.next_rotation = self.prevRotation
 
     # def get_penetration(self, mask, x, y):
     #     xs = 0
@@ -811,14 +812,15 @@ class Car:
                 self.wallCollTime = 0
 
 
-
+        self.barrier = False
         for obstacle in self.display.obstacles:
             if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
                 if obstacle.type == 1:
                     if self.prickWheels():
                         obstacle.destroy()
                 elif obstacle.type == 2:
-                    self.block(obstacle.rect.topleft[0], obstacle.rect.topleft[1])
+                    self.barrier = True
+                    self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
                 elif obstacle.type == 4:
@@ -837,7 +839,6 @@ class Car:
 
         self.wall = False
         if self.collision_detection(self.display.mapMask, 0, 0):
-
             self.check_color(self.display.mapMask, 0, 0)
         else:
             self.particle_color = (100, 100, 100)
@@ -854,6 +855,10 @@ class Car:
             if len(self.archiveCars) > 10:
                 self.archiveCars.pop(0)
 
+        if not self.barrier:
+            self.archiveBarrier.append([self.x, self.y, self.rotation])
+            if len(self.archiveBarrier) > 10:
+                self.archiveBarrier.pop(0)
     def prickWheels(self):
         if self.invincibility < 1 and self.deadTires < self.tireAmount:
             self.invincibility = 20
