@@ -316,7 +316,9 @@ class map_display(basic_display):
         # self.block_height = self.game.height // len(self.map)
 
         self.export_button = custom_button.Button(self, "export_map", 10, 10, 100, 50, text="Export map", text_color=(0, 255, 0), color=(255, 0, 0), border_radius=0)
-
+        self.export_png_button = custom_button.Button(self, "export_png", 120, 10, 100, 50, text="Export PNG",
+                    text_color=(0, 255, 0), color=(26, 26, 26),
+                    outline_color=(50, 50, 50), outline_width=2)
 
         self.dragging = False
         self.start_x = 0
@@ -355,7 +357,7 @@ class map_display(basic_display):
         self.enemies = self.temp_map_data['enemies']
         self.powerups = self.temp_map_data['powerups']
         for e in self.enemies:
-            e[0][0] = e[0][0]*self.zoom_level/self.block_width
+            e[0][0] = e[0][0] * self.zoom_level / self.block_width
             e[0][1] = e[0][1] * self.zoom_level / self.block_height
 
         self.temp_width = len(self.map[0])
@@ -625,6 +627,52 @@ class map_display(basic_display):
             mouse_x, mouse_y = pygame.mouse.get_pos()
             self.cx = mouse_x - (mouse_x - self.cx) * (self.zoom_level / old_zoom)
             self.cy = mouse_y - (mouse_y - self.cy) * (self.zoom_level / old_zoom)
+
+    def export_png(self):
+        # Create a new surface for the map
+        map_surface = pygame.Surface((self.temp_width * self.block_width,
+                                      self.temp_height * self.block_height))
+        map_surface.fill(self.bgColor)
+
+        # Draw map tiles
+        for y in range(self.temp_height):
+            for x in range(self.temp_width):
+                tile = self.map[y][x]
+                if tile == 0:
+                    continue
+                color = self.color_map.get(tile, self.asphalt_color)
+                # Add slight randomness to non-special tiles
+                if tile in (0, 1, 3, 4, 5):
+                    color = (
+                        min(max(color[0] + random.randint(-10, 10), 0), 255),
+                        min(max(color[1] + random.randint(-10, 10), 0), 255),
+                        min(max(color[2] + random.randint(-10, 10), 0), 255)
+                    )
+                pygame.draw.rect(map_surface, color,
+                                 (x * self.block_width, y * self.block_height,
+                                  self.block_width+1, self.block_height+1))
+
+        # Draw checkpoints
+        for chp in self.checkpoints:
+            if chp == self.checkpoints[0]:
+                color = self.color_map['m']  # Start/finish line
+            else:
+                color = self.color_map['c']  # Regular checkpoint
+            pygame.draw.line(map_surface, color,
+                             (chp[0][0] * self.block_width, chp[0][1] * self.block_height),
+                             (chp[1][0] * self.block_width, chp[1][1] * self.block_height),
+                             width=int(self.block_width))
+
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        filename = f'images/maps/map_{timestamp}.png'
+
+        # Create maps directory if it doesn't exist
+        if not os.path.exists('images/maps'):
+            os.makedirs('images/maps')
+
+        # Save the surface as PNG
+        pygame.image.save(map_surface, filename)
 
     def export_map(self):
         if not os.path.exists('maps'):

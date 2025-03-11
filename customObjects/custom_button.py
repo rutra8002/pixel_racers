@@ -91,7 +91,8 @@ class Button:  # A button class
                 self.display.game.player_model = self.display.selected_car_model
                 self.display.game.update_player_model()
                 self.display.game.change_display('main_menu_display')
-
+            elif self.action == "export_png":
+                self.display.export_png()
             elif 'edit_map_titled_' in self.action:
                 with open(f"{self.display.game.map_dir}/{self.action.removeprefix('edit_map_titled_')}.json", 'r') as f:
                     map_data = json.load(f)
