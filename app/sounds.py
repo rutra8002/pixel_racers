@@ -5,6 +5,7 @@ class SoundManager:
         pygame.mixer.init()
         self.sounds = {}
         self.music = None
+        self.paused = False
 
     def load_sound(self, name, filepath):
         self.sounds[name] = pygame.mixer.Sound(filepath)
@@ -29,13 +30,21 @@ class SoundManager:
 
     def play_music(self, loops=-1):
         if self.music:
-            pygame.mixer.music.load(self.music)
-            pygame.mixer.music.play(loops=loops)
+            if self.paused:
+                self.unpause_music()
+            else:
+                pygame.mixer.music.load(self.music)
+                pygame.mixer.music.play(loops=loops)
         else:
             print("No music loaded!")
 
-    def stop_music(self):
-        pygame.mixer.music.stop()
+    def pause_music(self):
+        pygame.mixer.music.pause()
+        self.paused = True
+
+    def unpause_music(self):
+        pygame.mixer.music.unpause()
+        self.paused = False
 
     def set_music_volume(self, volume):
         pygame.mixer.music.set_volume(volume)

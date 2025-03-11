@@ -94,7 +94,7 @@ class Game:
         if isinstance(self.current_display, self.displays["game_display"]) and not self.sound_manager.is_playing_music():
             self.sound_manager.play_music(loops=-1)
         elif not isinstance(self.current_display, self.displays["game_display"]):
-            self.sound_manager.stop_music()
+            self.sound_manager.pause_music()
 
     def fade(self, fade_in=True, duration=0.3):
         fade_surface = pygame.Surface((self.width, self.height))
