@@ -162,7 +162,7 @@ class Car:
             else:
                 self.car3d_height = self.temp_car3d_height
         elif model == 5:
-            self.num_of_sprites = 40
+            self.num_of_sprites = 6
             self.img_size = (33, 29)
             if self.temp_car3d_height == None:
                 self.car3d_height = 2
@@ -414,7 +414,7 @@ class Car:
         elif self.model == 5:
             self.image = images.plane
             self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height, collision=False)
             self.backDifference = 0.65
             self.mass = 100
             self.nitroPower = 4 * self.display.game.calibration

@@ -1,7 +1,7 @@
 import pygame
 
 class StackedSprite:
-    def __init__(self, display, image, num_of_sprites, sprite_size, scale_factor, rotation=0, rotate=True):
+    def __init__(self, display, image, num_of_sprites, sprite_size, scale_factor, rotation=0, rotate=True, collision=True):
         self.display = display
         self.image = image
         self.num_of_sprites = num_of_sprites
@@ -10,9 +10,12 @@ class StackedSprite:
         self.sprites = self.load_sprites()
         self.sprites.reverse()
         self.rect = self.sprites[0].get_rect()
+        self.collision = collision
         self.masks = [pygame.mask.from_surface(sprite) for sprite in self.sprites]
         self.largest_mask_index = self.get_largest_mask_index()
         self.mask = self.masks[self.largest_mask_index]
+        if not self.collision:
+            self.mask.clear()
         self.rotation_cache = {}
         self.update_mask_rotation(rotation)
         self.rotation = rotation
@@ -52,6 +55,8 @@ class StackedSprite:
         self.mask = self.masks[self.largest_mask_index]
         self.rect = self.mask.get_rect()
         self.rotation = rotation
+        if not self.collision:
+            self.mask.clear()
         return self.mask
 
     def get_rotated_sprite(self, sprite, rotation):
