@@ -28,12 +28,12 @@ class Obstacle:
             self.image = images.banana.convert_alpha()
             self.image = pygame.transform.scale(self.image, (70, 70))
             self.image = pygame.transform.rotate(self.image, angle)
-            print('banana')
         elif type == "brama":
-            self.image = images.spikes.convert_alpha()
+            self.image = images.barrier.convert_alpha()
             self.image = pygame.transform.rotate(self.image, angle)
         elif type == "speedBump":
-            self.image = images.spikes.convert_alpha()
+            self.image = images.tire.convert_alpha()
+            self.image = pygame.transform.scale(self.image, (50, 50))
             self.image = pygame.transform.rotate(self.image, angle)
         self.rect = self.image.get_rect()
         self.rect.center = self.x, self.y
@@ -46,6 +46,11 @@ class Obstacle:
             self.alpha = max(0, 255 - int((elapsed / 3) * 255))
         elif self.type == 2:
             self.alpha = max(0, 255 - int((elapsed / 5) * 255))
+
+        if self.type == 4:
+            if elapsed > 8:
+                self.display.deadBramas.append([self.x / self.display.block_width, self.y / self.display.block_width, 6, self.angle])
+                self.destroy()
 
         self.image.set_alpha(self.alpha)
 

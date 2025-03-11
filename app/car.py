@@ -834,7 +834,8 @@ class Car:
                     self.display.game.sound_manager.play_sound('Banana')
 
                 elif obstacle.type == 4:
-                    self.block(obstacle.rect.topleft[0], obstacle.rect.topleft[1])
+                    self.barrier = True
+                    self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
                 elif obstacle.type == 5:

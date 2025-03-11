@@ -80,12 +80,14 @@ class game_display(basic_display):
         self.hotbar = hotbar.Hotbar(self)
         self.screenHeight_without_hotbar = self.screenHeight - self.hotbar.h
 
-        self.import_map()
         self.obstacles = []
+        self.import_map()
+
         self.cars = [] #the physical cars of enemies and of the player
         self.particle_system = ParticleSystem()
         self.powerup_placement_variance = 10
         self.deadPowerups = []
+        self.deadBramas = []
         self.hasBanana = 1
         self.banana = None
 
@@ -179,6 +181,17 @@ class game_display(basic_display):
 
             self.bananas = self.map_data['bananas']
 
+            temp_list_of_bramas = self.map_data['bramas']
+            self.bramas = []
+
+            for i, br in enumerate(temp_list_of_bramas):
+                self.obstacles.append(obstacle.Obstacle(self, br[0], br[1], "brama", br[2]))
+
+            temp_list_of_speedBumps = self.map_data['speedBumps']
+            self.speedBumps = []
+
+            for i, sb in enumerate(temp_list_of_speedBumps):
+                self.obstacles.append(obstacle.Obstacle(self, sb[0], sb[1], "speedBump", sb[2]))
 
             self.enemies = self.map_data['enemies']
 
@@ -245,6 +258,13 @@ class game_display(basic_display):
                 else:
                     self.powerups.append(powerup.Powerup(p[0], p[1], self))
                     self.deadPowerups.remove(p)
+        if len(self.deadBramas) > 0:
+            for p in self.deadBramas:
+                if p[2] > 0:
+                    p[2] -= self.game.delta_time
+                else:
+                    self.obstacles.append(obstacle.Obstacle(self, p[0], p[1], "brama", p[3]))
+                    self.deadBramas.remove(p)
 
 
         self.particle_system.update(self.game.delta_time)
@@ -298,6 +318,8 @@ class map_display(basic_display):
         self.temp_height = int(self.height // self.gcd)
         self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
 
+        self.angle = 0
+
         self.archiveStates = []
         self.archiveStates.append(copy.deepcopy(self.map))
 
@@ -320,7 +342,7 @@ class map_display(basic_display):
 
 
         self.brushtext = custom_text.Custom_text(self, 10, 70, f'Brush size: {self.brush_size}', text_color='white', font_height=30, center=False)
-        self.tooltext = custom_text.Custom_text(self, 10, 100, f'Tool: {self.tool}', text_color='white', font_height=30, center=False)
+        self.tooltext = custom_text.Custom_text(self, 10, 100, f'Tool: {self.tool}  Angle: {self.angle}', text_color='white', font_height=30, center=False)
         self.player_pos_text = custom_text.Custom_text(self, 10, 220, f'Player position: {self.player_position}',
                                                        text_color='white', font_height=30, center=False)
         self.cursor_pos_text = custom_text.Custom_text(self, 10, 250, f'Cursor position: (0, 0)',
@@ -424,7 +446,7 @@ class map_display(basic_display):
         if self.tool == 'n':
             t = 'brama'
 
-        self.tooltext.update_text(f'Tool: {t}')
+        self.tooltext.update_text(f'Tool: {t}  Angle: {self.angle}')
 
         self.player_pos_text.update_text(f'Player position: {self.player_position}')
 
@@ -435,10 +457,10 @@ class map_display(basic_display):
         self.bananas.append((x, y))
 
     def add_brama(self, x, y):
-        self.bramas.append((x, y))
+        self.bramas.append((x, y, self.angle))
 
     def add_speedBump(self, x, y):
-        self.speedBumps.append((x, y))
+        self.speedBumps.append((x, y, self.angle))
 
     def render(self):
         vis_x_start = max(0, lolekszcz.floor((-self.cx) / self.block_width))
@@ -595,6 +617,12 @@ class map_display(basic_display):
                 if len(self.archiveStates) > 1:
                     self.map = self.archiveStates[-1]
                     self.archiveStates.pop(-1)
+            elif event.key == pygame.K_x:
+                self.angle += 10
+                if self.angle >= 360:
+                    self.angle -= 360
+                elif self.angle < 0:
+                    self.angle += 360
 
             elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 if self.shape == 1:
