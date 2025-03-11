@@ -48,7 +48,11 @@ class basic_display:
             'player': [[100, 100], 0],
             'enemies': [],
             'checkpoints': [],
-            'powerups': []
+            'powerups': [],
+            'bananas': [],
+            'barriers': [],
+            'speedBumps': []
+
         }
 
 
@@ -82,20 +86,13 @@ class game_display(basic_display):
         self.particle_system = ParticleSystem()
         self.powerup_placement_variance = 10
         self.deadPowerups = []
+        self.hasBanana = 5
+        self.banana = None
 
         self.environment_objects = [
             {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=True), "coords": (200, 300)},
             {"type": "tree", "sprite": StackedSprite(self, images.castle, 21, (21, 21), 3, random.randint(0, 359), rotate=True), "coords": (400, 500)},
         ]
-
-        # for i in range(1, 6):
-        #     if i == 5:
-        #         self.e = enemy.Enemy(self, images.enemy3d, (100 * i, 700), False)
-        #     else:
-        #         self.e = enemy.Enemy(self, images.enemy3d, (100 * i, 100 * i), False)
-        #     self.objects.append(self.e)
-        #     self.cars.append(self.e)
-
 
 
         self.p = player.Player(self, self.player_position, self.player_rotation, self.game.player_model)
@@ -180,6 +177,9 @@ class game_display(basic_display):
             for i, pup in enumerate(temp_list_of_powerups):
                 self.powerups.append(powerup.Powerup(pup[0], pup[1], self))
 
+
+
+
             self.enemies = self.map_data['enemies']
 
 
@@ -261,6 +261,11 @@ class game_display(basic_display):
 
         for pupo in self.powerups:
             pupo.update()
+
+        if self.hasBanana > 0:
+            self.hasBanana -= self.game.delta_time
+        else:
+            self.banana
 
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
@@ -356,6 +361,10 @@ class map_display(basic_display):
         self.checkpoints = self.temp_map_data['checkpoints']
         self.enemies = self.temp_map_data['enemies']
         self.powerups = self.temp_map_data['powerups']
+        self.powerups = self.temp_map_data['powerups']
+        self.bananas = self.temp_map_data['bananas']
+        self.barriers = self.temp_map_data['barriers']
+        self.speedBumps = self.temp_map_data['speedBumps']
         for e in self.enemies:
             e[0][0] = e[0][0] * self.zoom_level / self.block_width
             e[0][1] = e[0][1] * self.zoom_level / self.block_height

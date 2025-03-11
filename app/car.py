@@ -818,9 +818,16 @@ class Car:
                     self.block(obstacle.rect.topleft[0], obstacle.rect.topleft[1])
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
-                elif obstacle.type == 4:
+                elif obstacle.type == 3:
                     print('banana')
                     self.velAng = 100
+                    obstacle.destroy()
+                elif obstacle.type == 4:
+                    self.block(obstacle.rect.topleft[0], obstacle.rect.topleft[1])
+                    self.velUp *= -0.5
+                    self.velLeft *= -0.5
+                elif obstacle.type == 5:
+                    print('speed bump')
 
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentAcceleration = self.normalAcceleration
