@@ -50,162 +50,10 @@ class Car:
 
         self.player_name = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
-        #balanced:
-        if self.model == 1:
-            self.image = images.car3d
-            self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
-                                                             self.car3d_height)
-            self.backDifference = 0.65
-            self.mass = 1
-            self.nitroPower = 0.4 * self.display.game.calibration
-
-            self.tireAmount = 4
-            self.deadTires = 0
-            self.tireDamage = 0.09
-
-            self.normalAcceleration = 0.4 * self.display.game.calibration
-            self.oilAcceleration = 0 * self.display.game.calibration
-            self.iceAcceleration = 0.1 * self.display.game.calibration
-
-            self.normalRotationSpeed = 0.03 * self.display.game.calibration
-            self.gravelRotationSpeed = 0.018 * self.display.game.calibration
-
-            self.normalMaxSpeed = 12 * self.display.game.calibration
-            self.gravelMaxSpeed = 3 * self.display.game.calibration
-            self.iceMaxSpeed = 25 * self.display.game.calibration
-
-            self.normalFriction = 0.08 * self.display.game.calibration
-            self.iceFriction = 0.02 * self.display.game.calibration
-            self.oilFriction = 0 * self.display.game.calibration
-        #tank(not literally) /offroad:
-        elif self.model == 2:
-            self.image = images.newcar
-            self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
-            self.backDifference = 0.7
-            self.mass = 1.5
-            self.nitroPower = 0.35 * self.display.game.calibration
-            self.tireAmount = 4
-            self.deadTires = 0
-            self.tireDamage = 0.06
-
-            self.normalAcceleration = 0.4 * self.display.game.calibration
-            self.oilAcceleration = 0 * self.display.game.calibration
-            self.iceAcceleration = 0.12 * self.display.game.calibration
-
-            self.normalRotationSpeed = 0.022 * self.display.game.calibration
-            self.gravelRotationSpeed = 0.020 * self.display.game.calibration
-
-            self.normalMaxSpeed = 11 * self.display.game.calibration
-            self.gravelMaxSpeed = 5 * self.display.game.calibration
-            self.iceMaxSpeed = 23 * self.display.game.calibration
-
-            self.normalFriction = 0.1 * self.display.game.calibration
-            self.iceFriction = 0.03 * self.display.game.calibration
-            self.oilFriction = 0 * self.display.game.calibration
-        #accelerator:
-        elif self.model == 3:
-            self.image = images.police
-            self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
-            self.backDifference = 0.65
-            self.mass = 0.8
-            self.nitroPower = 0.5 * self.display.game.calibration
-            self.tireAmount = 3
-            self.deadTires = 0
-            self.tireDamage = 0.15
-
-            self.normalAcceleration = 0.8 * self.display.game.calibration
-            self.oilAcceleration = 0 * self.display.game.calibration
-            self.iceAcceleration = 0.2 * self.display.game.calibration
-
-            self.normalRotationSpeed = 0.032 * self.display.game.calibration
-            self.gravelRotationSpeed = 0.02 * self.display.game.calibration
-
-            self.normalMaxSpeed = 10 * self.display.game.calibration
-            self.gravelMaxSpeed = 2.5 * self.display.game.calibration
-            self.iceMaxSpeed = 20 * self.display.game.calibration
-
-            self.normalFriction = 0.08 * self.display.game.calibration
-            self.iceFriction = 0.02 * self.display.game.calibration
-            self.oilFriction = 0 * self.display.game.calibration
-        #mater:
-        elif self.model == 4:
-            self.image = images.bike
-            self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites,
-                                                             self.img_size, self.car3d_height)
-            self.backDifference = 1.4
-            self.mass = 1.1
-            self.nitroPower = 0.3 * self.display.game.calibration
-            self.tireAmount = 4
-            self.deadTires = 0
-            self.tireDamage = 0.08
-
-            self.normalAcceleration = 0.39 * self.display.game.calibration
-            self.oilAcceleration = 0 * self.display.game.calibration
-            self.iceAcceleration = 0.09 * self.display.game.calibration
-
-            self.normalRotationSpeed = 0.025 * self.display.game.calibration
-            self.gravelRotationSpeed = 0.018 * self.display.game.calibration
-
-            self.normalMaxSpeed = 14 * self.display.game.calibration
-            self.gravelMaxSpeed = 4 * self.display.game.calibration
-            self.iceMaxSpeed = 25 * self.display.game.calibration
-
-            self.normalFriction = 0.14 * self.display.game.calibration
-            self.iceFriction = 0.03 * self.display.game.calibration
-            self.oilFriction = 0 * self.display.game.calibration
-
-        # elif self.model == 5 paweł jumper
-
-
-        self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
-        self.bumpingCooldown = 0.03
-        self.wallCollisionCooldown = 0.03
-        self.wallCollTime = 0
-
+        self.velUp, self.velLeft, self.velAng = 0, 0, 0
+        self.rotation = rotation
         self.x, self.y = coordinates[0], coordinates[1]
         self.next_x, self.next_y = coordinates[0], coordinates[1]
-
-        self.delta_x, self.delta_y = 0, 0
-        self.archiveCords = [self.x, self.y]
-        self.prevPos = [self.x, self.y]
-        self.prevRotation = 0
-        self.currentAcceleration = self.normalAcceleration
-        self.currentMaxSpeed = self.normalMaxSpeed
-        self.currentRotationSpeed = self.normalRotationSpeed
-        self.currentFriction = self.normalFriction
-
-
-        self.rect = self.car3d_sprite.rect
-        self.rect.center = self.x, self.y
-
-        self.car_mask = self.car3d_sprite.mask
-        self.mask_image = self.car_mask.to_surface()
-
-
-        self.velUp, self.velLeft, self.velAng = 0, 0, 0
-        self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
-        self.in_oil = False
-        self.invincibility = 0
-        self.inviFlicker = False
-        self.rotation = rotation
-        self.next_rotation = self.rotation
-        self.recentCollisions = {}
-        self.goingForward = True
-        # self.wall = False
-
-        self.steer_rotation = 0
-        self.delta_rotation = 0.01*self.display.game.calibration
-        self.max_steer_rotation = 60
-        self.min_steer_rotation = -self.max_steer_rotation
-
-        self.steering_speed = 9 * self.display.game.calibration
-
-        self.nitroAmount = 0
-
         self.particle_system = self.display.particle_system
 
         back_wheel_offset = self.playerHeight / 2
@@ -226,6 +74,52 @@ class Car:
                                           -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
         self.nitrogen = ParticleGenerator(self.particle_system, nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100,
                                           30, 150, 'circle', True, 100)
+        self.change_model(model)
+
+
+        self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
+        self.bumpingCooldown = 0.03
+        self.wallCollisionCooldown = 0.03
+        self.wallCollTime = 0
+
+
+
+        self.delta_x, self.delta_y = 0, 0
+        self.archiveCords = [self.x, self.y]
+        self.prevPos = [self.x, self.y]
+        self.prevRotation = 0
+        self.currentAcceleration = self.normalAcceleration
+        self.currentMaxSpeed = self.normalMaxSpeed
+        self.currentRotationSpeed = self.normalRotationSpeed
+        self.currentFriction = self.normalFriction
+
+
+        self.rect = self.car3d_sprite.rect
+        self.rect.center = self.x, self.y
+
+        self.car_mask = self.car3d_sprite.mask
+        self.mask_image = self.car_mask.to_surface()
+
+
+
+        self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
+        self.in_oil = False
+        self.invincibility = 0
+        self.inviFlicker = False
+
+        self.next_rotation = self.rotation
+        self.recentCollisions = {}
+        self.goingForward = True
+        # self.wall = False
+
+        self.steer_rotation = 0
+        self.delta_rotation = 0.01*self.display.game.calibration
+        self.max_steer_rotation = 60
+        self.min_steer_rotation = -self.max_steer_rotation
+
+        self.steering_speed = 9 * self.display.game.calibration
+
+        self.nitroAmount = 0
 
 
         self.particle_system.add_generator(self.backwheel1_pgen)
@@ -265,6 +159,13 @@ class Car:
             self.img_size = (4, 18)
             if self.temp_car3d_height == None:
                 self.car3d_height = 3
+            else:
+                self.car3d_height = self.temp_car3d_height
+        elif model == 5:
+            self.num_of_sprites = 40
+            self.img_size = (33, 29)
+            if self.temp_car3d_height == None:
+                self.car3d_height = 2
             else:
                 self.car3d_height = self.temp_car3d_height
 
@@ -510,6 +411,31 @@ class Car:
             self.normalFriction = 0.14 * self.display.game.calibration
             self.iceFriction = 0.03 * self.display.game.calibration
             self.oilFriction = 0 * self.display.game.calibration
+        elif self.model == 5:
+            self.image = images.plane
+            self.set_3d_parameters(self.model)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
+            self.backDifference = 0.65
+            self.mass = 100
+            self.nitroPower = 4 * self.display.game.calibration
+            self.tireAmount = 0
+            self.deadTires = 0
+            self.tireDamage = 0
+
+            self.normalAcceleration = 0.5 * self.display.game.calibration
+            self.oilAcceleration = 0 * self.display.game.calibration
+            self.iceAcceleration = 0.1 * self.display.game.calibration
+
+            self.normalRotationSpeed = 0.03 * self.display.game.calibration
+            self.gravelRotationSpeed = 0.018 * self.display.game.calibration
+
+            self.normalMaxSpeed = 200 * self.display.game.calibration
+            self.gravelMaxSpeed = 50 * self.display.game.calibration
+            self.iceMaxSpeed = 300 * self.display.game.calibration
+
+            self.normalFriction = 0
+            self.iceFriction = 0
+            self.oilFriction = 0
 
 
         back_wheel_offset = self.playerHeight / 2
