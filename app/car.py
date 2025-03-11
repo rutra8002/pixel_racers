@@ -623,7 +623,6 @@ class Car:
 
             self.strength = True
         elif self.inventory[0] == 2:
-            pass
             angle = lolino.radians(self.rotation)
             spawn_x = self.x - (50 * lolino.cos(angle))
             spawn_y = self.y + (50 * lolino.sin(angle))
