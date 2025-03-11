@@ -1,3 +1,4 @@
+import cv2
 import pygame, json
 from customObjects import custom_text
 
@@ -53,7 +54,18 @@ class Button:  # A button class
                 self.display.game.run = False
             elif self.action == 'settings':
                 self.display.game.change_display('settings_display')
+            elif self.action == 'credits':
+                self.display.game.change_display('credits')
+                self.display.game.sound_manager.play_sound('Credits')
+                self.display.game.displays['credits'].last_fps = self.display.game.fps
+                self.display.game.displays['credits'].video = cv2.VideoCapture('videos/credits.mp4')
+                self.display.game.fps = 30
             elif self.action == 'to_main_menu':
+                self.display.game.change_display('main_menu_display')
+            elif self.action == 'main_menu_credits':
+                self.display.game.fps = self.display.game.displays['credits'].last_fps
+                self.display.game.displays['credits'].video.release()
+                self.display.game.sound_manager.stop_sound('Credits')
                 self.display.game.change_display('main_menu_display')
             elif self.action == 'play_course':
                 course_to_play = self.display.game.displays['level_selector'].currently_selected

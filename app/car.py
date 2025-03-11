@@ -827,7 +827,7 @@ class Car:
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
                 elif obstacle.type == 3:
-                    print('banana')
+                    print('banananana')
                     self.bananaTime = 0.91
                     obstacle.destroy()
                     self.display.hasBanana = 1

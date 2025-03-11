@@ -1,5 +1,7 @@
 import copy
 from configparser import ConfigParser
+import cv2
+import numpy
 from customObjects import custom_images, custom_text, custom_button
 from jeff_the_objects.slider import Slider
 from jeff_the_objects.stacked_sprite import StackedSprite
@@ -822,7 +824,7 @@ class main_menu_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
 
-        self.amount_of_buttons = 5
+        self.amount_of_buttons = 6
         self.button_padding = self.game.height * (1/96)
         self.button_width_modifier = 45.5/256
         self.button_heigh_modifier = 10.4/144
@@ -849,9 +851,15 @@ class main_menu_display(basic_display):
                                  text='Settings', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                                  outline_color=(50, 50, 50), outline_width=2)
 
+            custom_button.Button(self, 'credits', self.button_padding,
+                                 self.game.height + (- self.button_padding - self.button_height) * (
+                                         self.amount_of_buttons - 3), self.button_width, self.button_height,
+                                 text='Credits', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
+                                 outline_color=(50, 50, 50), outline_width=2)
+
             custom_button.Button(self, 'quit', self.button_padding,
                                  self.game.height + (- self.button_padding - self.button_height) * (
-                                             self.amount_of_buttons - 3), self.button_width, self.button_height,
+                                             self.amount_of_buttons - 4), self.button_width, self.button_height,
                                  text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                                  outline_color=(50, 50, 50), outline_width=2)
 
@@ -868,7 +876,8 @@ class main_menu_display(basic_display):
 
             custom_button.Button(self, 'settings', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 2), self.button_width, self.button_height, text='Settings', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
             custom_button.Button(self, 'to_map_maker_menu', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 3), self.button_width, self.button_height, text='Make a map', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-            custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 4), self.button_width, self.button_height, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+            custom_button.Button(self, 'credits', self.button_padding,self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 4), self.button_width, self.button_height, text='Credits', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+            custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 5), self.button_width, self.button_height, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
         self.particle_system = self.game.menu_particle_system
 
@@ -1329,3 +1338,47 @@ class change_vehicle(basic_display):
             self.selected_car_model += 1
             self.start_animation()
 
+class credits(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
+        self.button_width_modifier = 45.5 / 256
+        self.button_heigh_modifier = 10.4 / 144
+        self.last_update_time = pygame.time.get_ticks()
+        self.button_width = self.game.width * self.button_width_modifier
+        self.button_height = self.game.height * self.button_heigh_modifier
+        custom_button.Button(self, 'main_menu_credits',50,
+                             self.game.height - 50 - self.button_height,
+                             self.button_width, self.button_height, text='BACK', border_radius=0, color=(26, 26, 26),
+                             text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        self.video = cv2.VideoCapture('videos/credits.mp4')
+        self.currentText = 0
+        self.last_fps = self.game.fps
+        self.texts = ['papapapapa papapapapa', 'credits', 'RYBA', 'óąśćęłńżź']
+        self.text = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 2, self.texts[self.currentText], font_height=40, text_color=(255, 255, 255),
+                                background_color=(0, 0, 0), center=True,
+                                append=False)
+    def mainloop(self):
+        pass
+    def render(self):
+        ret, frame = self.video.read()
+        if not ret:
+            self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            ret, frame = self.video.read()
+            if not ret:
+                return
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = numpy.rot90(frame)
+        frame = pygame.surfarray.make_surface(frame)
+        self.game.screen.blit(frame, (0, 0))
+
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_update_time > 500:
+            self.currentText += 1
+            if self.currentText >= len(self.texts):
+                self.currentText = 0
+            self.text.update_text(self.texts[self.currentText])
+            self.last_update_time = current_time
+            self.text.update_position(random.randint(250, self.game.width - 250), random.randint(100, self.game.height - 150))
+        self.text.render()
+        for obj in self.objects:
+            obj.render()
