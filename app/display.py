@@ -1143,9 +1143,13 @@ class change_vehicle(basic_display):
         self.large_cars = []
         self.small_cars = []
         self.selected_car_model = 1
-        for _ in range(6):
-            large_car = car.Car(self, (self.game.width/2, self.game.height/2), 0, False, _ + 1, car3d_height_factor=2.8)
-            small_car = car.Car(self, (500, self.game.height/2), 0, False, _ + 1)
+        for i in range(6):
+            # Position large car at center
+            large_car = car.Car(self, (self.game.width / 2, self.game.height / 2), 0, False, i + 1,
+                                car3d_height_factor=2.8)
+            # Position small cars based on selected car
+            initial_x = self.game.width / 2 + (i - self.selected_car_model + 1) * 250
+            small_car = car.Car(self, (initial_x, self.game.height / 2), 0, False, i + 1)
 
             self.large_cars.append(large_car)
             self.small_cars.append(small_car)
@@ -1182,6 +1186,12 @@ class change_vehicle(basic_display):
                              self.button_width, self.button_height, text='BACK', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
+        self.animation_progress = 0  # Track animation from 0 to 1
+        self.target_positions = []  # Store target x positions for cars
+        self.start_positions = []  # Store starting x positions for cars
+        self.is_animating = False
+        self.animation_speed = 5.0  # Animation speed multiplier
+
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
 
@@ -1196,19 +1206,52 @@ class change_vehicle(basic_display):
             self.selected_car_model = 1
         elif self.selected_car_model > self.amount_of_car:
             self.selected_car_model = self.amount_of_car
+
+        # Update animation progress
+        if self.is_animating:
+            self.animation_progress = min(1.0, self.animation_progress + self.game.delta_time * self.animation_speed)
+            if self.animation_progress >= 1.0:
+                self.is_animating = False
+                # Update final positions
+                for i, car in enumerate(self.small_cars):
+                    car.x = self.target_positions[i]
+
+        # Render cars with animation
         for i, car in enumerate(self.small_cars):
             if i == self.selected_car_model - 1:
+                # Render large car with rotation
                 self.large_cars[i].rotation -= 80 * self.game.delta_time
-                self.large_cars[i].car_mask = self.large_cars[i].car3d_sprite.update_mask_rotation(int(self.large_cars[i].rotation))
+                self.large_cars[i].car_mask = self.large_cars[i].car3d_sprite.update_mask_rotation(
+                    int(self.large_cars[i].rotation))
                 self.large_cars[i].render_model()
             else:
-                car.x = self.game.width/2 + (i - self.selected_car_model+1)*250
-
+                if self.is_animating:
+                    # Interpolate position during animation
+                    start_pos = self.start_positions[i]
+                    target_pos = self.target_positions[i]
+                    car.x = start_pos + (target_pos - start_pos) * self.animation_progress
+                else:
+                    # Set target position directly when not animating
+                    car.x = self.game.width / 2 + (i - self.selected_car_model + 1) * 250
                 car.render_model()
 
-
+        # Render other objects
         for obj in self.objects:
             obj.render()
 
+    def start_animation(self):
+        self.animation_progress = 0
+        self.is_animating = True
+        self.start_positions = [car.x for car in self.small_cars]
+        self.target_positions = [self.game.width / 2 + (i - self.selected_car_model + 1) * 250 for i in
+                                 range(len(self.small_cars))]
+    def move_selected_car_to_left(self):
+        if self.selected_car_model > 1 and not self.is_animating:
+            self.selected_car_model -= 1
+            self.start_animation()
 
+    def move_selected_car_to_right(self):
+        if self.selected_car_model < self.amount_of_car and not self.is_animating:
+            self.selected_car_model += 1
+            self.start_animation()
 

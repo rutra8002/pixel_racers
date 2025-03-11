@@ -82,10 +82,10 @@ class Button:  # A button class
                 self.display.game.change_display('change_vehicle')
 
             elif self.action == 'move_selected_car_to_left':
-                self.display.selected_car_model -= 1
+                self.display.move_selected_car_to_left()
 
             elif self.action == 'move_selected_car_to_right':
-                self.display.selected_car_model += 1
+                self.display.move_selected_car_to_right()
 
             elif self.action == 'select_car':
                 self.display.game.player_model = self.display.selected_car_model
