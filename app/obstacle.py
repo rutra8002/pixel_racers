@@ -7,8 +7,8 @@ from jeff_the_objects.stacked_sprite import StackedSprite
 class Obstacle:
     def __init__(self, display, x, y, type: str, angle=0):
         self.display = display
-        self.x = x
-        self.y = y
+        self.x = x * self.display.block_width
+        self.y = y * self.display.block_width
         self.start_time = time.time()
         self.angle = angle
         self.alpha = 255
@@ -21,8 +21,9 @@ class Obstacle:
             self.image = images.barrier.convert_alpha()
             self.image = pygame.transform.rotate(self.image, angle)
         elif type == "banana":
-            self.image = images.spikes.convert_alpha()
+            self.image = images.banana.convert_alpha()
             self.image = pygame.transform.rotate(self.image, angle)
+            print('banana')
         elif type == "brama":
             self.image = images.spikes.convert_alpha()
             self.image = pygame.transform.rotate(self.image, angle)
@@ -56,4 +57,6 @@ class Obstacle:
 
     def destroy(self):
         self.display.obstacles.remove(self)
+        if self.type == 3:
+            self.display.banana = None
         del self
