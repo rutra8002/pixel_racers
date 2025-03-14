@@ -56,7 +56,7 @@ class Button:  # A button class
                 self.display.game.change_display('settings_display')
             elif self.action == 'credits':
                 self.display.game.change_display('credits')
-                self.display.game.sound_manager.play_sound('Credits')
+                self.display.game.sound_manager.play_sound('Credits', -1)
                 self.display.game.displays['credits'].last_fps = self.display.game.fps
                 self.display.game.displays['credits'].video = cv2.VideoCapture('videos/credits.mp4')
                 self.display.game.fps = 30
