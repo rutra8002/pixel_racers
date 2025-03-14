@@ -223,7 +223,6 @@ class game_display(basic_display):
 
         for o in self.obstacles:
             o.render()
-            print(o.type)
         for obj in self.objects:
             obj.render()
 

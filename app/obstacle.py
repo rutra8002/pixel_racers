@@ -12,6 +12,12 @@ class Obstacle:
         if type in ("banana", "brama", "speedBump", "guideArrow"):
             self.x = x * self.display.block_width
             self.y = y * self.display.block_width
+        self.falling = False
+        self.target_y = y * self.display.block_width
+        if type == "banana":
+            self.y = -100
+            self.falling = True
+
 
         self.start_time = time.time()
         self.angle = angle
@@ -45,7 +51,6 @@ class Obstacle:
 
     def render(self):
         current_time = time.time()
-        print(self.type)
         elapsed = current_time - self.start_time
         if self.type == 1:
             self.alpha = max(0, 255 - int((elapsed / 3) * 255))
@@ -56,6 +61,14 @@ class Obstacle:
             if elapsed > 8:
                 self.display.deadBramas.append([self.x / self.display.block_width, self.y / self.display.block_width, 6, self.angle])
                 self.destroy()
+        if self.type == 3:
+            if self.y < self.target_y and self.falling:
+                self.y += 10
+                print('f')
+                pygame.draw.circle(self.display.screen, (70, 70, 70), (self.x, self.target_y), 25)
+            else:
+                self.y = self.target_y
+                self.falling = False
 
         self.image.set_alpha(self.alpha)
 

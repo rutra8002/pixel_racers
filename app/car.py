@@ -797,7 +797,7 @@ class Car:
                     self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
-                elif obstacle.type == 3:
+                elif obstacle.type == 3 and not obstacle.falling:
                     self.bananaTime = 0.91 * random.choice((1, -1))
                     obstacle.destroy()
                     self.display.hasBanana = 1
