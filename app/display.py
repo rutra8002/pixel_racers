@@ -86,6 +86,9 @@ class game_display(basic_display):
         self.obstacles = []
         self.import_map()
 
+        self.wong_way = False
+        self.wong_way_image = custom_images.Custom_image(self, 'images/wong_way.png', self.game.width/2, self.game.height/8, 100, 96, append=False)
+
         self.cars = [] #the physical cars of enemies and of the player
         self.particle_system = ParticleSystem()
         self.powerup_placement_variance = 10
@@ -239,6 +242,9 @@ class game_display(basic_display):
             if hasattr(self, 'overlap_point') and self.overlap_point:
                 pygame.draw.circle(self.screen, (255, 0, 0), self.overlap_point, 5)
         self.render_leaderboard()
+
+        if self.wong_way:
+            self.wong_way_image.render()
 
     def events(self, event):
         for obj in self.objects:
