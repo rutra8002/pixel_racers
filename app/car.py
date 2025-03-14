@@ -4,7 +4,6 @@ import string
 
 import pygame
 import math as lolino
-import time
 from particle_system import ParticleGenerator
 from unicodedata import normalize
 from customObjects.custom_text import Custom_text
@@ -30,6 +29,8 @@ class Car:
         self.barrier = False
         self.model = model
         self.car3d_height_factor = car3d_height_factor
+        self.wall_frames = 0
+        self.last_frames_len = 10
 
 
 
@@ -80,8 +81,8 @@ class Car:
 
 
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
-        self.bumpingCooldown = 0.03
-        self.wallCollisionCooldown = 0.03
+        self.bumpingCooldown = 30
+        self.wallCollisionCooldown = 30
         self.wallCollTime = 0
 
 
@@ -90,9 +91,9 @@ class Car:
         self.archiveCords = [self.x, self.y]
         self.prevPos = [self.x, self.y]
         self.prevRotation = 0
-        self.archiveWall = [[self.x, self.y, self.rotation]]
-        self.archiveCars = [[self.x, self.y, self.rotation]]
-        self.archiveBarrier = [[self.x, self.y, self.rotation]]
+        self.archiveWall = [[self.x, self.y, self.rotation] for _ in range(self.last_frames_len)]
+        self.archiveCars = [[self.x, self.y, self.rotation] for _ in range(self.last_frames_len)]
+        self.archiveBarrier = [[self.x, self.y, self.rotation] for _ in range(self.last_frames_len)]
         self.currentAcceleration = self.normalAcceleration
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentRotationSpeed = self.normalRotationSpeed
@@ -231,8 +232,8 @@ class Car:
                         self.handle_bumping(c)
                         self.next_x, self.next_y, self.x, self.y = self.archiveCars[-1][0], self.archiveCars[-1][1], self.archiveCars[-1][0], self.archiveCars[-1][1]
                         self.next_rotation, self.rotation = self.archiveCars[-1][2], self.archiveCars[-1][2]
-                        self.recentCollisions[c] = time.time()
-                        c.recentCollisions[self] = time.time()
+                        self.recentCollisions[c] = pygame.time.get_ticks()
+                        c.recentCollisions[self] = pygame.time.get_ticks()
 
         for p in self.display.powerups:
             if self.collision_detection(p.mask, p.rect.topleft[0], p.rect.topleft[1]):
@@ -807,11 +808,11 @@ class Car:
 
         for car in self.recentCollisions:
             if self.recentCollisions[car] != 0 and not self.collision_detection(car.car_mask, car.rect.topleft[0], car.rect.topleft[1]):
-                if time.time() - self.recentCollisions[car] > self.bumpingCooldown:
+                if pygame.time.get_ticks() - self.recentCollisions[car] > self.bumpingCooldown:
                     self.recentCollisions[car] = 0
 
-        if self.wallCollTime != 0:
-            if time.time() - self.wallCollTime > self.wallCollisionCooldown:
+        if self.wallCollTime != 0 and not self.wall:
+            if pygame.time.get_ticks() - self.wallCollTime > self.wallCollisionCooldown:
                 self.wallCollTime = 0
 
 
@@ -860,9 +861,17 @@ class Car:
             self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],blue=self.particle_color[2])
 
         if not self.wall:
+            self.wall_frames = 0
             self.archiveWall.append([self.x, self.y, self.rotation])
-            if len(self.archiveWall) > 10:
+            if len(self.archiveWall) > self.last_frames_len:
                 self.archiveWall.pop(0)
+        else:
+            self.wall_frames += 1
+            if self.wall_frames > 10:
+                back = 2
+                self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], \
+                self.archiveWall[-back][0], self.archiveWall[-back][1]
+                self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back][2]
 
         if not self.car:
             self.archiveCars.append([self.x, self.y, self.rotation])
@@ -1197,10 +1206,10 @@ class Car:
                             if self.isPlayer:
                                 self.display.game.sound_manager.play_sound('bounce')
                                 self.strength = False
-                            back = 2
+                            back = 1
                             self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back][0], self.archiveWall[-back][1]
                             self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back][2]
-                            self.wallCollTime = time.time()
+                            self.wallCollTime = pygame.time.get_ticks()
 
                             # self.wall_collision(sharedMask, center_x, center_y)
                             # self.next_x, self.next_y, self.x, self.y = self.archiveWall[-1][0], self.archiveWall[-1][1], self.archiveWall[-1][0], self.archiveWall[-1][1]
@@ -1238,7 +1247,3 @@ class Car:
                         if self.deadTires > 0:
                             self.display.game.sound_manager.play_sound('Pitstop')
                             self.deadTires = 0
-                    if wall_count > 15:
-                        back = 4
-                        self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back][0], self.archiveWall[-back][1]
-                        self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back][2]
