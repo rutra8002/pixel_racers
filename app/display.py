@@ -891,6 +891,12 @@ class main_menu_display(basic_display):
 
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_l:
+                self.game.change_display('leaderboard')
 
 class settings_display(basic_display):
     def __init__(self, game):
@@ -903,7 +909,7 @@ class settings_display(basic_display):
 
         custom_text.Custom_text(self, self.game.width/2, self.game.height/8, 'SETTINGS', text_color='white', font_height=int(self.game.height*(19/216)))
         custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
-        custom_button.Button(self, 'to_level_selector', self.game.width/2, self.game.height/2, self.button_width, self.button_height, text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'to_main_menu', self.game.width/2, self.game.height/2, self.button_width, self.button_height, text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
         cfg = read_config()
         current_fps = int(cfg['fps'])
@@ -976,6 +982,9 @@ class settings_display(basic_display):
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.resolution_buttons[i].rect.collidepoint(event.pos):
                 self.set_resolution(res)
         self.handle_scroll(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')
 
     def set_resolution(self, resolution):
         self.current_resolution = resolution
@@ -1076,6 +1085,13 @@ class level_selector(basic_display):
 
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
+
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')
 
     def render(self):
         self.particle_system.add_particle(random.randint(0, self.game.width), random.uniform(0, self.game.height),
@@ -1218,6 +1234,13 @@ class map_maker_menu(basic_display):
         for o in self.objects:
             o.render()
 
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')
+
 class change_vehicle(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
@@ -1337,6 +1360,13 @@ class change_vehicle(basic_display):
         if self.selected_car_model < self.amount_of_car and not self.is_animating:
             self.selected_car_model += 1
             self.start_animation()
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')
+
 
 class credits(basic_display):
     def __init__(self, game):
@@ -1382,3 +1412,29 @@ class credits(basic_display):
         self.text.render()
         for obj in self.objects:
             obj.render()
+
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.fps = self.game.displays['credits'].last_fps
+                self.game.displays['credits'].video.release()
+                self.game.sound_manager.stop_sound('Credits')
+                self.game.change_display('main_menu_display')
+
+class leaderboard(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
+    def mainloop(self):
+        pass
+    def render(self):
+        for obj in self.objects:
+            obj.render()
+
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')
