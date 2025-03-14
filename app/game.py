@@ -21,7 +21,7 @@ class Game:
         self.sound_manager.load_sound('Strength', 'sounds/Strength.wav')
         self.sound_manager.load_sound('Pitstop', 'sounds/Pitstop.wav')
         self.sound_manager.load_sound('Banana', 'sounds/goofy-slip.wav')
-        self.sound_manager.set_music_volume(0.6)
+        self.sound_manager.set_music_volume(0.4)
 
         config.set_config()
 
