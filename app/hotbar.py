@@ -20,7 +20,7 @@ class Hotbar:
         self.display.objects.append(self)
 
         self.stopwatch = StopWatch(self)
-        custom_text.Custom_text(self.display, self.x+self.w/7, self.y + self.h/2.5 + 50, 'Lap: 1/5', text_color='white')
+        self.lap_text = custom_text.Custom_text(self.display, self.x+self.w/7, self.y + self.h/2.5 + 50, f'Lap: 1/5', text_color='white')
 
     def events(self, event):
         pass
@@ -36,6 +36,9 @@ class Hotbar:
     def start_counting_time(self):
         self.stopwatch.start_time = time.time()
         self.stopwatch.start_counting_time = True
+
+    def update_lap_text(self):
+        self.lap_text.update_text(f'Lap: {self.display.p.lap}/5')
 
 class StopWatch:
     def __init__(self, hotbar):
