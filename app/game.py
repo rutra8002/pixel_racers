@@ -13,6 +13,7 @@ class Game:
 
         self.sound_manager = sounds.SoundManager()
         self.sound_manager.load_music('sounds/music/Neon Rush.wav')
+        self.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
         self.sound_manager.load_sound('Credits', 'sounds/music/credits.ogg')
         self.sound_manager.load_sound('Boom','sounds/TireBoom.wav')
         self.sound_manager.load_sound('bounce', 'sounds/bounce.wav')
@@ -21,7 +22,7 @@ class Game:
         self.sound_manager.load_sound('Strength', 'sounds/Strength.wav')
         self.sound_manager.load_sound('Pitstop', 'sounds/Pitstop.wav')
         self.sound_manager.load_sound('Banana', 'sounds/goofy-slip.wav')
-        self.sound_manager.set_music_volume(0.4)
+        self.sound_manager.set_music_volume(0.2)
 
         config.set_config()
 
