@@ -33,7 +33,7 @@ class Obstacle:
             self.image = pygame.transform.rotate(self.image, angle)
         elif type == "speedBump":
             self.image = images.tire.convert_alpha()
-            self.image = pygame.transform.scale(self.image, (50, 50))
+            self.image = pygame.transform.scale(self.image, (100, 100))
             self.image = pygame.transform.rotate(self.image, angle)
         self.rect = self.image.get_rect()
         self.rect.center = self.x, self.y

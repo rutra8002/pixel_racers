@@ -11,7 +11,6 @@ from app import images, obstacle
 from jeff_the_objects import stacked_sprite
 
 #TO DO:
-#powerups - Tobiasz
 #leaderboard - ???
 
 
@@ -117,7 +116,6 @@ class Car:
         self.next_rotation = self.rotation
         self.recentCollisions = {}
         self.goingForward = True
-        # self.wall = False
 
         self.steer_rotation = 0
         self.delta_rotation = 0.01*self.display.game.calibration
@@ -187,12 +185,9 @@ class Car:
         self.center = self.rect.center
         if self.inviFlicker:
             pygame.draw.circle(self.display.screen, (102, 100, 100), self.center, 25)
-        # self.display.screen.blit(self.mask_image, self.rect)
 
 
         self.mask_image = self.car_mask.to_surface()
-        # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
-        # self.display.screen.blit(self.newImg, self.rect)
         self.car3d_sprite.render(self.display.screen, (self.x, self.y))
 
         back_wheel_offset = self.playerHeight / 2
@@ -311,11 +306,8 @@ class Car:
         self.center = self.rect.center
         if self.inviFlicker:
             pygame.draw.circle(self.display.screen, (102, 100, 100), self.center, 25)
-        # self.display.screen.blit(self.mask_image, self.rect)
 
         self.mask_image = self.car_mask.to_surface()
-        # self.display.screen.blit(self.mask_image, self.mask_image.get_rect())
-        # self.display.screen.blit(self.newImg, self.rect)
         self.car3d_sprite.render(self.display.screen, (self.x, self.y))
 
     def change_model(self, model):
@@ -497,9 +489,14 @@ class Car:
 
     def movement(self):
         global dire
-        if self.bananaTime > 0:
+        if self.display.game.delta_time < self.bananaTime:
             self.bananaTime -= self.display.game.delta_time
             self.velAng = 13
+        elif -self.display.game.delta_time > self.bananaTime:
+            self.bananaTime += self.display.game.delta_time
+            self.velAng = -13
+        else:
+            self.bananaTime = 0
         self.prevPos = [self.x, self.y]
         self.prevRotation = self.rotation
         self.x, self.y = self.next_x, self.next_y
@@ -516,7 +513,7 @@ class Car:
             if self.WASD_steering:
                 self.velUp -= self.currentAcceleration
             else:
-                a, b = self.get_acceleration_with_trigonometry(-1, self.currentAcceleration * self.backDifference * self.display.game.delta_time * self.display.game.calibration * self.tireHealth / 2)
+                a, b = self.get_acceleration_with_trigonometry(-1, self.currentAcceleration * self.backDifference * self.display.game.delta_time * self.display.game.calibration * (self.tireHealth ** 0.5) / 2)
                 self.velLeft += a
                 self.velUp += b
         if self.a and not self.in_oil:
@@ -572,13 +569,6 @@ class Car:
         if self.velLeft != 0 or self.velUp != 0:
             s = self.check_if_sideways(dire)
             self.slow_down(self.currentFriction * s / magnitude / (self.tireHealth ** 0.2))
-
-
-        # if not self.boost:
-        #     magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
-        #     if magnitude > self.currentMaxSpeed:
-        #         self.velLeft = (self.velLeft / magnitude) * self.currentMaxSpeed
-        #         self.velUp = (self.velUp / magnitude) * self.currentMaxSpeed
 
         if self.borderBounce:
             if self.x < 0:
@@ -751,46 +741,6 @@ class Car:
             angle -= 360
         return angle
 
-    # def block(self, x, y):
-    #     dx = x - self.rect.centerx + self.delta_x
-    #     dy = y - self.rect.centery + self.delta_y
-    #     distance = lolino.sqrt(dx ** 2 + dy ** 2)
-    #     if distance == 0:
-    #         return
-    #
-    #     nx = dx / distance
-    #     ny = dy / distance
-    #
-    #     # Move car back along collision normal
-    #     separation = 2  # Adjust this value based on penetration depth if available
-    #     self.next_x -= nx * separation
-    #     self.next_y -= ny * separation
-    #
-    #     # Reset rotation to prevent clipping
-    #     self.next_rotation = self.prevRotation
-
-    # def get_penetration(self, mask, x, y):
-    #     xs = 0
-    #     ys = 0
-    #     offset = (x - self.rect.topleft[0], y - self.rect.topleft[1])
-    #     sharedMask = self.car_mask.overlap_mask(mask, offset)
-    #     sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
-    #     sharedSurface.set_colorkey((0, 0, 0))
-    #     size = sharedSurface.get_size()
-    #
-    #     for x in range(size[0]):
-    #         for y in range(size[1]):
-    #             if sharedSurface.get_at((x, y))[1] == 200:
-    #                 xs += 1
-    #                 break
-    #     for y in range(size[1]):
-    #         for x in range(size[0]):
-    #             if sharedSurface.get_at((x, y))[1] == 200:
-    #                 ys += 1
-    #                 break
-    #
-    #     return xs, ys
-
     def loop(self):
         self.movement()
         self.invincibility -= 5 * self.display.game.delta_time
@@ -816,31 +766,6 @@ class Car:
                 self.wallCollTime = 0
 
 
-        self.barrier = False
-        for obstacle in self.display.obstacles:
-            if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
-                if obstacle.type == 1:
-                    if self.prickWheels():
-                        obstacle.destroy()
-                elif obstacle.type == 2:
-                    self.barrier = True
-                    self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
-                    self.velUp *= -0.5
-                    self.velLeft *= -0.5
-                elif obstacle.type == 3:
-                    print('banananana')
-                    self.bananaTime = 0.91
-                    obstacle.destroy()
-                    self.display.hasBanana = 1
-                    self.display.game.sound_manager.play_sound('Banana')
-
-                elif obstacle.type == 4:
-                    self.barrier = True
-                    self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
-                    self.velUp *= -0.5
-                    self.velLeft *= -0.5
-                elif obstacle.type == 5:
-                    print('speed bump')
 
         self.currentMaxSpeed = self.normalMaxSpeed
         self.currentAcceleration = self.normalAcceleration
@@ -859,6 +784,33 @@ class Car:
             self.particle_color = (100, 100, 100)
             self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],blue=self.particle_color[2])
             self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1],blue=self.particle_color[2])
+
+        self.barrier = False
+        for obstacle in self.display.obstacles:
+            if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
+                if obstacle.type == 1:
+                    if self.prickWheels():
+                        obstacle.destroy()
+                elif obstacle.type == 2:
+                    self.barrier = True
+                    self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], \
+                    self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
+                    self.velUp *= -0.5
+                    self.velLeft *= -0.5
+                elif obstacle.type == 3:
+                    self.bananaTime = 0.91 * random.choice((1, -1))
+                    obstacle.destroy()
+                    self.display.hasBanana = 1
+                    self.display.game.sound_manager.play_sound('Banana')
+
+                elif obstacle.type == 4:
+                    self.barrier = True
+                    self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], \
+                    self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
+                    self.velUp *= -0.5
+                    self.velLeft *= -0.5
+                elif obstacle.type == 5:
+                    self.currentMaxSpeed = self.gravelMaxSpeed
 
         if not self.wall:
             self.wall_frames = 0
@@ -893,20 +845,6 @@ class Car:
             return False
 
 
-    # def get_coordinates(self, mask, x, y):
-    #     xs = []
-    #     xy = []
-    #     offset = (x - (self.rect.topleft[0] + self.delta_x), y - (self.rect.topleft[1] + self.delta_y))
-    #     sharedMask = self.car_mask.overlap_mask(mask, offset)
-    #     sharedSurface = sharedMask.to_surface(setcolor=(0, 200, 0))
-    #     sharedSurface.set_colorkey((0, 0, 0))
-    #     for x in range(sharedSurface.get_size()[0]):
-    #         for y in range(sharedSurface.get_size()[1]):
-    #             if sharedSurface.get_at((x, y))[1] == 200:
-    #                 xs.append(x + self.rect.topleft[0] + self.delta_x)
-    #                 xy.append(y + self.rect.topleft[1] + self.delta_y)
-    #     return sum(xs) // len(xs), sum(xy) // len(xy)
-
     def detect_collision_area(self, mask, x, y):
         xs, ys = [], []
         offset = (x - (self.rect.topleft[0] + self.delta_x), y - (self.rect.topleft[1] + self.delta_y))
@@ -926,37 +864,6 @@ class Car:
         return None, None
 
     def compute_wall_normal(self, center_x, center_y):
-        # grid = []
-        # for dy in range(-1, 2):
-        #     row = []
-        #     for dx in range(-1, 2):
-        #         check_x = int((center_x // self.display.block_width) + dx)
-        #         check_y = int((center_y // self.display.block_height) + dy)
-        #         if 0 <= check_y < len(self.display.map) and 0 <= check_x < len(self.display.map[0]):
-        #             row.append(self.display.map[check_y][check_x] == 1)  # True if wall, False otherwise
-        #         else:
-        #             row.append(False)
-        #     grid.append(row)
-        #
-        # # Check patterns (horizontal, vertical, diagonal walls)
-        # if grid[1][0] and grid[1][2]:
-        #     normal = (0, 1)  # Horizontal wall
-        #     print('horizontal')
-        # elif grid[0][1] and grid[2][1]:
-        #     normal = (1, 0)  # Vertical wall
-        #     print('vertical')
-        # elif grid[0][0] and grid[2][2]:
-        #     normal = (lolino.sqrt(2) / 2, lolino.sqrt(2) / 2)  # Diagonal ↘
-        #     print("Diagonal ↘")
-        # elif grid[0][2] and grid[2][0]:
-        #     normal = (lolino.sqrt(2) / 2, -lolino.sqrt(2) / 2)  # Diagonal ↙
-        #     print("Diagonal ↙")
-        # else:
-        #     normal = (0, 1)  # Default to horizontal if unclear
-        #     print("Default to horizontal")
-        #
-        # tangent = (-normal[1], normal[0])  # Perpendicular to normal
-        # return normal, tangent
         width, height = self.display.block_width, self.display.block_height
         grid_size = 5  # Expand detection area
         offset = grid_size // 2
@@ -1063,9 +970,6 @@ class Car:
         impulse = 2 * self.mass * abs(v1n)
 
         self.velAng = L / I
-        # self.x += n[0]
-        # self.y += n[1]
-        # self.wall_separation(x, y)
 
     def teleport(self, coords):
         if self.isPlayer:
@@ -1096,8 +1000,7 @@ class Car:
         omega_A = La / Ia
         omega_B = Lb / Ib
 
-        # self.rotation += lolino.degrees(omega_A * self.display.game.delta_time)
-        # other.rotation += lolino.degrees(omega_B * self.display.game.delta_time)
+
         n = ((other.next_x - self.next_x) / lolino.sqrt((other.next_x - self.next_x)**2 + (other.next_y - self.next_y)**2), (other.next_y - self.next_y) / lolino.sqrt((other.next_x - self.next_x)**2 + (other.next_y - self.next_y)**2))
         t = (-n[1], n[0])
         v1n = self.velLeft * n[0] + self.velUp * n[1]
@@ -1197,8 +1100,6 @@ class Car:
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
 
-                        # center_x = xx * self.display.block_width + self.display.block_width // 2
-                        # center_y = yy * self.display.block_height + self.display.block_height // 2
                         if self.wallCollTime == 0:
                             center_x, center_y = self.detect_collision_area(mask, 0, 0)
                             if center_x and center_y:
@@ -1210,19 +1111,6 @@ class Car:
                             self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back][0], self.archiveWall[-back][1]
                             self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back][2]
                             self.wallCollTime = pygame.time.get_ticks()
-
-                            # self.wall_collision(sharedMask, center_x, center_y)
-                            # self.next_x, self.next_y, self.x, self.y = self.archiveWall[-1][0], self.archiveWall[-1][1], self.archiveWall[-1][0], self.archiveWall[-1][1]
-                            # self.next_rotation, self.rotation = self.archiveWall[-1][2], self.archiveWall[-1][2]
-                            # self.next_rotation = self.rotation
-                            # if self.velUp > 0:
-                            #     self.next_y = self.y + 1
-                            # elif self.velUp < 0:
-                            #     self.next_y = self.y - 1
-                            # if self.velLeft > 0:
-                            #     self.next_x = self.x + 1
-                            # elif self.velLeft < 0:
-                            #     self.next_x = self.x - 1
 
 
                     elif tile == 3:

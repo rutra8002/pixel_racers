@@ -7,6 +7,8 @@ import math
 class Player(Car):
     def __init__(self, display, coordinates, rotation, model):
         super().__init__(display, coordinates, rotation, isPlayer=True, model=model)
+        self.current_checkpoint = -1
+        self.lap = 1
 
     def events(self, event):
 
