@@ -49,10 +49,12 @@ class Game:
 
         from app import display
 
-        self.displays = {'template_display': display.basic_display(self), 'game_display': display.game_display, 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self), 'change_vehicle': display.change_vehicle(self), 'credits': display.credits(self), 'leaderboard': display.leaderboard(self)}
+        self.template_display = display.basic_display(self)
+        self.upgrade_worlds()
+
+        self.displays = {'template_display': self.template_display, 'game_display': display.game_display, 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self), 'change_vehicle': display.change_vehicle(self), 'credits': display.credits(self), 'leaderboard': display.leaderboard(self)}
         self.current_display = self.displays['main_menu_display']
 
-        self.upgrade_worlds()
         self.displays['level_selector'].load_maps()
 
         self.pointing_at = []
@@ -252,7 +254,7 @@ class Game:
                 f.close()
 
                 if 'version' not in josn_obj.keys() or ('version' in josn_obj.keys() and josn_obj['version'] != self.version):
-                    temp_map = dict(self.displays['template_display'].map_data)
+                    temp_map = dict(self.template_display.map_data)
                     temp_map.update(josn_obj)
                     temp_map['version'] = self.version
                     if 'player_position' in josn_obj.keys():

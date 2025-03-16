@@ -37,6 +37,8 @@ class checkpoint: # A checkpoint is a line with 2 points
                     else:
                         self.display.wong_way = True
 
+                    car.last_passed_checkpoint = self.i
+
                 self.color = (0, 0, 255)
                 player_name = car.player_name
                 self.display.leaderboard[player_name] = self.i

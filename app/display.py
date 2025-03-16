@@ -54,8 +54,8 @@ class basic_display:
             'bananas': [],
             'barriers': [],
             'speedBumps': [],
-            'guideArrows': []
-
+            'guideArrows': [],
+            'bramas': []
         }
 
 
@@ -207,14 +207,6 @@ class game_display(basic_display):
 
             f.close()
 
-    def render_leaderboard(self):
-        y_offset = 10
-        for player, checkpoint in sorted(self.leaderboard.items(), key=lambda item: item[1], reverse=True):
-            text = f"{player}: Checkpoint {checkpoint + 1}"
-            text_obj = custom_text.Custom_text(self, 10, y_offset, text, font_height=20, text_color=(255, 255, 255), background_color=(0, 0, 0), center=False,
-                                   append=False)
-            text_obj.render()
-            y_offset += 20
 
     def render(self):
         self.screen.fill(self.bgColor)
@@ -240,7 +232,7 @@ class game_display(basic_display):
 
             if hasattr(self, 'overlap_point') and self.overlap_point:
                 pygame.draw.circle(self.screen, (255, 0, 0), self.overlap_point, 5)
-        self.render_leaderboard()
+        # self.render_leaderboard()
 
         if self.wong_way:
             self.wong_way_image.render()
