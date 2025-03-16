@@ -53,7 +53,8 @@ class basic_display:
             'powerups': [],
             'bananas': [],
             'barriers': [],
-            'speedBumps': []
+            'speedBumps': [],
+            'guideArrows': []
 
         }
 
@@ -84,6 +85,9 @@ class game_display(basic_display):
 
         self.obstacles = []
         self.import_map()
+
+        self.wong_way = False
+        self.wong_way_image = custom_images.Custom_image(self, 'images/wong_way.png', self.game.width/2, self.game.height/8, 100, 96, append=False)
 
         self.cars = [] #the physical cars of enemies and of the player
         self.particle_system = ParticleSystem()
@@ -184,16 +188,19 @@ class game_display(basic_display):
             self.bananas = self.map_data['bananas']
 
             temp_list_of_bramas = self.map_data['bramas']
-            self.bramas = []
-
             for i, br in enumerate(temp_list_of_bramas):
                 self.obstacles.append(obstacle.Obstacle(self, br[0], br[1], "brama", br[2]))
 
             temp_list_of_speedBumps = self.map_data['speedBumps']
-            self.speedBumps = []
-
             for i, sb in enumerate(temp_list_of_speedBumps):
                 self.obstacles.append(obstacle.Obstacle(self, sb[0], sb[1], "speedBump", sb[2]))
+
+            temp_list_of_guideArrows = self.map_data['guideArrows']
+            for i, sb in enumerate(temp_list_of_guideArrows):
+                self.obstacles.append(obstacle.Obstacle(self, sb[0], sb[1], "guideArrow", sb[2]))
+                print(self.obstacles)
+            for o in self.obstacles:
+                print(o.type)
 
             self.enemies = self.map_data['enemies']
 
@@ -214,11 +221,12 @@ class game_display(basic_display):
         self.screen.blit(self.map_surface, (0, 0))
         self.particle_system.draw(self.screen)
 
-
-        for obj in self.objects:
-            obj.render()
         for o in self.obstacles:
             o.render()
+        for obj in self.objects:
+            obj.render()
+
+
         for obj in self.environment_objects:
             if obj["type"] == "tree":
                 obj["sprite"].render(self.screen, obj["coords"])
@@ -233,6 +241,9 @@ class game_display(basic_display):
             if hasattr(self, 'overlap_point') and self.overlap_point:
                 pygame.draw.circle(self.screen, (255, 0, 0), self.overlap_point, 5)
         self.render_leaderboard()
+
+        if self.wong_way:
+            self.wong_way_image.render()
 
     def events(self, event):
         for obj in self.objects:
@@ -341,6 +352,7 @@ class map_display(basic_display):
         self.bananas = []
         self.bramas = []
         self.speedBumps = []
+        self.guideArrows = []
 
 
         self.brushtext = custom_text.Custom_text(self, 10, 70, f'Brush size: {self.brush_size}', text_color='white', font_height=30, center=False)
@@ -377,6 +389,7 @@ class map_display(basic_display):
         self.bananas = []
         self.bramas = []
         self.speedBumps = []
+        self.guideArrows = []
 
         self.checkpoints = []
         self.current_checkpoint = []
@@ -399,6 +412,7 @@ class map_display(basic_display):
         self.bananas = self.temp_map_data['bananas']
         self.bramas = self.temp_map_data['bramas']
         self.speedBumps = self.temp_map_data['speedBumps']
+        self.guideArrows = self.temp_map_data['guideArrows']
         for e in self.enemies:
             e[0][0] = e[0][0] * self.zoom_level / self.block_width
             e[0][1] = e[0][1] * self.zoom_level / self.block_height
@@ -447,6 +461,8 @@ class map_display(basic_display):
             t = 'banana'
         if self.tool == 'n':
             t = 'brama'
+        if self.tool == 'o':
+            t = 'arrow'
 
         self.tooltext.update_text(f'Tool: {t}  Angle: {self.angle}')
 
@@ -463,6 +479,9 @@ class map_display(basic_display):
 
     def add_speedBump(self, x, y):
         self.speedBumps.append((x, y, self.angle))
+
+    def add_guideArrow(self, x, y):
+        self.guideArrows.append((x, y, self.angle))
 
     def render(self):
         vis_x_start = max(0, lolekszcz.floor((-self.cx) / self.block_width))
@@ -518,7 +537,7 @@ class map_display(basic_display):
         for obj in self.objects:
             obj.render()
         b = self.brush_size * self.block_width
-        if self.tool not in ['p', 'c', 'm', 'e', 'u', 'v', 'b', 'n']:
+        if self.tool not in ['p', 'c', 'm', 'e', 'u', 'v', 'b', 'n', 'o']:
             c = self.color_map.get(self.tool)
             if self.shape == 0:
                 pygame.draw.rect(self.screen, c, (pygame.mouse.get_pos()[0] - b / 2, pygame.mouse.get_pos()[1] - b / 2, b, b), 2)
@@ -540,6 +559,8 @@ class map_display(basic_display):
             pygame.draw.circle(self.screen, (255, 0, 0), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
         for i in self.speedBumps:
             pygame.draw.circle(self.screen, (0, 255, 0), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
+        for i in self.guideArrows:
+            pygame.draw.rect(self.screen, (0, 0, 255), (i[0] * self.block_width + self.cx - 10, i[1] * self.block_height + self.cy - 5, 20, 10))
 
         if (self.tool == 'c' or self.tool == 'm') and len(self.current_checkpoint) == 1:
 
@@ -609,6 +630,8 @@ class map_display(basic_display):
                 self.tool = 'b'
             elif event.key == pygame.K_v:
                 self.tool = 'v'
+            elif event.key == pygame.K_o:
+                self.tool = 'o'
             elif event.key == pygame.K_UP:
                 self.brush_size += 10
             elif event.key == pygame.K_DOWN:
@@ -688,6 +711,8 @@ class map_display(basic_display):
                 self.add_brama(grid_x, grid_y)
             elif self.tool == 'v' and self.valid_grid_pos(grid_x, grid_y):
                 self.add_speedBump(grid_x, grid_y)
+            elif self.tool == 'o' and self.valid_grid_pos(grid_x, grid_y):
+                self.add_guideArrow(grid_x, grid_y)
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_MIDDLE:
             self.dragging = True
@@ -779,7 +804,8 @@ class map_display(basic_display):
             'powerups': self.powerups,
             'bananas': self.bananas,
             'bramas': self.bramas,
-            'speedBumps': self.speedBumps
+            'speedBumps': self.speedBumps,
+            'guideArrows': self.guideArrows
         }
 
         self.temp_map_data.update(map_data)
@@ -891,6 +917,12 @@ class main_menu_display(basic_display):
 
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_l:
+                self.game.change_display('leaderboard')
 
 class settings_display(basic_display):
     def __init__(self, game):
@@ -903,7 +935,7 @@ class settings_display(basic_display):
 
         custom_text.Custom_text(self, self.game.width/2, self.game.height/8, 'SETTINGS', text_color='white', font_height=int(self.game.height*(19/216)))
         custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
-        custom_button.Button(self, 'to_level_selector', self.game.width/2, self.game.height/2, self.button_width, self.button_height, text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        custom_button.Button(self, 'to_main_menu', self.game.width/2, self.game.height/2, self.button_width, self.button_height, text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
         cfg = read_config()
         current_fps = int(cfg['fps'])
@@ -976,6 +1008,9 @@ class settings_display(basic_display):
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.resolution_buttons[i].rect.collidepoint(event.pos):
                 self.set_resolution(res)
         self.handle_scroll(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')
 
     def set_resolution(self, resolution):
         self.current_resolution = resolution
@@ -1076,6 +1111,13 @@ class level_selector(basic_display):
 
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
+
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')
 
     def render(self):
         self.particle_system.add_particle(random.randint(0, self.game.width), random.uniform(0, self.game.height),
@@ -1218,6 +1260,13 @@ class map_maker_menu(basic_display):
         for o in self.objects:
             o.render()
 
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')
+
 class change_vehicle(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
@@ -1337,6 +1386,13 @@ class change_vehicle(basic_display):
         if self.selected_car_model < self.amount_of_car and not self.is_animating:
             self.selected_car_model += 1
             self.start_animation()
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')
+
 
 class credits(basic_display):
     def __init__(self, game):
@@ -1382,3 +1438,29 @@ class credits(basic_display):
         self.text.render()
         for obj in self.objects:
             obj.render()
+
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.fps = self.game.displays['credits'].last_fps
+                self.game.displays['credits'].video.release()
+                self.game.sound_manager.stop_sound('Credits')
+                self.game.change_display('main_menu_display')
+
+class leaderboard(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
+    def mainloop(self):
+        pass
+    def render(self):
+        for obj in self.objects:
+            obj.render()
+
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')

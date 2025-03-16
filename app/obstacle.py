@@ -9,14 +9,20 @@ class Obstacle:
         self.display = display
         self.x = x
         self.y = y
-        if type in ("banana", "brama", "speedBump"):
+        if type in ("banana", "brama", "speedBump", "guideArrow"):
             self.x = x * self.display.block_width
             self.y = y * self.display.block_width
+        self.falling = False
+        self.target_y = y * self.display.block_width
+        if type == "banana":
+            self.y = -100
+            self.falling = True
+
 
         self.start_time = time.time()
         self.angle = angle
         self.alpha = 255
-        types = {"spikes": 1, "barrier": 2, "banana": 3, "brama": 4, "speedBump": 5}
+        types = {"spikes": 1, "barrier": 2, "banana": 3, "brama": 4, "speedBump": 5, "guideArrow": 6}
         self.type = types[type]
         if type == "spikes":
             self.image = images.spikes.convert_alpha()
@@ -33,7 +39,11 @@ class Obstacle:
             self.image = pygame.transform.rotate(self.image, angle)
         elif type == "speedBump":
             self.image = images.tire.convert_alpha()
-            self.image = pygame.transform.scale(self.image, (50, 50))
+            self.image = pygame.transform.scale(self.image, (100, 100))
+            self.image = pygame.transform.rotate(self.image, angle)
+        elif type == "guideArrow":
+            self.image = images.guideArrow.convert_alpha()
+            self.image = pygame.transform.scale(self.image, (200, 100))
             self.image = pygame.transform.rotate(self.image, angle)
         self.rect = self.image.get_rect()
         self.rect.center = self.x, self.y
@@ -51,6 +61,14 @@ class Obstacle:
             if elapsed > 8:
                 self.display.deadBramas.append([self.x / self.display.block_width, self.y / self.display.block_width, 6, self.angle])
                 self.destroy()
+        if self.type == 3:
+            if self.y < self.target_y and self.falling:
+                self.y += 10
+                print('f')
+                pygame.draw.circle(self.display.screen, (70, 70, 70), (self.x, self.target_y), 25)
+            else:
+                self.y = self.target_y
+                self.falling = False
 
         self.image.set_alpha(self.alpha)
 
