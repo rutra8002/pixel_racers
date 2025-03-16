@@ -54,8 +54,8 @@ class basic_display:
             'bananas': [],
             'barriers': [],
             'speedBumps': [],
-            'guideArrows': []
-
+            'guideArrows': [],
+            'bramas': []
         }
 
 
