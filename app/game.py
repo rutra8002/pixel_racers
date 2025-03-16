@@ -196,15 +196,15 @@ class Game:
             for entry in reversed(self.console_history[-10:]):
                 input_text = f"> {entry['input']}"
                 output_text = entry['output']
-                input_surf = self.console_font.render(input_text, True, (255, 255, 255))
-                output_surf = self.console_font.render(output_text, True, (255, 255, 255))
+                input_surf = self.console_font.render(input_text, True, (0, 255, 0))
+                output_surf = self.console_font.render(output_text, True, (0, 255, 0))
                 self.screen.blit(input_surf, (10, y))
                 y += 20
                 self.screen.blit(output_surf, (10, y))
                 y += 20
 
             input_text = f"> {self.console_input}"
-            input_surf = self.console_font.render(input_text, True, (255, 255, 255))
+            input_surf = self.console_font.render(input_text, True, (0, 255, 0))
             self.screen.blit(input_surf, (10, self.height - 30))
 
 
