@@ -8,8 +8,8 @@ import json
 class Enemy(Car):
     def __init__(self, display, coordinates, rotation,model, crazy=False):
         super().__init__(display, coordinates, rotation,isPlayer=False,model=model)
-        self.game_dir = dsp.basic_display.map_dir
-        self.lv = dsp.game_display.diff
+        self.game_dir = display.map_dir
+        self.lv = display.diff
         with open(f"{self.game_dir}/{self.lv}.json", 'r') as f:
             self.map_data = json.load(f)
         self.coordinates = coordinates
