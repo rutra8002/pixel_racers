@@ -10,12 +10,11 @@ class Enemy(Car):
         super().__init__(display, coordinates, rotation,isPlayer=False,model=model)
         self.game_dir = display.map_dir
         self.lv = display.diff
-        with open(f"{self.game_dir}/{self.lv}.json", 'r') as f:
-            self.map_data = json.load(f)
+        self.map_data = display.map_data
         self.coordinates = coordinates
         self.chk_index = 0
         self.list_of_checkpoints = self.map_data['checkpoints']
-        self.map = self.map_data["map"]
+        self.map = self.display.map
         self.distance_right = 10000
         self.distance_down = 10000
         self.distance_up = 10000
