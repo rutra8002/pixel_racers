@@ -161,7 +161,7 @@ class Car:
                 self.car3d_height = 1.5 * self.car3d_height_factor
         elif model == 4:
             self.num_of_sprites = 11
-            self.img_size = (4, 18)
+            self.img_size = (10, 18)
             if self.car3d_height_factor == None:
                 self.car3d_height = 3
             else:
