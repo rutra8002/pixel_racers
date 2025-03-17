@@ -1426,7 +1426,7 @@ class credits(basic_display):
                 self.currentText = 0
             self.text.update_text(self.texts[self.currentText])
             self.last_update_time = current_time
-            self.text.update_position(random.randint(250, self.game.width - 250), random.randint(100, self.game.height - 150))
+            self.text.update_position(random.randint(250, self.game.width - 250), random.randint(100, self.game.height - 100))
         self.text.render()
         for obj in self.objects:
             obj.render()
@@ -1444,9 +1444,29 @@ class credits(basic_display):
 class leaderboard(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
+        self.players = self.load()
+        self.texts = {}
+        for i, (name, score) in enumerate(self.players):
+            self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 60 * i,
+                                                             f'{name}: {score}', font_height=40, text_color=(255, 255, 255),
+                                                             background_color=(0, 0, 0), center=True,
+                                                             append=True)
+        self.title = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 10,
+                                            "Leaderboard", font_height=60, text_color=(255, 255, 255),
+                                            background_color=(0, 0, 0), center=True,
+                                            append=True)
     def mainloop(self):
         pass
+    def load(self):
+        players = []
+        with open('app/leaderboard.txt', 'r') as file:
+            for line in file:
+                name, score = line.strip().split(',')
+                players.append((name, int(score)))
+        return players
     def render(self):
+        for i, (name, score) in enumerate(self.players):
+            self.texts[f'text_{i}'].update_text(f'{name}: {score}')
         for obj in self.objects:
             obj.render()
 
