@@ -63,7 +63,7 @@ class Obstacle:
                 self.destroy()
         if self.type == 3:
             if self.y < self.target_y and self.falling:
-                self.y += 10
+                self.y += 580 * self.display.game.delta_time
                 print('f')
                 pygame.draw.circle(self.display.screen, (70, 70, 70), (self.x, self.target_y), 25)
             else:
