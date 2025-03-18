@@ -814,6 +814,9 @@ class Car:
                     self.velLeft *= -0.5
                 elif obstacle.type == 5:
                     self.currentMaxSpeed = self.gravelMaxSpeed
+                elif obstacle.type == 7:
+                    self.display.game.sound_manager.play_sound('coin')
+                    obstacle.destroy()
 
         if not self.wall:
             self.wall_frames = 0
