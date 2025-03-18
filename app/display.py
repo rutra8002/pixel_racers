@@ -97,7 +97,6 @@ class game_display(basic_display):
         self.deadPowerups = []
         self.deadBramas = []
         self.hasBanana = 1
-        self.hasCoin = -1
         self.banana = None
 
         self.environment_objects = [
@@ -195,7 +194,10 @@ class game_display(basic_display):
             self.bananas = self.map_data['bananas']
 
             self.coin = self.map_data['coin']
-
+            if self.coin == "None":
+                self.hasCoin = 0
+            else:
+                self.hasCoin = -1
             temp_list_of_bramas = self.map_data['bramas']
             for i, br in enumerate(temp_list_of_bramas):
                 self.obstacles.append(obstacle.Obstacle(self, br[0], br[1], "brama", br[2]))
@@ -584,7 +586,7 @@ class map_display(basic_display):
             pygame.draw.circle(self.screen, (0, 255, 0), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
         for i in self.guideArrows:
             pygame.draw.rect(self.screen, (0, 0, 255), (i[0] * self.block_width + self.cx - 10, i[1] * self.block_height + self.cy - 5, 20, 10))
-        if self.coin != None:
+        if self.coin != "None":
             pygame.draw.circle(self.screen, (200, 200, 0), (self.coin[0] * self.block_width + self.cx, self.coin[1] * self.block_height + self.cy), 10)
 
 
