@@ -1,3 +1,5 @@
+import time
+
 import pygame.draw
 from customObjects import custom_text
 from app import player
@@ -19,6 +21,7 @@ class checkpoint: # A checkpoint is a line with 2 points
     def render(self):
         pygame.draw.line(self.display.screen, self.color, self.start_pos, self.end_pos, width=self.display.block_width)
         self.text.render()
+        pygame.draw.circle(self.display.screen, 'red', ((self.start_pos[0]+self.end_pos[0])/2, (self.start_pos[1]+self.end_pos[1])/2), 5)
 
     def collision(self):
         for car in self.display.cars:
@@ -35,7 +38,10 @@ class checkpoint: # A checkpoint is a line with 2 points
                         self.display.hotbar.update_lap_text()
 
                     else:
+                        if not self.display.wong_way:
+                            car.wong_way_timer = time.time()
                         self.display.wong_way = True
+
 
                     car.last_passed_checkpoint = self.i
 

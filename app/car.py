@@ -105,7 +105,8 @@ class Car:
         self.car_mask = self.car3d_sprite.mask
         self.mask_image = self.car_mask.to_surface()
 
-
+        self.stunned = False
+        self.stunned_timer = 0
 
         self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
         self.in_oil = False
@@ -489,121 +490,123 @@ class Car:
 
     def movement(self):
         global dire
-        if self.display.game.delta_time < self.bananaTime:
-            self.bananaTime -= self.display.game.delta_time
-            self.velAng = 13
-        elif -self.display.game.delta_time > self.bananaTime:
-            self.bananaTime += self.display.game.delta_time
-            self.velAng = -13
-        else:
-            self.bananaTime = 0
-        self.prevPos = [self.x, self.y]
-        self.prevRotation = self.rotation
-        self.x, self.y = self.next_x, self.next_y
-        self.rotation = self.next_rotation
-        c, d = self.velLeft, self.velUp
-        if self.w and not self.in_oil:
-            if self.WASD_steering:
-                self.velUp += self.currentAcceleration
+        if not self.stunned:
+            if self.display.game.delta_time < self.bananaTime:
+                self.bananaTime -= self.display.game.delta_time
+                self.velAng = 13
+            elif -self.display.game.delta_time > self.bananaTime:
+                self.bananaTime += self.display.game.delta_time
+                self.velAng = -13
             else:
-                a, b = self.get_acceleration_with_trigonometry(1, self.currentAcceleration * self.display.game.delta_time * self.display.game.calibration * self.tireHealth / 2)
-                self.velLeft += a
-                self.velUp += b
-        if self.s and not self.in_oil:
-            if self.WASD_steering:
-                self.velUp -= self.currentAcceleration
-            else:
-                a, b = self.get_acceleration_with_trigonometry(-1, self.currentAcceleration * self.backDifference * self.display.game.delta_time * self.display.game.calibration * (self.tireHealth ** 0.5) / 2)
-                self.velLeft += a
-                self.velUp += b
-        if self.a and not self.in_oil:
-            if self.WASD_steering:
-                self.velLeft += self.currentAcceleration
-            else:
+                self.bananaTime = 0
+            self.prevPos = [self.x, self.y]
+            self.prevRotation = self.rotation
+            self.x, self.y = self.next_x, self.next_y
+            self.rotation = self.next_rotation
+            c, d = self.velLeft, self.velUp
+            if self.w and not self.in_oil:
+                if self.WASD_steering:
+                    self.velUp += self.currentAcceleration
+                else:
+                    a, b = self.get_acceleration_with_trigonometry(1,
+                                                                   self.currentAcceleration * self.display.game.delta_time * self.display.game.calibration * self.tireHealth / 2)
+                    self.velLeft += a
+                    self.velUp += b
+            if self.s and not self.in_oil:
+                if self.WASD_steering:
+                    self.velUp -= self.currentAcceleration
+                else:
+                    a, b = self.get_acceleration_with_trigonometry(-1,
+                                                                   self.currentAcceleration * self.backDifference * self.display.game.delta_time * self.display.game.calibration * (
+                                                                               self.tireHealth ** 0.5) / 2)
+                    self.velLeft += a
+                    self.velUp += b
+            if self.a and not self.in_oil:
+                if self.WASD_steering:
+                    self.velLeft += self.currentAcceleration
+                else:
+                    self.steer_rotation += self.delta_rotation * self.display.game.delta_time * self.steering_speed
+            if self.d and not self.in_oil:
+                if self.WASD_steering:
+                    self.velLeft -= self.currentAcceleration
+                else:
+                    self.steer_rotation += -self.delta_rotation * self.display.game.delta_time * self.steering_speed
+            if self.q and self.WASD_steering:
                 self.steer_rotation += self.delta_rotation * self.display.game.delta_time * self.steering_speed
-        if self.d and not self.in_oil:
-            if self.WASD_steering:
-                self.velLeft -= self.currentAcceleration
-            else:
+            if self.e and self.WASD_steering:
                 self.steer_rotation += -self.delta_rotation * self.display.game.delta_time * self.steering_speed
-        if self.q and self.WASD_steering:
-            self.steer_rotation += self.delta_rotation * self.display.game.delta_time * self.steering_speed
-        if self.e and self.WASD_steering:
-            self.steer_rotation += -self.delta_rotation * self.display.game.delta_time * self.steering_speed
-        if not self.a and not self.d and not self.in_oil:
-            self.steer_rotation -= 10*self.steer_rotation * self.display.game.delta_time
-        if abs(self.steer_rotation) < 0.01:
-            self.steer_rotation = 0
+            if not self.a and not self.d and not self.in_oil:
+                self.steer_rotation -= 10 * self.steer_rotation * self.display.game.delta_time
+            if abs(self.steer_rotation) < 0.01:
+                self.steer_rotation = 0
 
+            self.steer_rotation = max(self.min_steer_rotation, min(self.steer_rotation, self.max_steer_rotation))
 
+            if self.WASD_steering:
+                self.next_rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * 2
 
-        self.steer_rotation = max(self.min_steer_rotation, min(self.steer_rotation, self.max_steer_rotation))
+            if self.boost and self.nitroAmount >= 1 and not self.WASD_steering:
+                if not self.infiNitro:
+                    self.nitroAmount -= 1
+                a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
+                self.velLeft += a * self.display.game.delta_time * self.display.game.calibration
+                self.velUp += b * self.display.game.delta_time * self.display.game.calibration
 
-        if self.WASD_steering:
-            self.next_rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed * 2
+            magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
+            dire = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
 
-        if self.boost and self.nitroAmount >= 1 and not self.WASD_steering:
-            if not self.infiNitro:
-                self.nitroAmount -= 1
-            a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
-            self.velLeft += a * self.display.game.delta_time * self.display.game.calibration
-            self.velUp += b * self.display.game.delta_time * self.display.game.calibration
+            if magnitude > self.currentFriction:
+                modifier = magnitude / 200
+                if modifier > 2:
+                    modifier = 2
+                if modifier < 0.2:
+                    modifier = 0.2
+                self.goingForward = self.check_if_forward(dire)
+                if self.goingForward:
+                    self.next_rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
+                else:
+                    self.next_rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
+            if magnitude > self.currentMaxSpeed:
+                self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
+                # elif self.velLeft == c and self.velUp == d:
+            if self.velLeft != 0 or self.velUp != 0:
+                s = self.check_if_sideways(dire)
+                self.slow_down(self.currentFriction * s / magnitude / (self.tireHealth ** 0.2))
 
-        magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
-        dire = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
+            if self.borderBounce:
+                if self.x < 0:
+                    self.velLeft *= -self.borderBounciness
+                    self.x += 1
+                if self.x > self.display.screenWidth:
+                    self.velLeft *= -self.borderBounciness
+                    self.x -= 1
+                if self.y < 0:
+                    self.velUp *= -self.borderBounciness
+                    self.y += 1
+                if self.y > self.display.screenHeight_without_hotbar:
+                    self.velUp *= -self.borderBounciness
+                    self.y -= 1
 
-        if magnitude > self.currentFriction:
-            modifier = magnitude / 200
-            if modifier > 2:
-                modifier = 2
-            if modifier < 0.2:
-                modifier = 0.2
-            self.goingForward = self.check_if_forward(dire)
-            if self.goingForward:
-                self.next_rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
             else:
-                self.next_rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
-        if magnitude > self.currentMaxSpeed:
-            self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
-            # elif self.velLeft == c and self.velUp == d:
-        if self.velLeft != 0 or self.velUp != 0:
-            s = self.check_if_sideways(dire)
-            self.slow_down(self.currentFriction * s / magnitude / (self.tireHealth ** 0.2))
+                if self.x < 0:
+                    self.x += 2
+                    self.velLeft = -self.borderForce
+                if self.x > self.display.screenWidth:
+                    self.x -= 2
+                    self.velLeft = self.borderForce
+                if self.y < 0:
+                    self.y += 2
+                    self.velUp = -self.borderForce
+                if self.y > self.display.screenHeight_without_hotbar:
+                    self.y -= 2
+                    self.velUp = self.borderForce
 
-        if self.borderBounce:
-            if self.x < 0:
-                self.velLeft *= -self.borderBounciness
-                self.x += 1
-            if self.x > self.display.screenWidth:
-                self.velLeft *= -self.borderBounciness
-                self.x -= 1
-            if self.y < 0:
-                self.velUp *= -self.borderBounciness
-                self.y += 1
-            if self.y > self.display.screenHeight_without_hotbar:
-                self.velUp *= -self.borderBounciness
-                self.y -= 1
-
-        else:
-            if self.x < 0:
-                self.x += 2
-                self.velLeft = -self.borderForce
-            if self.x > self.display.screenWidth:
-                self.x -= 2
-                self.velLeft = self.borderForce
-            if self.y < 0:
-                self.y += 2
-                self.velUp = -self.borderForce
-            if self.y > self.display.screenHeight_without_hotbar:
-                self.y -= 2
-                self.velUp = self.borderForce
-
-        self.archiveCords = [self.x, self.y]
-        self.next_x -= self.velLeft * self.display.game.delta_time
-        self.next_y -= self.velUp * self.display.game.delta_time
-        self.delta_x, self.delta_y = self.next_x - self.x, self.next_y - self.y
-        self.next_rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
-        self.velAng *= self.damping
+            self.archiveCords = [self.x, self.y]
+            self.next_x -= self.velLeft * self.display.game.delta_time
+            self.next_y -= self.velUp * self.display.game.delta_time
+            self.delta_x, self.delta_y = self.next_x - self.x, self.next_y - self.y
+            self.next_rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
+            self.velAng *= self.damping
 
     def use_powerup(self):
         if len(self.inventory) == 0:
