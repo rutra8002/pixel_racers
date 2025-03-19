@@ -46,7 +46,7 @@ class Hotbar:
         self.stopwatch.start_counting_time = True
 
     def update_lap_text(self):
-        self.lap_text.update_text(f'Lap: {self.display.p.lap}/5')
+        self.lap_text.update_text(f'Lap: {self.display.p.lap}/{self.display.laps}')
 
     def update_player_standing(self):
         for i, car in enumerate(self.display.leaderboard_list):

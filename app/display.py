@@ -95,8 +95,7 @@ class game_display(basic_display):
         self.wong_way_image = custom_images.Custom_image(self, 'images/wong_way.png', self.game.width/2, self.game.height/8, 100, 96, append=False)
 
         self.cars = [] #the physical cars of enemies and of the player
-        self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
-        self.hotbar.set_player_standing()
+
 
         self.particle_system = ParticleSystem()
         self.placement_variance = 10
@@ -104,6 +103,8 @@ class game_display(basic_display):
         self.deadBramas = []
         self.hasBanana = 1
         self.banana = None
+
+        self.started_race = False
 
         self.environment_objects = [
             {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=True), "coords": (200, 300)},
@@ -114,7 +115,8 @@ class game_display(basic_display):
         self.p = player.Player(self, self.player_position, self.player_rotation, self.game.player_model)
 
         self.leaderboard = {}
-
+        self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+        self.hotbar.set_player_standing()
         for e in self.enemies:
             enemy.Enemy(self, e[0], e[1], 1)
 
@@ -271,6 +273,13 @@ class game_display(basic_display):
 
 
     def mainloop(self):
+        if self.started_race == False:
+            for car in self.cars:
+                car.start_race()
+            self.started_race = True
+
+
+
         if self.hotbar.stopwatch.start_time == 0:
             self.hotbar.start_counting_time()
 
@@ -342,7 +351,12 @@ class game_display(basic_display):
 
     def end_race(self):
         for car in self.leaderboard_list:
-            print(car.isPlayer)
+            try:
+                avg = sum(car.lap_times)/len(car.lap_times)
+            except:
+                avg = 0
+
+            print(car.isPlayer, car.lap_times, avg)
 
 
 class map_display(basic_display):
@@ -445,6 +459,7 @@ class map_display(basic_display):
         self.temp_map_data = dict(self.map_data)
         self.enemies = []
         self.laps = 5
+        self.lapstext.update_text(f'{self.laps}')
 
 
     def add_lap(self, amount):
@@ -470,6 +485,8 @@ class map_display(basic_display):
         self.guideArrows = self.temp_map_data['guideArrows']
         self.coin = self.temp_map_data['coin']
         self.laps = self.temp_map_data['laps']
+
+        self.lapstext.update_text(f'{self.laps}')
         for e in self.enemies:
             e[0][0] = e[0][0] * self.zoom_level / self.block_width
             e[0][1] = e[0][1] * self.zoom_level / self.block_height
