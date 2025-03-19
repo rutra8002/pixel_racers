@@ -52,7 +52,7 @@ class basic_display:
             'enemies': [],
             'checkpoints': [],
             'powerups': [],
-            'coin': [],
+            'coin': 'None',
             'bananas': [],
             'barriers': [],
             'speedBumps': [],
@@ -623,7 +623,7 @@ class map_display(basic_display):
             pygame.draw.circle(self.screen, (0, 255, 0), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
         for i in self.guideArrows:
             pygame.draw.rect(self.screen, (0, 0, 255), (i[0] * self.block_width + self.cx - 10, i[1] * self.block_height + self.cy - 5, 20, 10))
-        if self.coin != "None":
+        if self.coin != None and self.coin != 'None' and len(self.coin) > 0:
             pygame.draw.circle(self.screen, (200, 200, 0), (self.coin[0] * self.block_width + self.cx, self.coin[1] * self.block_height + self.cy), 10)
 
 
