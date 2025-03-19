@@ -20,11 +20,14 @@ class Hotbar:
         self.display.objects.append(self)
 
         self.stopwatch = StopWatch(self)
-        self.lap_text = custom_text.Custom_text(self.display, self.x+self.w/7, self.y + self.h/2.5 + 50, f'Lap: 1/5', text_color='white')
+
 
     def events(self, event):
         pass
 
+    def set_laps(self):
+        self.lap_text = custom_text.Custom_text(self.display, self.x + self.w / 7, self.y + self.h / 2.5 + 50,
+                                                f'Lap: 1/{self.display.laps}', text_color='white')
     def render(self):
         pygame.draw.rect(self.game.screen, self.color, self.rect, border_radius=20)
         pygame.draw.rect(self.game.screen, self.outline_color, self.rect, width=5, border_radius=20)

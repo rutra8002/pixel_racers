@@ -56,7 +56,8 @@ class basic_display:
             'barriers': [],
             'speedBumps': [],
             'guideArrows': [],
-            'bramas': []
+            'bramas': [],
+            'laps': 5
         }
 
 
@@ -86,6 +87,7 @@ class game_display(basic_display):
 
         self.obstacles = []
         self.import_map()
+        self.hotbar.set_laps()
 
         self.wong_way = False
         self.wong_way_image = custom_images.Custom_image(self, 'images/wong_way.png', self.game.width/2, self.game.height/8, 100, 96, append=False)
@@ -209,7 +211,7 @@ class game_display(basic_display):
 
             self.enemies = self.map_data['enemies']
 
-
+            self.laps = self.map_data['laps']
             f.close()
 
 
@@ -346,6 +348,8 @@ class map_display(basic_display):
         self.enemies = []
         self.enemy_rotation = 0
 
+        self.laps = 5
+
         self.brush_size = 30
         self.dragging = False
 
@@ -361,6 +365,15 @@ class map_display(basic_display):
 
         self.brushtext = custom_text.Custom_text(self, 10, 70, f'Brush size: {self.brush_size}', text_color='white', font_height=30, center=False)
         self.tooltext = custom_text.Custom_text(self, 10, 100, f'Tool: {self.tool}  Angle: {self.angle}', text_color='white', font_height=30, center=False)
+
+        custom_text.Custom_text(self, 10, 160, f'Laps:', text_color='white', font_height=30, center=False)
+
+        self.lapstext = custom_text.Custom_text(self, 250, 160, f'{self.laps}', text_color='white', font_height=30, center=False)
+        custom_button.Button(self, 'substract_lap', 150, 160, 70, 35, (16, 16, 16), text='-', text_color='white', outline_color='white', outline_width=2, border_radius=3)
+        custom_button.Button(self, 'add_lap', 300, 160, 70, 35, (16, 16, 16), text='+', text_color='white',
+                             outline_color='white', outline_width=2, border_radius=3)
+
+
         self.player_pos_text = custom_text.Custom_text(self, 10, 220, f'Player position: {self.player_position}',
                                                        text_color='white', font_height=30, center=False)
         self.cursor_pos_text = custom_text.Custom_text(self, 10, 250, f'Cursor position: (0, 0)',
@@ -399,7 +412,13 @@ class map_display(basic_display):
         self.current_checkpoint = []
         self.temp_map_data = dict(self.map_data)
         self.enemies = []
+        self.laps = 5
 
+
+    def add_lap(self, amount):
+        if self.laps + amount >= 1:
+            self.laps += amount
+            self.lapstext.update_text(f'{self.laps}')
 
     def load_map(self, map_data):
         self.reset_map()
@@ -417,6 +436,7 @@ class map_display(basic_display):
         self.bramas = self.temp_map_data['bramas']
         self.speedBumps = self.temp_map_data['speedBumps']
         self.guideArrows = self.temp_map_data['guideArrows']
+        self.laps = self.temp_map_data['laps']
         for e in self.enemies:
             e[0][0] = e[0][0] * self.zoom_level / self.block_width
             e[0][1] = e[0][1] * self.zoom_level / self.block_height
@@ -809,7 +829,8 @@ class map_display(basic_display):
             'bananas': self.bananas,
             'bramas': self.bramas,
             'speedBumps': self.speedBumps,
-            'guideArrows': self.guideArrows
+            'guideArrows': self.guideArrows,
+            'laps': self.laps
         }
 
         self.temp_map_data.update(map_data)
