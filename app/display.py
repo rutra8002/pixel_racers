@@ -140,7 +140,7 @@ class game_display(basic_display):
 
     def draw_map(self):
         #draw test_map_one img
-        if self.difficulty == "New_Level_one":
+        if self.difficulty == "Finished_Level_One":
             self.map_surface.blit(images.mapone, (0, 0))
         else:
             self.map_surface.fill(self.bgColor)
