@@ -88,11 +88,15 @@ class game_display(basic_display):
         self.obstacles = []
         self.import_map()
         self.hotbar.set_laps()
+        self.amount_of_checkpoints = len(self.checkpoints)
 
         self.wong_way = False
         self.wong_way_image = custom_images.Custom_image(self, 'images/wong_way.png', self.game.width/2, self.game.height/8, 100, 96, append=False)
 
         self.cars = [] #the physical cars of enemies and of the player
+        self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+        self.hotbar.set_player_standing()
+
         self.particle_system = ParticleSystem()
         self.powerup_placement_variance = 10
         self.deadPowerups = []
@@ -226,6 +230,7 @@ class game_display(basic_display):
             obj.render()
 
 
+
         for obj in self.environment_objects:
             if obj["type"] == "tree":
                 obj["sprite"].render(self.screen, obj["coords"])
@@ -262,7 +267,10 @@ class game_display(basic_display):
     def mainloop(self):
         if self.hotbar.stopwatch.start_time == 0:
             self.hotbar.start_counting_time()
+
+        self.update_standings()
         self.hotbar.mainloop()
+        self.p.get_distance_to_nearest_checkpoint()
         if len(self.deadPowerups) > 0:
             for p in self.deadPowerups:
                 if p[2] > 0:
@@ -314,6 +322,11 @@ class game_display(basic_display):
 
     def update_player_model(self, model):
         self.p.change_model(model)
+
+
+    def update_standings(self):
+        self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+
 
 class map_display(basic_display):
     def __init__(self, game):

@@ -31,7 +31,7 @@ class checkpoint: # A checkpoint is a line with 2 points
                         car.current_checkpoint = self.i
                         self.display.wong_way = False
 
-                    elif self.i == 0 and car.current_checkpoint == len(self.display.checkpoints)-1:
+                    elif self.i == 0 and car.current_checkpoint == self.display.amount_of_checkpoints-1:
                         car.current_checkpoint = self.i
                         car.lap += 1
                         self.display.wong_way = False
@@ -44,6 +44,15 @@ class checkpoint: # A checkpoint is a line with 2 points
 
 
                     car.last_passed_checkpoint = self.i
+
+                else:
+                    if car.current_checkpoint == self.i or car.current_checkpoint == self.i - 1:
+                        car.current_checkpoint = self.i
+
+                    elif self.i == 0 and car.current_checkpoint == self.display.amount_of_checkpoints-1:
+                        car.current_checkpoint = self.i
+                        car.lap += 1
+
 
                 self.color = (0, 0, 255)
                 player_name = car.player_name

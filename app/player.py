@@ -7,8 +7,6 @@ import math
 class Player(Car):
     def __init__(self, display, coordinates, rotation, model):
         super().__init__(display, coordinates, rotation, isPlayer=True, model=model)
-        self.current_checkpoint = -1
-        self.lap = 1
         self.wong_way_timer = 0
 
     def events(self, event):
@@ -56,7 +54,7 @@ class Player(Car):
         self.x = self.next_x
         self.y = self.next_y
 
-        if self.current_checkpoint + 1 == len(self.display.checkpoints):
+        if self.current_checkpoint + 1 == self.display.amount_of_checkpoints:
             checkpoint_to_rotate_towards = self.display.checkpoints[0]
         else:
             checkpoint_to_rotate_towards = self.display.checkpoints[self.current_checkpoint + 1]

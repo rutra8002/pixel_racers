@@ -31,7 +31,8 @@ class Car:
         self.wall_frames = 0
         self.last_frames_len = 10
 
-
+        self.current_checkpoint = -1
+        self.lap = 1
 
         self.damping = 0.7
 
@@ -607,6 +608,33 @@ class Car:
             self.delta_x, self.delta_y = self.next_x - self.x, self.next_y - self.y
             self.next_rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
             self.velAng *= self.damping
+
+
+    def get_distance_to_nearest_checkpoint(self):
+        if self.current_checkpoint + 1 == self.display.amount_of_checkpoints:
+            x1, y1 = self.display.checkpoints[0].start_pos
+            x2, y2 = self.display.checkpoints[0].end_pos
+        else:
+            x1, y1 = self.display.checkpoints[self.current_checkpoint + 1].start_pos
+            x2, y2 = self.display.checkpoints[self.current_checkpoint + 1].end_pos
+
+        segment_length_sq = (x2 - x1) ** 2 + (y2 - y1) ** 2
+        if segment_length_sq == 0:
+            return lolino.dist(self.display.checkpoints[0].start_pos, (self.x, self.y))
+
+        t = ((self.x - x1) * (x2 - x1) + (self.y - y1) * (y2 - y1)) / segment_length_sq
+
+
+        t = max(0, min(1, t))
+
+        closest_x = x1 + t * (x2 - x1)
+        closest_y = y1 + t * (y2 - y1)
+
+
+        return lolino.dist((closest_x, closest_y), (self.x, self.y))
+
+
+
 
     def use_powerup(self):
         if len(self.inventory) == 0:
