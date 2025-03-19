@@ -1166,6 +1166,7 @@ class Car:
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.prickWheels()
                     elif tile == 6:
-                        if self.deadTires > 0:
+                        while self.deadTires > 0:
                             self.display.game.sound_manager.play_sound('Pitstop')
-                            self.deadTires = 0
+                            self.deadTires -= 1
+                            self.tireHealth += self.tireDamage
