@@ -7,8 +7,7 @@ import math
 class Player(Car):
     def __init__(self, display, coordinates, rotation, model):
         super().__init__(display, coordinates, rotation, isPlayer=True, model=model)
-        self.current_checkpoint = -1
-        self.lap = 1
+        self.wong_way_timer = 0
 
     def events(self, event):
 
@@ -47,3 +46,28 @@ class Player(Car):
                 self.q = False
             if event.key == pygame.K_e:
                 self.e = False
+
+    def return_to_last_checkpoint(self):
+        checkpoint_to_return = self.display.checkpoints[self.current_checkpoint]
+        self.next_x = (checkpoint_to_return.start_pos[0] + checkpoint_to_return.end_pos[0])/2
+        self.next_y = (checkpoint_to_return.start_pos[1] + checkpoint_to_return.end_pos[1])/2
+        self.x = self.next_x
+        self.y = self.next_y
+
+        if self.current_checkpoint + 1 == self.display.amount_of_checkpoints:
+            checkpoint_to_rotate_towards = self.display.checkpoints[0]
+        else:
+            checkpoint_to_rotate_towards = self.display.checkpoints[self.current_checkpoint + 1]
+        self.rotation = self.rotate_toward(((checkpoint_to_rotate_towards.start_pos[0] + checkpoint_to_rotate_towards.end_pos[0])/2, (checkpoint_to_rotate_towards.start_pos[1] + checkpoint_to_rotate_towards.end_pos[1])/2))
+        self.next_rotation = self.rotation
+        self.stunned = True
+        self.stunned_timer = time.time()
+
+        self.velUp = 0
+        self.velLeft = 0
+
+    def rotate_toward(self, pos):
+        rel_x, rel_y = pos[0] - self.x, pos[1] - self.y
+
+        angle = lolino.degrees(lolino.atan2(-rel_y, rel_x)) - 90
+        return angle

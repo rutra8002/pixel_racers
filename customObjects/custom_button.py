@@ -105,12 +105,19 @@ class Button:  # A button class
                 self.display.game.change_display('main_menu_display')
             elif self.action == "export_png":
                 self.display.export_png()
+
+            elif self.action == 'substract_lap':
+                self.display.add_lap(-1)
+            elif self.action == 'add_lap':
+                self.display.add_lap(1)
+
             elif 'edit_map_titled_' in self.action:
                 with open(f"{self.display.game.map_dir}/{self.action.removeprefix('edit_map_titled_')}.json", 'r') as f:
                     map_data = json.load(f)
                     self.display.game.displays['map_display'].load_map(map_data)
                     f.close()
                 self.display.game.change_display('map_display')
+
             else:
                 print('No action assigned to this button')
 

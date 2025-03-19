@@ -20,11 +20,18 @@ class Hotbar:
         self.display.objects.append(self)
 
         self.stopwatch = StopWatch(self)
-        self.lap_text = custom_text.Custom_text(self.display, self.x+self.w/7, self.y + self.h/2.5 + 50, f'Lap: 1/5', text_color='white')
+
 
     def events(self, event):
         pass
 
+    def set_laps(self):
+        self.lap_text = custom_text.Custom_text(self.display, self.x + self.w / 7, self.y + self.h / 2.5 + 50,
+                                                f'Lap: 1/{self.display.laps}', text_color='white')
+
+    def set_player_standing(self):
+        self.player_standing = custom_text.Custom_text(self.display, self.x + self.w*(6.5/7), self.y + self.h / 2,
+                                                f'1st', text_color=(255, 215, 0))
     def render(self):
         pygame.draw.rect(self.game.screen, self.color, self.rect, border_radius=20)
         pygame.draw.rect(self.game.screen, self.outline_color, self.rect, width=5, border_radius=20)
@@ -32,13 +39,37 @@ class Hotbar:
 
     def mainloop(self):
         self.stopwatch.update_time()
+        self.update_player_standing()
 
     def start_counting_time(self):
         self.stopwatch.start_time = time.time()
         self.stopwatch.start_counting_time = True
 
     def update_lap_text(self):
-        self.lap_text.update_text(f'Lap: {self.display.p.lap}/5')
+        self.lap_text.update_text(f'Lap: {self.display.p.lap}/{self.display.laps}')
+
+    def update_player_standing(self):
+        for i, car in enumerate(self.display.leaderboard_list):
+            if car.isPlayer:
+
+                if i == 0:
+                    text = f"1st"
+                    color = (255, 215, 0)
+                elif i == 1:
+                    text = f"2nd"
+                    color = (192, 192, 192)
+                elif i == 2:
+                    text = f"3rd"
+                    color = (205, 127, 50)
+                else:
+                    text = f"{i + 1}th"
+                    color = (255, 255, 255)
+
+
+                self.player_standing.update_text(text)
+                self.player_standing.update_color(color, None)
+                break
+
 
 class StopWatch:
     def __init__(self, hotbar):

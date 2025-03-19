@@ -1,3 +1,5 @@
+import time
+
 import pygame.draw
 from customObjects import custom_text
 from app import player
@@ -19,6 +21,7 @@ class checkpoint: # A checkpoint is a line with 2 points
     def render(self):
         pygame.draw.line(self.display.screen, self.color, self.start_pos, self.end_pos, width=self.display.block_width)
         self.text.render()
+        pygame.draw.circle(self.display.screen, 'red', ((self.start_pos[0]+self.end_pos[0])/2, (self.start_pos[1]+self.end_pos[1])/2), 5)
 
     def collision(self):
         for car in self.display.cars:
@@ -28,16 +31,35 @@ class checkpoint: # A checkpoint is a line with 2 points
                         car.current_checkpoint = self.i
                         self.display.wong_way = False
 
-                    elif self.i == 0 and car.current_checkpoint == len(self.display.checkpoints)-1:
+                    elif self.i == 0 and car.current_checkpoint == self.display.amount_of_checkpoints-1:
                         car.current_checkpoint = self.i
                         car.lap += 1
                         self.display.wong_way = False
-                        self.display.hotbar.update_lap_text()
+                        car.lap_times.append(time.time() - car.begining_lap_time)
+                        car.begining_lap_time = time.time()
+                        if car.lap <= self.display.laps:
+                            self.display.hotbar.update_lap_text()
+                        else:
+                            self.display.end_race()
 
                     else:
+                        if not self.display.wong_way:
+                            car.wong_way_timer = time.time()
                         self.display.wong_way = True
 
+
                     car.last_passed_checkpoint = self.i
+
+                else:
+                    if car.current_checkpoint == self.i or car.current_checkpoint == self.i - 1:
+                        car.current_checkpoint = self.i
+
+                    elif self.i == 0 and car.current_checkpoint == self.display.amount_of_checkpoints-1:
+                        car.current_checkpoint = self.i
+                        car.lap += 1
+                        car.lap_times.append(time.time() - car.begining_lap_time)
+                        car.begining_lap_time = time.time()
+
 
                 self.color = (0, 0, 255)
                 player_name = car.player_name
