@@ -35,7 +35,10 @@ class checkpoint: # A checkpoint is a line with 2 points
                         car.current_checkpoint = self.i
                         car.lap += 1
                         self.display.wong_way = False
-                        self.display.hotbar.update_lap_text()
+                        if car.lap <= self.display.laps:
+                            self.display.hotbar.update_lap_text()
+                        else:
+                            self.display.end_race()
 
                     else:
                         if not self.display.wong_way:

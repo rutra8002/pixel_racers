@@ -327,6 +327,10 @@ class game_display(basic_display):
     def update_standings(self):
         self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
 
+    def end_race(self):
+        for car in self.leaderboard_list:
+            print(car.isPlayer)
+
 
 class map_display(basic_display):
     def __init__(self, game):
