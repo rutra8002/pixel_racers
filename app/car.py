@@ -1,4 +1,5 @@
 import random
+import time
 from operator import invert
 import string
 
@@ -47,6 +48,8 @@ class Car:
         self.tireHealth = 1
         self.inventory = [1, 2, 3, 4] # 1 to super siła, 2 to barierka, 3 to kolczatka, 4 to heal - leczy 1 oponę
         self.inventory_size = 2
+
+        self.lap_times = []
 
         self.strength = False # następne zderzenie z autem nie daje tobie knockbacku. Przy zderzeniu ze ścianą znika i nic nie robi
         self.infiNitro = True
@@ -1169,3 +1172,7 @@ class Car:
                         if self.deadTires > 0:
                             self.display.game.sound_manager.play_sound('Pitstop')
                             self.deadTires = 0
+
+
+    def start_race(self):
+        self.begining_lap_time = time.time()
