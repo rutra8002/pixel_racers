@@ -242,6 +242,7 @@ class Car:
                 bonus = random.randint(0, 4)
                 if bonus == 0:
                     self.nitroAmount += 20
+
                     if self.nitroAmount > 100:
                         self.nitroAmount = 100
                 elif len(self.inventory) < self.inventory_size:
