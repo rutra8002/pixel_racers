@@ -22,8 +22,16 @@ class Hotbar:
         self.stopwatch = StopWatch(self)
 
 
+
     def events(self, event):
         pass
+
+
+    def after_player_setup(self):
+        self.set_laps()
+        self.set_player_standing()
+        self.nitro_bar = Nitrobar(self.display, self.x + self.w*6/7, self.y+15,25,self.h*2/3,5, (150, 255, 255), (0, 0, 255))
+        custom_text.Custom_text(self.display, self.x+self.w*6.05/7, self.y+30 + self.h*2/3, 'Nitro', text_color='white', font_height=15)
 
     def set_laps(self):
         self.lap_text = custom_text.Custom_text(self.display, self.x + self.w / 7, self.y + self.h / 2.5 + 50,
@@ -35,11 +43,13 @@ class Hotbar:
     def render(self):
         pygame.draw.rect(self.game.screen, self.color, self.rect, border_radius=20)
         pygame.draw.rect(self.game.screen, self.outline_color, self.rect, width=5, border_radius=20)
+        self.nitro_bar.render()
 
 
     def mainloop(self):
         self.stopwatch.update_time()
         self.update_player_standing()
+        self.nitro_bar.update_bar_height()
 
     def start_counting_time(self):
         self.stopwatch.start_time = time.time()
@@ -99,3 +109,46 @@ class StopWatch:
                 seconds_time = f'{seconds_time}'
 
             self.text.update_text(f'Time: {split_str[1]}:{seconds_time}')
+
+
+import pygame
+
+class Nitrobar:
+    def __init__(self, display, x, y, width, max_height, pixel_size, start_color, end_color):
+        self.display = display
+        self.screen = self.display.screen
+        self.x = int(x)
+        self.y = int(y)
+        self.width = width
+        self.max_height = max_height
+        self.pixel_size = pixel_size
+        self.start_color = start_color
+        self.end_color = end_color
+
+        self.update_bar_height()
+
+    def lerp_color(self, color1, color2, t):
+        return (
+            int(color1[0] + (color2[0] - color1[0]) * t),
+            int(color1[1] + (color2[1] - color1[1]) * t),
+            int(color1[2] + (color2[2] - color1[2]) * t),
+        )
+
+    def render(self):
+        bottom_y = int(self.y + self.max_height)
+
+        adjusted_height = (self.height // self.pixel_size) * self.pixel_size
+        start_y = bottom_y - adjusted_height
+
+
+        for y in range(start_y, bottom_y, self.pixel_size):
+            for x in range(self.x, self.x + self.width, self.pixel_size):
+                t = (y - start_y) / adjusted_height if adjusted_height > 0 else 0
+                color = self.lerp_color(self.start_color, self.end_color, t)
+                pygame.draw.rect(self.screen, color, (x, y, self.pixel_size, self.pixel_size))
+
+
+        pygame.draw.rect(self.screen, (26, 26, 26), (self.x, self.y, self.width, self.max_height), width=5)
+
+    def update_bar_height(self):
+        self.height = int(self.max_height * self.display.p.nitroAmount / 100)

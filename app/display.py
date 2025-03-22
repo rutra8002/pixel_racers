@@ -88,7 +88,6 @@ class game_display(basic_display):
 
         self.obstacles = []
         self.import_map()
-        self.hotbar.set_laps()
         self.amount_of_checkpoints = len(self.checkpoints)
 
         self.wong_way = False
@@ -116,7 +115,7 @@ class game_display(basic_display):
 
         self.leaderboard = {}
         self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
-        self.hotbar.set_player_standing()
+        self.hotbar.after_player_setup()
         for e in self.enemies:
             enemy.Enemy(self, e[0], e[1], 1)
 
