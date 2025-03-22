@@ -51,7 +51,7 @@ class checkpoint: # A checkpoint is a line with 2 points
                     car.last_passed_checkpoint = self.i
 
                 else:
-                    if car.current_checkpoint == self.i or car.current_checkpoint == self.i - 1:
+                    if car.current_checkpoint == self.i or car.current_checkpoint == self.i - 1 or car.current_checkpoint == self.i - 2 or car.current_checkpoint == self.i - 3:
                         car.current_checkpoint = self.i
 
                     elif self.i == 0 and car.current_checkpoint == self.display.amount_of_checkpoints-1:
