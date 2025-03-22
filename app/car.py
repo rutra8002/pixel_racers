@@ -240,6 +240,28 @@ class Car:
                 if self.isPlayer:
                     self.display.game.sound_manager.play_sound('Powerup')
                 bonus = random.randint(0, 4)
+
+                powerup_names = ["NITRO", "BARRIER", "SPIKES", "HEAL", "STRENGTH"]
+                if self.isPlayer:
+                    font = pygame.font.Font("fonts/joystix monospace.otf", 30)
+                    text_surface = font.render(f"Collected: {powerup_names[bonus]}", True, (255, 255, 255))
+
+                    text_rect = text_surface.get_rect(
+                        center=(self.display.game.width // 2, self.display.game.height // 5))
+
+                    bg_rect = text_rect.copy()
+                    bg_rect.inflate_ip(20, 10)
+
+                    self.display.powerup_text = {
+                        'surface': text_surface,
+                        'rect': text_rect,
+                        'bg_rect': bg_rect,
+                        'bg_color': (0, 0, 0)
+                    }
+                    self.display.powerup_text_timer = 7
+
+
+
                 if bonus == 0:
                     self.nitroAmount += 20
 
@@ -249,7 +271,22 @@ class Car:
                     self.inventory.append(bonus)
                 p.kill()
 
+        if hasattr(self.display, 'powerup_text') and hasattr(self.display, 'powerup_text_timer') and self.display.powerup_text_timer > 0:
+            # Draw background rectangle
+            pygame.draw.rect(
+                self.display.screen,
+                self.display.powerup_text['bg_color'],
+                self.display.powerup_text['bg_rect']
+            )
 
+            # Draw text
+            self.display.screen.blit(
+                self.display.powerup_text['surface'],
+                self.display.powerup_text['rect']
+            )
+
+            # Decrease timer
+            self.display.powerup_text_timer -= self.display.game.delta_time
         if self.display.game.debug:
             pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
 
