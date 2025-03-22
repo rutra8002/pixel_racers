@@ -850,12 +850,12 @@ class map_display(basic_display):
         for chp in self.checkpoints:
             if chp == self.checkpoints[0]:
                 color = self.color_map['m']  # Start/finish line
+                pygame.draw.line(map_surface, color,
+                                 (chp[0][0] * self.block_width, chp[0][1] * self.block_height),
+                                 (chp[1][0] * self.block_width, chp[1][1] * self.block_height),
+                                 width=int(self.block_width))
             else:
                 color = self.color_map['c']  # Regular checkpoint
-            pygame.draw.line(map_surface, color,
-                             (chp[0][0] * self.block_width, chp[0][1] * self.block_height),
-                             (chp[1][0] * self.block_width, chp[1][1] * self.block_height),
-                             width=int(self.block_width))
 
         # Generate filename with timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
