@@ -142,6 +142,8 @@ class game_display(basic_display):
         #draw test_map_one img
         if self.difficulty == "Finished_Level_One":
             self.map_surface.blit(images.mapone, (0, 0))
+        elif self.difficulty == "Finished_Level_Three":
+            self.map_surface.blit(images.mapthree, (0, 0))
         else:
             self.map_surface.fill(self.bgColor)
             for y in range(len(self.map)):
