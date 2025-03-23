@@ -33,7 +33,7 @@ class Hotbar:
         self.nitro_bar = Nitrobar(self.display, self.x + self.w*6/7, self.y+15,25,self.h*2/3,5, (150, 255, 255), (0, 0, 255))
         custom_text.Custom_text(self.display, self.x+self.w*6.05/7, self.y+30 + self.h*2/3, 'Nitro', text_color='white', font_height=15)
         self.inv = Inventory(self.display, self.x+self.w*5/7, self.y+15, 150, 150)
-        self.undercarge = Undercarge(self.display, self.w/2, self.y, 300, 180)
+        self.undercarge = Undercarge(self.display, self.w/1.6, self.y, 300, 180)
 
     def set_laps(self):
         self.lap_text = custom_text.Custom_text(self.display, self.x + self.w / 7, self.y + self.h / 2.5 + 50,
