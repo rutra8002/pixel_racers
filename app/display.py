@@ -274,6 +274,7 @@ class game_display(basic_display):
 
 
     def mainloop(self):
+        print(self.p.tireAmount)
         if self.started_race == False:
             for car in self.cars:
                 car.start_race()
@@ -343,6 +344,7 @@ class game_display(basic_display):
 
     def update_player_model(self, model):
         self.p.change_model(model)
+        self.hotbar.undercarge.update()
 
 
     def update_standings(self):

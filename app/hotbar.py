@@ -33,6 +33,7 @@ class Hotbar:
         self.nitro_bar = Nitrobar(self.display, self.x + self.w*6/7, self.y+15,25,self.h*2/3,5, (150, 255, 255), (0, 0, 255))
         custom_text.Custom_text(self.display, self.x+self.w*6.05/7, self.y+30 + self.h*2/3, 'Nitro', text_color='white', font_height=15)
         self.inv = Inventory(self.display, self.x+self.w*5/7, self.y+15, 150, 150)
+        self.undercarge = Undercarge(self.display, self.w/2, self.y, 300, 180)
 
     def set_laps(self):
         self.lap_text = custom_text.Custom_text(self.display, self.x + self.w / 7, self.y + self.h / 2.5 + 50,
@@ -46,6 +47,7 @@ class Hotbar:
         pygame.draw.rect(self.game.screen, self.outline_color, self.rect, width=5, border_radius=20)
         self.nitro_bar.render()
         self.inv.render()
+        self.undercarge.render()
 
 
     def mainloop(self):
@@ -207,5 +209,87 @@ class Inventory:
             self.big_img[self.inventory[0] - 1].render()
 
 
+class Undercarge:
+    def __init__(self, display, x, y, width, height):
+        self.display = display
+        self.screen = self.display.screen
+        self.x = x
+        self.y = y
+        self.w = width
+        self.h = height
 
+        self.xs = []
+        self.img = None
+
+        self.update()
+
+
+    def render(self):
+        if self.img != None:
+
+            pygame.draw.rect(self.screen, (76, 76, 76), (self.x - self.w / 2, self.y + 10, self.w, self.h - 20),
+                             border_radius=20)
+            pygame.draw.rect(self.screen, (126, 126, 126), (self.x - self.w / 2, self.y + 10, self.w, self.h - 20),
+                             border_radius=20, width=5)
+
+            self.img.render()
+
+            for _ in range(self.display.p.deadTires):
+                self.xs[_].render()
+
+
+    def update(self):
+        if self.img != None:
+            self.img.delete()
+            for x in self.xs:
+                x.delete()
+
+        self.xs = []
+        self.img = None
+        if self.display.p.tireAmount == 4:
+            self.img = custom_images.Custom_image(self.display, 'images/4-wheels.png', self.x, self.y + self.h / 2,
+                                                  self.w, self.h, append=False)
+            self.xs.append(
+                custom_images.Custom_image(self.display, 'images/x.png', self.x - self.w / 4.1, self.y + self.h / 4.4,
+                                           55, 50,
+                                           append=False))
+
+            self.xs.append(
+                custom_images.Custom_image(self.display, 'images/x.png', self.x - self.w / 4.1,
+                                           self.y + self.h - self.h / 4.4,
+                                           55, 50,
+                                           append=False))
+
+            self.xs.append(
+                custom_images.Custom_image(self.display, 'images/x.png', self.x - self.w / 4.1 + self.w / 1.95,
+                                           self.y + self.h / 4.4,
+                                           55, 50,
+                                           append=False))
+
+            self.xs.append(
+                custom_images.Custom_image(self.display, 'images/x.png', self.x - self.w / 4.1 + self.w / 1.95,
+                                           self.y + self.h - self.h / 4.4,
+                                           55, 50,
+                                           append=False))
+
+        if self.display.p.tireAmount == 3:
+            self.img = custom_images.Custom_image(self.display, 'images/3-wheels.png', self.x, self.y + self.h / 2,
+                                                  self.w, self.h, append=False)
+
+            self.xs.append(
+                custom_images.Custom_image(self.display, 'images/x.png', self.x - self.w / 4.1, self.y + self.h / 2,
+                                           55, 50,
+                                           append=False))
+
+            self.xs.append(
+                custom_images.Custom_image(self.display, 'images/x.png', self.x - self.w / 4.1 + self.w / 2.05,
+                                           self.y + self.h / 4.4,
+                                           55, 50,
+                                           append=False))
+
+            self.xs.append(
+                custom_images.Custom_image(self.display, 'images/x.png', self.x - self.w / 4.1 + self.w / 2.05,
+                                           self.y + self.h - self.h / 4.4,
+                                           55, 50,
+                                           append=False))
 

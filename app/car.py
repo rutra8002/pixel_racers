@@ -416,7 +416,7 @@ class Car:
             self.backDifference = 0.65
             self.mass = 0.8
             self.nitroPower = 0.5 * self.display.game.calibration
-            self.tireAmount = 3
+            self.tireAmount = 4
             self.deadTires = 0
             self.tireDamage = 0.15
 
@@ -442,7 +442,7 @@ class Car:
             self.backDifference = 1.4
             self.mass = 1.1
             self.nitroPower = 0.3 * self.display.game.calibration
-            self.tireAmount = 4
+            self.tireAmount = 3
             self.deadTires = 0
             self.tireDamage = 0.08
 
