@@ -232,7 +232,6 @@ class Car:
                     self.car = True
                     self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
                     if self.recentCollisions[c] == 0:
-                        print('poziom3')
                         self.handle_bumping(c)
                         back = 2
                         self.next_x, self.next_y, self.x, self.y = self.archiveCars[-back][0], self.archiveCars[-back][1], self.archiveCars[-back][0], self.archiveCars[-back][1]
