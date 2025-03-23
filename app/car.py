@@ -7,6 +7,8 @@ import pygame
 import math as lolino
 from particle_system import ParticleGenerator
 from unicodedata import normalize
+
+from app.images import police
 from customObjects.custom_text import Custom_text
 from app import images, obstacle
 from jeff_the_objects import stacked_sprite
@@ -230,9 +232,13 @@ class Car:
                     self.car = True
                     self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
                     if self.recentCollisions[c] == 0:
+                        print('poziom3')
                         self.handle_bumping(c)
-                        self.next_x, self.next_y, self.x, self.y = self.archiveCars[-1][0], self.archiveCars[-1][1], self.archiveCars[-1][0], self.archiveCars[-1][1]
-                        self.next_rotation, self.rotation = self.archiveCars[-1][2], self.archiveCars[-1][2]
+                        back = 2
+                        self.next_x, self.next_y, self.x, self.y = self.archiveCars[-back][0], self.archiveCars[-back][1], self.archiveCars[-back][0], self.archiveCars[-back][1]
+                        self.next_rotation, self.rotation = self.archiveCars[-back][2], self.archiveCars[-back][2]
+                        c.next_x, c.next_y, c.x, c.y = c.archiveCars[-back][0], c.archiveCars[-back][1], c.archiveCars[-back][0], c.archiveCars[-back][1]
+                        c.next_rotation, c.rotation = c.archiveCars[-back][2], c.archiveCars[-back][2]
                         self.recentCollisions[c] = pygame.time.get_ticks()
                         c.recentCollisions[self] = pygame.time.get_ticks()
 
@@ -653,27 +659,30 @@ class Car:
 
 
     def get_distance_to_nearest_checkpoint(self):
-        if self.current_checkpoint + 1 == self.display.amount_of_checkpoints:
-            x1, y1 = self.display.checkpoints[0].start_pos
-            x2, y2 = self.display.checkpoints[0].end_pos
-        else:
-            x1, y1 = self.display.checkpoints[self.current_checkpoint + 1].start_pos
-            x2, y2 = self.display.checkpoints[self.current_checkpoint + 1].end_pos
+        try:
+            if self.current_checkpoint + 1 == self.display.amount_of_checkpoints:
+                x1, y1 = self.display.checkpoints[0].start_pos
+                x2, y2 = self.display.checkpoints[0].end_pos
+            else:
+                x1, y1 = self.display.checkpoints[self.current_checkpoint + 1].start_pos
+                x2, y2 = self.display.checkpoints[self.current_checkpoint + 1].end_pos
 
-        segment_length_sq = (x2 - x1) ** 2 + (y2 - y1) ** 2
-        if segment_length_sq == 0:
-            return lolino.dist(self.display.checkpoints[0].start_pos, (self.x, self.y))
+            segment_length_sq = (x2 - x1) ** 2 + (y2 - y1) ** 2
+            if segment_length_sq == 0:
+                return lolino.dist(self.display.checkpoints[0].start_pos, (self.x, self.y))
 
-        t = ((self.x - x1) * (x2 - x1) + (self.y - y1) * (y2 - y1)) / segment_length_sq
-
-
-        t = max(0, min(1, t))
-
-        closest_x = x1 + t * (x2 - x1)
-        closest_y = y1 + t * (y2 - y1)
+            t = ((self.x - x1) * (x2 - x1) + (self.y - y1) * (y2 - y1)) / segment_length_sq
 
 
-        return lolino.dist((closest_x, closest_y), (self.x, self.y))
+            t = max(0, min(1, t))
+
+            closest_x = x1 + t * (x2 - x1)
+            closest_y = y1 + t * (y2 - y1)
+
+
+            return lolino.dist((closest_x, closest_y), (self.x, self.y))
+        except:
+            pass
 
 
 
@@ -830,7 +839,8 @@ class Car:
                         self.recentCollisions[car] = 0
 
         for car in self.recentCollisions:
-            if self.recentCollisions[car] != 0 and not self.collision_detection(car.car_mask, car.rect.topleft[0], car.rect.topleft[1]):
+            # if self.recentCollisions[car] != 0 and not self.collision_detection(car.car_mask, car.rect.topleft[0] + car.delta_x, car.rect.topleft[1] + car.delta_y):
+            if self.recentCollisions[car] != 0:
                 if pygame.time.get_ticks() - self.recentCollisions[car] > self.bumpingCooldown:
                     self.recentCollisions[car] = 0
 
