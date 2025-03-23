@@ -118,5 +118,5 @@ class Obstacle:
         if self.type == 3:
             self.display.banana = None
         if self.type == 7:
-            self.display.hasCoin = 1
+            self.display.hasCoin = 0
         del self

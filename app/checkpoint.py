@@ -2,7 +2,7 @@ import time
 
 import pygame.draw
 from customObjects import custom_text
-from app import player
+from app import player, obstacle
 
 class checkpoint: # A checkpoint is a line with 2 points
     def __init__(self, display, i, start_pos, end_pos):
@@ -39,6 +39,9 @@ class checkpoint: # A checkpoint is a line with 2 points
                         car.begining_lap_time = time.time()
                         if car.lap <= self.display.laps:
                             self.display.hotbar.update_lap_text()
+                            if self.display.hasCoin == 0:
+                                self.display.obstacles.append(obstacle.Obstacle(self.display, self.display.coin[0], self.display.coin[1], "coin"))
+                                self.display.hasCoin = 1
                         else:
                             self.display.end_race()
 

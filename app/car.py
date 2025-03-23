@@ -46,13 +46,13 @@ class Car:
 
         self.particle_color = [0, 0, 0]
         self.tireHealth = 1
-        self.inventory = [1, 2, 3, 4] # 1 to super siła, 2 to barierka, 3 to kolczatka, 4 to heal - leczy 1 oponę
+        self.inventory = [] # 1 to super siła, 2 to barierka, 3 to kolczatka, 4 to heal - leczy 1 oponę
         self.inventory_size = 2
 
         self.lap_times = []
 
         self.strength = False # następne zderzenie z autem nie daje tobie knockbacku. Przy zderzeniu ze ścianą znika i nic nie robi
-        self.infiNitro = True
+        self.infiNitro = False
 
         self.player_name = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
@@ -186,6 +186,7 @@ class Car:
             else:
                 self.car3d_height = 2.5 * self.car3d_height_factor
 
+
     def render(self):
         self.center = self.rect.center
         if self.inviFlicker:
@@ -241,7 +242,7 @@ class Car:
                     self.display.game.sound_manager.play_sound('Powerup')
                 bonus = random.randint(0, 4)
 
-                powerup_names = ["NITRO", "BARRIER", "SPIKES", "HEAL", "STRENGTH"]
+                powerup_names = ["NITRO", "STRENGTH", "BARRIER", "SPIKES", "HEAL"]
                 if self.isPlayer:
                     font = pygame.font.Font("fonts/joystix monospace.otf", 30)
                     text_surface = font.render(f"Collected: {powerup_names[bonus]}", True, (255, 255, 255))

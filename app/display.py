@@ -204,9 +204,9 @@ class game_display(basic_display):
 
             self.coin = self.map_data['coin']
             if self.coin == "None":
-                self.hasCoin = 0
+                self.hasCoin = 1
             else:
-                self.hasCoin = -1
+                self.hasCoin = 0
             temp_list_of_bramas = self.map_data['bramas']
             for i, br in enumerate(temp_list_of_bramas):
                 self.obstacles.append(obstacle.Obstacle(self, br[0], br[1], "brama", br[2]))
@@ -308,14 +308,6 @@ class game_display(basic_display):
 
         if self.p.stunned and time.time() - self.p.stunned_timer >= 1:
             self.p.stunned = False
-
-        if self.hasCoin > 0:
-            self.hasCoin -= self.game.delta_time
-            if self.hasCoin == 0:
-                self.hasCoin = -1
-        elif self.hasCoin < 0:
-            self.obstacles.append(obstacle.Obstacle(self, self.coin[0], self.coin[1], "coin"))
-            self.hasCoin = 0
 
         self.particle_system.update(self.game.delta_time)
 
@@ -465,6 +457,7 @@ class map_display(basic_display):
     def add_lap(self, amount):
         if self.laps + amount >= 1:
             self.laps += amount
+            print('lap 1')
             self.lapstext.update_text(f'{self.laps}')
 
     def load_map(self, map_data):
