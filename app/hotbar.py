@@ -1,5 +1,5 @@
 import pygame
-from customObjects import custom_text
+from customObjects import custom_text, custom_images
 import time, datetime
 class Hotbar:
     def __init__(self, display):
@@ -32,6 +32,7 @@ class Hotbar:
         self.set_player_standing()
         self.nitro_bar = Nitrobar(self.display, self.x + self.w*6/7, self.y+15,25,self.h*2/3,5, (150, 255, 255), (0, 0, 255))
         custom_text.Custom_text(self.display, self.x+self.w*6.05/7, self.y+30 + self.h*2/3, 'Nitro', text_color='white', font_height=15)
+        self.inv = Inventory(self.display, self.x+self.w*5/7, self.y+15, 150, 150)
 
     def set_laps(self):
         self.lap_text = custom_text.Custom_text(self.display, self.x + self.w / 7, self.y + self.h / 2.5 + 50,
@@ -44,6 +45,7 @@ class Hotbar:
         pygame.draw.rect(self.game.screen, self.color, self.rect, border_radius=20)
         pygame.draw.rect(self.game.screen, self.outline_color, self.rect, width=5, border_radius=20)
         self.nitro_bar.render()
+        self.inv.render()
 
 
     def mainloop(self):
@@ -111,8 +113,6 @@ class StopWatch:
             self.text.update_text(f'Time: {split_str[1]}:{seconds_time}')
 
 
-import pygame
-
 class Nitrobar:
     def __init__(self, display, x, y, width, max_height, pixel_size, start_color, end_color):
         self.display = display
@@ -152,3 +152,60 @@ class Nitrobar:
 
     def update_bar_height(self):
         self.height = int(self.max_height * self.display.p.nitroAmount / 100)
+
+
+class Inventory:
+    def __init__(self, display, x, y, width, height):
+        self.display = display
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.screen = self.display.screen
+        self.inventory = self.display.p.inventory
+
+        self.big_rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.small_rect = pygame.Rect(self.x+self.width+10, self.y+self.height/2, self.width/2, self.height/2)
+
+        self.big_img_rect = [self.big_rect[0] + self.big_rect[2]/2, self.big_rect[1] + self.big_rect[3]/2, self.big_rect[2]-45, self.big_rect[3]-45]
+        self.small_img_rect = [self.small_rect[0] + self.small_rect[2]/2, self.small_rect[1] + self.small_rect[3]/2, self.small_rect[2]-23,
+                                                    self.small_rect[3]-23]
+
+
+        self.spike_img = custom_images.Custom_image(self.display, 'images/spikes.png', self.big_img_rect[0], self.big_img_rect[1], self.big_img_rect[2], self.big_img_rect[3], append=False)
+        self.barrier_img = custom_images.Custom_image(self.display, 'images/barrier.png', self.big_img_rect[0], self.big_img_rect[1], self.big_img_rect[2], self.big_img_rect[3], append=False)
+        self.strenght_img = custom_images.Custom_image(self.display, 'images/strength.png', self.big_img_rect[0], self.big_img_rect[1], self.big_img_rect[2], self.big_img_rect[3], append=False)
+        self.heal_img = custom_images.Custom_image(self.display, 'images/tirehealth.png', self.big_img_rect[0], self.big_img_rect[1], self.big_img_rect[2], self.big_img_rect[3], append=False)
+
+        self.small_spike_img = custom_images.Custom_image(self.display, 'images/spikes.png', self.small_img_rect[0], self.small_img_rect[1], self.small_img_rect[2],
+                                                    self.small_img_rect[3], append=False)
+        self.small_barrier_img = custom_images.Custom_image(self.display, 'images/barrier.png', self.small_img_rect[0], self.small_img_rect[1], self.small_img_rect[2],
+                                                    self.small_img_rect[3], append=False)
+        self.small_strenght_img = custom_images.Custom_image(self.display, 'images/strength.png', self.small_img_rect[0], self.small_img_rect[1], self.small_img_rect[2],
+                                                    self.small_img_rect[3], append=False)
+        self.small_heal_img = custom_images.Custom_image(self.display, 'images/tirehealth.png', self.small_img_rect[0], self.small_img_rect[1], self.small_img_rect[2],
+                                                    self.small_img_rect[3], append=False)
+
+        self.big_img = [self.strenght_img, self.barrier_img, self.spike_img, self.heal_img]
+        self.small_img = [self.small_strenght_img, self.small_barrier_img, self.small_spike_img, self.small_heal_img]
+
+
+
+    def render(self):
+        pygame.draw.rect(self.screen, (26, 26, 26), self.big_rect, border_radius=20)
+        pygame.draw.rect(self.screen, (126, 126, 126), self.big_rect, border_radius=20, width=5)
+        pygame.draw.rect(self.screen, (26, 26, 26), self.small_rect, border_radius=10)
+        pygame.draw.rect(self.screen, (126, 126, 126),
+                         self.small_rect,
+                         border_radius=10, width=3)
+
+        if len(self.inventory) > 1:
+            self.big_img[self.inventory[0] - 1].render()
+            self.small_img[self.inventory[1] - 1].render()
+
+        elif len(self.inventory) == 1:
+            self.big_img[self.inventory[0] - 1].render()
+
+
+
+

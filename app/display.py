@@ -339,8 +339,6 @@ class game_display(basic_display):
             self.banana = obstacle.Obstacle(self, a[0], a[1], 'banana')
             self.obstacles.append(self.banana)
 
-
-
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
     def update_player_model(self, model):
