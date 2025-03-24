@@ -141,8 +141,12 @@ class game_display(basic_display):
         #draw test_map_one img
         if self.difficulty == "Finished_Level_One":
             self.map_surface.blit(images.mapone, (0, 0))
+            self.game.sound_manager.load_music('sounds/music/Neon Rush.wav')
+
         elif self.difficulty == "Finished_Level_Three":
             self.map_surface.blit(images.mapthree, (0, 0))
+            self.game.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
+
         else:
             self.map_surface.fill(self.bgColor)
             for y in range(len(self.map)):
