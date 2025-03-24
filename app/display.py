@@ -3,6 +3,8 @@ import time
 from configparser import ConfigParser
 import cv2
 import numpy
+
+from app.database import DatabaseManager
 from customObjects import custom_images, custom_text, custom_button
 from jeff_the_objects.slider import Slider
 from jeff_the_objects.stacked_sprite import StackedSprite
@@ -82,6 +84,9 @@ class game_display(basic_display):
     def __init__(self, game, difficulty):
         basic_display.__init__(self, game)
         self.difficulty = difficulty
+
+        self.db_manager = DatabaseManager()
+
         if self.difficulty == "Finished_Level_One":
             self.game.sound_manager.load_music('sounds/music/Neon Rush.wav')
 
