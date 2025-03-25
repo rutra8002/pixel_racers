@@ -1,7 +1,10 @@
 import copy
+import time
 from configparser import ConfigParser
 import cv2
 import numpy
+
+from app.database import DatabaseManager
 from customObjects import custom_images, custom_text, custom_button
 from jeff_the_objects.slider import Slider
 from jeff_the_objects.stacked_sprite import StackedSprite
@@ -52,11 +55,13 @@ class basic_display:
             'enemies': [],
             'checkpoints': [],
             'powerups': [],
+            'coin': 'None',
             'bananas': [],
             'barriers': [],
             'speedBumps': [],
             'guideArrows': [],
-            'bramas': []
+            'bramas': [],
+            'laps': 5
         }
 
 
@@ -81,23 +86,36 @@ class game_display(basic_display):
         basic_display.__init__(self, game)
         self.difficulty = difficulty
         self.diff = difficulty
-        
+
+
+        self.db_manager = DatabaseManager()
+
+        if self.difficulty == "Finished_Level_One":
+            self.game.sound_manager.load_music('sounds/music/Neon Rush.wav')
+
+        elif self.difficulty == "Finished_Level_Three":
+            self.game.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
         self.hotbar = hotbar.Hotbar(self)
         self.screenHeight_without_hotbar = self.screenHeight - self.hotbar.h
 
         self.obstacles = []
         self.import_map()
+        self.amount_of_checkpoints = len(self.checkpoints)
 
         self.wong_way = False
         self.wong_way_image = custom_images.Custom_image(self, 'images/wong_way.png', self.game.width/2, self.game.height/8, 100, 96, append=False)
 
         self.cars = [] #the physical cars of enemies and of the player
+
+
         self.particle_system = ParticleSystem()
-        self.powerup_placement_variance = 10
+        self.placement_variance = 10
         self.deadPowerups = []
         self.deadBramas = []
         self.hasBanana = 1
         self.banana = None
+
+        self.started_race = False
 
         self.environment_objects = [
             {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=True), "coords": (200, 300)},
@@ -108,7 +126,8 @@ class game_display(basic_display):
         self.p = player.Player(self, self.player_position, self.player_rotation, self.game.player_model)
 
         self.leaderboard = {}
-
+        self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+        self.hotbar.after_player_setup()
         for e in self.enemies:
             enemy.Enemy(self, e[0], e[1], 1)
 
@@ -118,6 +137,36 @@ class game_display(basic_display):
         self.draw_map()
         self.map_surface.set_colorkey(self.bgColor)
         self.mapMask = pygame.mask.from_surface(self.map_surface)
+
+    def add_snow_particles(self):
+        for _ in range(10):
+            x = random.randint(0, self.game.width)
+            y = random.randint(-50, 10)
+
+            vel_x = random.uniform(-0.5, 0.5)
+            vel_y = random.uniform(0.5, 2)
+
+            acc_x = 0
+            acc_y = 0.05
+
+            ang_vel = 0
+            ang_acc = 0
+
+            size = random.randint(1, 5)
+            lifetime = 690
+
+            speed = 100
+
+            r = random.randint(200, 255)
+            g = random.randint(200, 255)
+            b = random.randint(240, 255)
+            alpha = random.randint(200, 250)
+
+            shape = 'circle'
+
+            self.particle_system.add_particle(x, y, vel_x, vel_y, acc_x, acc_y,
+                                              ang_vel, ang_acc, speed, lifetime, size,
+                                              r, g, b, alpha, shape)
 
     #check collision between particles and map
     def check_particle_collision(self, particle):
@@ -131,35 +180,43 @@ class game_display(basic_display):
         return False
 
     def draw_map(self):
-        self.map_surface.fill(self.bgColor)
-        for y in range(len(self.map)):
-            for x in range(len(self.map[y])):
-                if self.map[y][x] == 0:
-                    continue
-                elif self.map[y][x] == 1:
-                    color = self.wall_color
-                elif self.map[y][x] == 2:
-                    color = self.oil_color
-                elif self.map[y][x] == 3:
-                    color = self.gravel_color
-                elif self.map[y][x] == 4:
-                    color = self.ice_color
-                elif self.map[y][x] == 5:
-                    color = self.spike_color
-                elif self.map[y][x] == 6:
-                    color = self.pitstop_color
-                else:
-                    color = self.asphalt_color
-                # Add randomness to the color
-                if self.map[y][x] in (0, 1, 3, 4, 5):
-                    color = (
-                        min(max(color[0] + random.randint(-10, 10), 0), 255),
-                        min(max(color[1] + random.randint(-10, 10), 0), 255),
-                        min(max(color[2] + random.randint(-10, 10), 0), 255)
-                    )
+        #draw test_map_one img
+        if self.difficulty == "Finished_Level_One":
+            self.map_surface.blit(images.mapone, (0, 0))
 
-                pygame.draw.rect(self.map_surface, color,
-                                 (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
+        elif self.difficulty == "Finished_Level_Three":
+            self.map_surface.blit(images.mapthree, (0, 0))
+
+        else:
+            self.map_surface.fill(self.bgColor)
+            for y in range(len(self.map)):
+                for x in range(len(self.map[y])):
+                    if self.map[y][x] == 0:
+                        continue
+                    elif self.map[y][x] == 1:
+                        color = self.wall_color
+                    elif self.map[y][x] == 2:
+                        color = self.oil_color
+                    elif self.map[y][x] == 3:
+                        color = self.gravel_color
+                    elif self.map[y][x] == 4:
+                        color = self.ice_color
+                    elif self.map[y][x] == 5:
+                        color = self.spike_color
+                    elif self.map[y][x] == 6:
+                        color = self.pitstop_color
+                    else:
+                        color = self.asphalt_color
+                    # Add randomness to the color
+                    if self.map[y][x] in (0, 1, 3, 4, 5):
+                        color = (
+                            min(max(color[0] + random.randint(-10, 10), 0), 255),
+                            min(max(color[1] + random.randint(-10, 10), 0), 255),
+                            min(max(color[2] + random.randint(-10, 10), 0), 255)
+                        )
+
+                    pygame.draw.rect(self.map_surface, color,
+                                     (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
     def import_map(self):
         with open(f"{self.game.map_dir}/{self.difficulty}.json", 'r') as f:
             map_data = json.load(f)
@@ -189,6 +246,11 @@ class game_display(basic_display):
 
             self.bananas = self.map_data['bananas']
 
+            self.coin = self.map_data['coin']
+            if self.coin == "None":
+                self.hasCoin = 1
+            else:
+                self.hasCoin = 0
             temp_list_of_bramas = self.map_data['bramas']
             for i, br in enumerate(temp_list_of_bramas):
                 self.obstacles.append(obstacle.Obstacle(self, br[0], br[1], "brama", br[2]))
@@ -206,7 +268,7 @@ class game_display(basic_display):
 
             self.enemies = self.map_data['enemies']
 
-
+            self.laps = self.map_data['laps']
             f.close()
 
 
@@ -219,6 +281,7 @@ class game_display(basic_display):
             o.render()
         for obj in self.objects:
             obj.render()
+
 
 
         for obj in self.environment_objects:
@@ -255,9 +318,20 @@ class game_display(basic_display):
 
 
     def mainloop(self):
+        if self.started_race == False:
+            for car in self.cars:
+                car.start_race()
+            self.started_race = True
+
+        if self.difficulty == "Finished_Level_Three":
+            self.add_snow_particles()
+
         if self.hotbar.stopwatch.start_time == 0:
             self.hotbar.start_counting_time()
+
+        self.update_standings()
         self.hotbar.mainloop()
+        self.p.get_distance_to_nearest_checkpoint()
         if len(self.deadPowerups) > 0:
             for p in self.deadPowerups:
                 if p[2] > 0:
@@ -272,7 +346,13 @@ class game_display(basic_display):
                 else:
                     self.obstacles.append(obstacle.Obstacle(self, p[0], p[1], "brama", p[3]))
                     self.deadBramas.remove(p)
+        #
+        # if self.wong_way and time.time() - self.p.wong_way_timer >= 3:
+        #     # self.p.return_to_last_checkpoint()
+        #     self.wong_way = False
 
+        if self.p.stunned and time.time() - self.p.stunned_timer >= 1:
+            self.p.stunned = False
 
         self.particle_system.update(self.game.delta_time)
 
@@ -296,12 +376,25 @@ class game_display(basic_display):
             self.banana = obstacle.Obstacle(self, a[0], a[1], 'banana')
             self.obstacles.append(self.banana)
 
-
-
         # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
 
     def update_player_model(self, model):
         self.p.change_model(model)
+        self.hotbar.undercarge.update()
+
+
+    def update_standings(self):
+        self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+
+    def end_race(self):
+        for car in self.leaderboard_list:
+            try:
+                avg = sum(car.lap_times)/len(car.lap_times)
+            except:
+                avg = 0
+
+            print(car.isPlayer, car.lap_times, avg)
+
 
 class map_display(basic_display):
     def __init__(self, game):
@@ -336,6 +429,8 @@ class map_display(basic_display):
         self.enemies = []
         self.enemy_rotation = 0
 
+        self.laps = 5
+
         self.brush_size = 30
         self.dragging = False
 
@@ -347,10 +442,20 @@ class map_display(basic_display):
         self.bramas = []
         self.speedBumps = []
         self.guideArrows = []
+        self.coin = None
 
 
         self.brushtext = custom_text.Custom_text(self, 10, 70, f'Brush size: {self.brush_size}', text_color='white', font_height=30, center=False)
         self.tooltext = custom_text.Custom_text(self, 10, 100, f'Tool: {self.tool}  Angle: {self.angle}', text_color='white', font_height=30, center=False)
+
+        custom_text.Custom_text(self, 10, 160, f'Laps:', text_color='white', font_height=30, center=False)
+
+        self.lapstext = custom_text.Custom_text(self, 250, 160, f'{self.laps}', text_color='white', font_height=30, center=False)
+        custom_button.Button(self, 'substract_lap', 150, 160, 70, 35, (16, 16, 16), text='-', text_color='white', outline_color='white', outline_width=2, border_radius=3)
+        custom_button.Button(self, 'add_lap', 300, 160, 70, 35, (16, 16, 16), text='+', text_color='white',
+                             outline_color='white', outline_width=2, border_radius=3)
+
+
         self.player_pos_text = custom_text.Custom_text(self, 10, 220, f'Player position: {self.player_position}',
                                                        text_color='white', font_height=30, center=False)
         self.cursor_pos_text = custom_text.Custom_text(self, 10, 250, f'Cursor position: (0, 0)',
@@ -384,12 +489,21 @@ class map_display(basic_display):
         self.bramas = []
         self.speedBumps = []
         self.guideArrows = []
+        self.coin = None
 
         self.checkpoints = []
         self.current_checkpoint = []
         self.temp_map_data = dict(self.map_data)
         self.enemies = []
+        self.laps = 5
+        self.lapstext.update_text(f'{self.laps}')
 
+
+    def add_lap(self, amount):
+        if self.laps + amount >= 1:
+            self.laps += amount
+            print('lap 1')
+            self.lapstext.update_text(f'{self.laps}')
 
     def load_map(self, map_data):
         self.reset_map()
@@ -407,6 +521,10 @@ class map_display(basic_display):
         self.bramas = self.temp_map_data['bramas']
         self.speedBumps = self.temp_map_data['speedBumps']
         self.guideArrows = self.temp_map_data['guideArrows']
+        self.coin = self.temp_map_data['coin']
+        self.laps = self.temp_map_data['laps']
+
+        self.lapstext.update_text(f'{self.laps}')
         for e in self.enemies:
             e[0][0] = e[0][0] * self.zoom_level / self.block_width
             e[0][1] = e[0][1] * self.zoom_level / self.block_height
@@ -457,6 +575,8 @@ class map_display(basic_display):
             t = 'brama'
         if self.tool == 'o':
             t = 'arrow'
+        if self.tool == 'q':
+            t = 'coin'
 
         self.tooltext.update_text(f'Tool: {t}  Angle: {self.angle}')
 
@@ -476,6 +596,9 @@ class map_display(basic_display):
 
     def add_guideArrow(self, x, y):
         self.guideArrows.append((x, y, self.angle))
+
+    def add_coin(self, x, y):
+        self.coin = [x,y]
 
     def render(self):
         vis_x_start = max(0, lolekszcz.floor((-self.cx) / self.block_width))
@@ -531,7 +654,7 @@ class map_display(basic_display):
         for obj in self.objects:
             obj.render()
         b = self.brush_size * self.block_width
-        if self.tool not in ['p', 'c', 'm', 'e', 'u', 'v', 'b', 'n', 'o']:
+        if self.tool not in ['p', 'c', 'm', 'e', 'u', 'v', 'b', 'n', 'o', 'q']:
             c = self.color_map.get(self.tool)
             if self.shape == 0:
                 pygame.draw.rect(self.screen, c, (pygame.mouse.get_pos()[0] - b / 2, pygame.mouse.get_pos()[1] - b / 2, b, b), 2)
@@ -548,13 +671,17 @@ class map_display(basic_display):
         for i in self.powerups:
             pygame.draw.circle(self.screen, (0, 0, 255), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
         for i in self.bananas:
-            pygame.draw.circle(self.screen, (200, 200, 0), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
+            pygame.draw.rect(self.screen, (200, 200, 0), (i[0] * self.block_width + self.cx - 10, i[1] * self.block_height + self.cy - 5, 20, 10))
         for i in self.bramas:
             pygame.draw.circle(self.screen, (255, 0, 0), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
         for i in self.speedBumps:
             pygame.draw.circle(self.screen, (0, 255, 0), (i[0] * self.block_width + self.cx, i[1] * self.block_height + self.cy), 10)
         for i in self.guideArrows:
             pygame.draw.rect(self.screen, (0, 0, 255), (i[0] * self.block_width + self.cx - 10, i[1] * self.block_height + self.cy - 5, 20, 10))
+        if self.coin != None and self.coin != 'None' and len(self.coin) > 0:
+            pygame.draw.circle(self.screen, (200, 200, 0), (self.coin[0] * self.block_width + self.cx, self.coin[1] * self.block_height + self.cy), 10)
+
+
 
         if (self.tool == 'c' or self.tool == 'm') and len(self.current_checkpoint) == 1:
 
@@ -642,7 +769,8 @@ class map_display(basic_display):
                     self.angle -= 360
                 elif self.angle < 0:
                     self.angle += 360
-
+            elif event.key == pygame.K_q:
+                self.tool = 'q'
             elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 if self.shape == 1:
                     self.shape = 0
@@ -707,6 +835,8 @@ class map_display(basic_display):
                 self.add_speedBump(grid_x, grid_y)
             elif self.tool == 'o' and self.valid_grid_pos(grid_x, grid_y):
                 self.add_guideArrow(grid_x, grid_y)
+            elif self.tool == 'q' and self.valid_grid_pos(grid_x, grid_y):
+                self.add_coin(grid_x, grid_y)
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_MIDDLE:
             self.dragging = True
@@ -759,12 +889,12 @@ class map_display(basic_display):
         for chp in self.checkpoints:
             if chp == self.checkpoints[0]:
                 color = self.color_map['m']  # Start/finish line
+                pygame.draw.line(map_surface, color,
+                                 (chp[0][0] * self.block_width, chp[0][1] * self.block_height),
+                                 (chp[1][0] * self.block_width, chp[1][1] * self.block_height),
+                                 width=int(self.block_width))
             else:
                 color = self.color_map['c']  # Regular checkpoint
-            pygame.draw.line(map_surface, color,
-                             (chp[0][0] * self.block_width, chp[0][1] * self.block_height),
-                             (chp[1][0] * self.block_width, chp[1][1] * self.block_height),
-                             width=int(self.block_width))
 
         # Generate filename with timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -796,10 +926,12 @@ class map_display(basic_display):
             'enemies': temp_enemies,
             'checkpoints': self.checkpoints,
             'powerups': self.powerups,
+            'coin': self.coin,
             'bananas': self.bananas,
             'bramas': self.bramas,
             'speedBumps': self.speedBumps,
-            'guideArrows': self.guideArrows
+            'guideArrows': self.guideArrows,
+            'laps': self.laps
         }
 
         self.temp_map_data.update(map_data)
@@ -1428,7 +1560,7 @@ class credits(basic_display):
                 self.currentText = 0
             self.text.update_text(self.texts[self.currentText])
             self.last_update_time = current_time
-            self.text.update_position(random.randint(250, self.game.width - 250), random.randint(100, self.game.height - 150))
+            self.text.update_position(random.randint(250, self.game.width - 250), random.randint(100, self.game.height - 100))
         self.text.render()
         for obj in self.objects:
             obj.render()
@@ -1446,9 +1578,29 @@ class credits(basic_display):
 class leaderboard(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
+        self.players = self.load()
+        self.texts = {}
+        for i, (name, score) in enumerate(self.players):
+            self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 60 * i,
+                                                             f'{name}: {score}', font_height=40, text_color=(255, 255, 255),
+                                                             background_color=(0, 0, 0), center=True,
+                                                             append=True)
+        self.title = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 10,
+                                            "Leaderboard", font_height=60, text_color=(255, 255, 255),
+                                            background_color=(0, 0, 0), center=True,
+                                            append=True)
     def mainloop(self):
         pass
+    def load(self):
+        players = []
+        with open('app/leaderboard.txt', 'r') as file:
+            for line in file:
+                name, score = line.strip().split(',')
+                players.append((name, int(score)))
+        return players
     def render(self):
+        for i, (name, score) in enumerate(self.players):
+            self.texts[f'text_{i}'].update_text(f'{name}: {score}')
         for obj in self.objects:
             obj.render()
 

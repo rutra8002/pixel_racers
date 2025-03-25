@@ -19,3 +19,8 @@ plane = pygame.image.load("images/cars/plane.png").convert_alpha()
 skateboard = pygame.image.load("images/cars/skateboard.png").convert_alpha()
 tire = pygame.image.load("images/tire.png").convert_alpha()
 guideArrow = pygame.image.load("images/arrow.png").convert_alpha()
+speedBump = pygame.image.load("images/spedbump.png").convert_alpha()
+coin = pygame.image.load("images/coin.png").convert_alpha()
+
+mapone = pygame.image.load("images/maps/testmapone.png").convert_alpha()
+mapthree = pygame.image.load("images/maps/testmapthree.png").convert_alpha()

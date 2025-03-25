@@ -1,6 +1,6 @@
 import json
 import platform
-import pygame, sys, threading, code, os
+import pygame, sys, threading, code, os, sqlite3
 from app import config, sounds
 from customObjects import custom_text, custom_images, custom_button
 import particle_system
@@ -22,6 +22,7 @@ class Game:
         self.sound_manager.load_sound('Strength', 'sounds/Strength.wav')
         self.sound_manager.load_sound('Pitstop', 'sounds/Pitstop.wav')
         self.sound_manager.load_sound('Banana', 'sounds/goofy-slip.wav')
+        self.sound_manager.load_sound('coin', 'sounds/coin.wav')
         self.sound_manager.set_music_volume(0.2)
 
         config.set_config()
@@ -87,6 +88,10 @@ class Game:
         self.console_font = pygame.font.Font(None, 24)
 
         self.console_history_index = 0
+
+        self.db = sqlite3.connect('scores.sqlite')
+        self.cursor = self.db.cursor()
+
 
     #     console_thread = threading.Thread(target=self.start_console, args=(custom_locals,))
     #     console_thread.start()

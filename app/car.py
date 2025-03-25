@@ -1,4 +1,5 @@
 import random
+import time
 from operator import invert
 import string
 
@@ -6,6 +7,8 @@ import pygame
 import math as lolino
 from particle_system import ParticleGenerator
 from unicodedata import normalize
+
+from app.images import police
 from customObjects.custom_text import Custom_text
 from app import images, obstacle
 from jeff_the_objects import stacked_sprite
@@ -13,7 +16,11 @@ from jeff_the_objects import stacked_sprite
 #TO DO:
 #leaderboard - ???
 
-
+# There are four different car models, each with different advantages and drawbacks. The user can change the current car to use in the races in the main menu. The different models are listed here:
+# 1. Basic car - has all the stats on a balanced level.
+# 2. Jeep - more bulky, less agile, but hard for opponents to push around.
+# 3. Toy car - lightweight and swift, only has three tires
+# 4. Police car - has better stats than others but only when driving backwards, boost still pushes the car forward and powerup obstacles spawn behind though.
 class Car:
     def __init__(self, display, coordinates, rotation, isPlayer, model, car3d_height_factor=None):
         self.display = display
@@ -31,7 +38,8 @@ class Car:
         self.wall_frames = 0
         self.last_frames_len = 10
 
-
+        self.current_checkpoint = -1
+        self.lap = 1
 
         self.damping = 0.7
 
@@ -44,11 +52,13 @@ class Car:
 
         self.particle_color = [0, 0, 0]
         self.tireHealth = 1
-        self.inventory = [1, 2, 3, 4] # 1 to super siła, 2 to barierka, 3 to kolczatka, 4 to heal - leczy 1 oponę
+        self.inventory = [] # 1 to super siła, 2 to barierka, 3 to kolczatka, 4 to heal - leczy 1 oponę
         self.inventory_size = 2
 
+        self.lap_times = []
+
         self.strength = False # następne zderzenie z autem nie daje tobie knockbacku. Przy zderzeniu ze ścianą znika i nic nie robi
-        self.infiNitro = True
+        self.infiNitro = False
 
         self.player_name = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
@@ -105,7 +115,8 @@ class Car:
         self.car_mask = self.car3d_sprite.mask
         self.mask_image = self.car_mask.to_surface()
 
-
+        self.stunned = False
+        self.stunned_timer = 0
 
         self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
         self.in_oil = False
@@ -152,16 +163,16 @@ class Car:
                 self.car3d_height = 1.5
             else:
                 self.car3d_height = 1.5 * self.car3d_height_factor
-        elif model == 3:
+        elif model == 4:
             self.num_of_sprites = 13
             self.img_size = (15, 34)
             if self.car3d_height_factor == None:
                 self.car3d_height = 1.5
             else:
                 self.car3d_height = 1.5 * self.car3d_height_factor
-        elif model == 4:
+        elif model == 3:
             self.num_of_sprites = 11
-            self.img_size = (4, 18)
+            self.img_size = (10, 18)
             if self.car3d_height_factor == None:
                 self.car3d_height = 3
             else:
@@ -180,6 +191,7 @@ class Car:
                 self.car3d_height = 2.5
             else:
                 self.car3d_height = 2.5 * self.car3d_height_factor
+
 
     def render(self):
         self.center = self.rect.center
@@ -225,8 +237,11 @@ class Car:
                     self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
                     if self.recentCollisions[c] == 0:
                         self.handle_bumping(c)
-                        self.next_x, self.next_y, self.x, self.y = self.archiveCars[-1][0], self.archiveCars[-1][1], self.archiveCars[-1][0], self.archiveCars[-1][1]
-                        self.next_rotation, self.rotation = self.archiveCars[-1][2], self.archiveCars[-1][2]
+                        back = 2
+                        self.next_x, self.next_y, self.x, self.y = self.archiveCars[-back][0], self.archiveCars[-back][1], self.archiveCars[-back][0], self.archiveCars[-back][1]
+                        self.next_rotation, self.rotation = self.archiveCars[-back][2], self.archiveCars[-back][2]
+                        c.next_x, c.next_y, c.x, c.y = c.archiveCars[-back][0], c.archiveCars[-back][1], c.archiveCars[-back][0], c.archiveCars[-back][1]
+                        c.next_rotation, c.rotation = c.archiveCars[-back][2], c.archiveCars[-back][2]
                         self.recentCollisions[c] = pygame.time.get_ticks()
                         c.recentCollisions[self] = pygame.time.get_ticks()
 
@@ -235,15 +250,53 @@ class Car:
                 if self.isPlayer:
                     self.display.game.sound_manager.play_sound('Powerup')
                 bonus = random.randint(0, 4)
+
+                powerup_names = ["NITRO", "STRENGTH", "BARRIER", "SPIKES", "HEAL"]
+                if self.isPlayer:
+                    font = pygame.font.Font("fonts/joystix monospace.otf", 30)
+                    text_surface = font.render(f"Collected: {powerup_names[bonus]}", True, (255, 255, 255))
+
+                    text_rect = text_surface.get_rect(
+                        center=(self.display.game.width // 2, self.display.game.height // 5))
+
+                    bg_rect = text_rect.copy()
+                    bg_rect.inflate_ip(20, 10)
+
+                    self.display.powerup_text = {
+                        'surface': text_surface,
+                        'rect': text_rect,
+                        'bg_rect': bg_rect,
+                        'bg_color': (0, 0, 0)
+                    }
+                    self.display.powerup_text_timer = 7
+
+
+
                 if bonus == 0:
                     self.nitroAmount += 20
+
                     if self.nitroAmount > 100:
                         self.nitroAmount = 100
                 elif len(self.inventory) < self.inventory_size:
                     self.inventory.append(bonus)
                 p.kill()
 
+        if hasattr(self.display, 'powerup_text') and hasattr(self.display, 'powerup_text_timer') and self.display.powerup_text_timer > 0:
+            # Draw background rectangle
+            pygame.draw.rect(
+                self.display.screen,
+                self.display.powerup_text['bg_color'],
+                self.display.powerup_text['bg_rect']
+            )
 
+            # Draw text
+            self.display.screen.blit(
+                self.display.powerup_text['surface'],
+                self.display.powerup_text['rect']
+            )
+
+            # Decrease timer
+            self.display.powerup_text_timer -= self.display.game.delta_time
         if self.display.game.debug:
             pygame.draw.rect(self.display.game.screen, (0, 255, 0), self.rect, width=1)
 
@@ -367,13 +420,15 @@ class Car:
             self.oilFriction = 0 * self.display.game.calibration
         #accelerator:
         elif self.model == 3:
-            self.image = images.police
+            self.image = images.bike
             self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites,
+                                                             self.img_size, self.car3d_height)
+
             self.backDifference = 0.65
             self.mass = 0.8
             self.nitroPower = 0.5 * self.display.game.calibration
-            self.tireAmount = 3
+            self.tireAmount = 4
             self.deadTires = 0
             self.tireDamage = 0.15
 
@@ -391,15 +446,18 @@ class Car:
             self.normalFriction = 0.08 * self.display.game.calibration
             self.iceFriction = 0.02 * self.display.game.calibration
             self.oilFriction = 0 * self.display.game.calibration
+
         #mater:
         elif self.model == 4:
-            self.image = images.bike
+            self.image = images.police
             self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites,
+                                                             self.img_size, self.car3d_height)
+
             self.backDifference = 1.4
             self.mass = 1.1
             self.nitroPower = 0.3 * self.display.game.calibration
-            self.tireAmount = 4
+            self.tireAmount = 3
             self.deadTires = 0
             self.tireDamage = 0.08
 
@@ -417,6 +475,9 @@ class Car:
             self.normalFriction = 0.14 * self.display.game.calibration
             self.iceFriction = 0.03 * self.display.game.calibration
             self.oilFriction = 0 * self.display.game.calibration
+
+
+
         elif self.model == 5:
             self.image = images.plane
             self.set_3d_parameters(self.model)
@@ -489,121 +550,153 @@ class Car:
 
     def movement(self):
         global dire
-        if self.display.game.delta_time < self.bananaTime:
-            self.bananaTime -= self.display.game.delta_time
-            self.velAng = 13
-        elif -self.display.game.delta_time > self.bananaTime:
-            self.bananaTime += self.display.game.delta_time
-            self.velAng = -13
-        else:
-            self.bananaTime = 0
-        self.prevPos = [self.x, self.y]
-        self.prevRotation = self.rotation
-        self.x, self.y = self.next_x, self.next_y
-        self.rotation = self.next_rotation
-        c, d = self.velLeft, self.velUp
-        if self.w and not self.in_oil:
-            if self.WASD_steering:
-                self.velUp += self.currentAcceleration
+        if not self.stunned:
+            if self.display.game.delta_time < self.bananaTime:
+                self.bananaTime -= self.display.game.delta_time
+                self.velAng = 13
+            elif -self.display.game.delta_time > self.bananaTime:
+                self.bananaTime += self.display.game.delta_time
+                self.velAng = -13
             else:
-                a, b = self.get_acceleration_with_trigonometry(1, self.currentAcceleration * self.display.game.delta_time * self.display.game.calibration * self.tireHealth / 2)
-                self.velLeft += a
-                self.velUp += b
-        if self.s and not self.in_oil:
-            if self.WASD_steering:
-                self.velUp -= self.currentAcceleration
-            else:
-                a, b = self.get_acceleration_with_trigonometry(-1, self.currentAcceleration * self.backDifference * self.display.game.delta_time * self.display.game.calibration * (self.tireHealth ** 0.5) / 2)
-                self.velLeft += a
-                self.velUp += b
-        if self.a and not self.in_oil:
-            if self.WASD_steering:
-                self.velLeft += self.currentAcceleration
-            else:
+                self.bananaTime = 0
+            self.prevPos = [self.x, self.y]
+            self.prevRotation = self.rotation
+            self.x, self.y = self.next_x, self.next_y
+            self.rotation = self.next_rotation
+            c, d = self.velLeft, self.velUp
+            if self.w and not self.in_oil:
+                if self.WASD_steering:
+                    self.velUp += self.currentAcceleration
+                else:
+                    a, b = self.get_acceleration_with_trigonometry(1,
+                                                                   self.currentAcceleration * self.display.game.delta_time * self.display.game.calibration * self.tireHealth / 2)
+                    self.velLeft += a
+                    self.velUp += b
+            if self.s and not self.in_oil:
+                if self.WASD_steering:
+                    self.velUp -= self.currentAcceleration
+                else:
+                    a, b = self.get_acceleration_with_trigonometry(-1,
+                                                                   self.currentAcceleration * self.backDifference * self.display.game.delta_time * self.display.game.calibration * (
+                                                                               self.tireHealth ** 0.5) / 2)
+                    self.velLeft += a
+                    self.velUp += b
+            if self.a and not self.in_oil:
+                if self.WASD_steering:
+                    self.velLeft += self.currentAcceleration
+                else:
+                    self.steer_rotation += self.delta_rotation * self.display.game.delta_time * self.steering_speed
+            if self.d and not self.in_oil:
+                if self.WASD_steering:
+                    self.velLeft -= self.currentAcceleration
+                else:
+                    self.steer_rotation += -self.delta_rotation * self.display.game.delta_time * self.steering_speed
+            if self.q and self.WASD_steering:
                 self.steer_rotation += self.delta_rotation * self.display.game.delta_time * self.steering_speed
-        if self.d and not self.in_oil:
-            if self.WASD_steering:
-                self.velLeft -= self.currentAcceleration
-            else:
+            if self.e and self.WASD_steering:
                 self.steer_rotation += -self.delta_rotation * self.display.game.delta_time * self.steering_speed
-        if self.q and self.WASD_steering:
-            self.steer_rotation += self.delta_rotation * self.display.game.delta_time * self.steering_speed
-        if self.e and self.WASD_steering:
-            self.steer_rotation += -self.delta_rotation * self.display.game.delta_time * self.steering_speed
-        if not self.a and not self.d and not self.in_oil:
-            self.steer_rotation -= 10*self.steer_rotation * self.display.game.delta_time
-        if abs(self.steer_rotation) < 0.01:
-            self.steer_rotation = 0
+            if not self.a and not self.d and not self.in_oil:
+                self.steer_rotation -= 10 * self.steer_rotation * self.display.game.delta_time
+            if abs(self.steer_rotation) < 0.01:
+                self.steer_rotation = 0
 
+            self.steer_rotation = max(self.min_steer_rotation, min(self.steer_rotation, self.max_steer_rotation))
 
+            if self.WASD_steering:
+                self.next_rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * 2
 
-        self.steer_rotation = max(self.min_steer_rotation, min(self.steer_rotation, self.max_steer_rotation))
+            if self.boost and self.nitroAmount >= 1 and not self.WASD_steering:
+                if not self.infiNitro:
+                    self.nitroAmount -= 1
+                a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
+                self.velLeft += a * self.display.game.delta_time * self.display.game.calibration
+                self.velUp += b * self.display.game.delta_time * self.display.game.calibration
 
-        if self.WASD_steering:
-            self.next_rotation += self.steer_rotation* self.display.game.delta_time * self.currentRotationSpeed * 2
+            magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
+            dire = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
 
-        if self.boost and self.nitroAmount >= 1 and not self.WASD_steering:
-            if not self.infiNitro:
-                self.nitroAmount -= 1
-            a, b = self.get_acceleration_with_trigonometry(1, self.nitroPower)
-            self.velLeft += a * self.display.game.delta_time * self.display.game.calibration
-            self.velUp += b * self.display.game.delta_time * self.display.game.calibration
+            if magnitude > self.currentFriction:
+                modifier = magnitude / 200
+                if modifier > 2:
+                    modifier = 2
+                if modifier < 0.2:
+                    modifier = 0.2
+                self.goingForward = self.check_if_forward(dire)
+                if self.goingForward:
+                    self.next_rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
+                else:
+                    self.next_rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
+            if magnitude > self.currentMaxSpeed:
+                self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
+                # elif self.velLeft == c and self.velUp == d:
+            if self.velLeft != 0 or self.velUp != 0:
+                s = self.check_if_sideways(dire)
+                self.slow_down(self.currentFriction * s / magnitude / (self.tireHealth ** 0.2))
 
-        magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
-        dire = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
+            if self.borderBounce:
+                if self.x < 0:
+                    self.velLeft *= -self.borderBounciness
+                    self.x += 1
+                if self.x > self.display.screenWidth:
+                    self.velLeft *= -self.borderBounciness
+                    self.x -= 1
+                if self.y < 0:
+                    self.velUp *= -self.borderBounciness
+                    self.y += 1
+                if self.y > self.display.screenHeight_without_hotbar:
+                    self.velUp *= -self.borderBounciness
+                    self.y -= 1
 
-        if magnitude > self.currentFriction:
-            modifier = magnitude / 200
-            if modifier > 2:
-                modifier = 2
-            if modifier < 0.2:
-                modifier = 0.2
-            self.goingForward = self.check_if_forward(dire)
-            if self.goingForward:
-                self.next_rotation += self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
             else:
-                self.next_rotation -= self.steer_rotation * self.display.game.delta_time * self.currentRotationSpeed * modifier
-        if magnitude > self.currentMaxSpeed:
-            self.slow_down(0.1 + self.speedCorrection * (magnitude - self.currentMaxSpeed))
-            # elif self.velLeft == c and self.velUp == d:
-        if self.velLeft != 0 or self.velUp != 0:
-            s = self.check_if_sideways(dire)
-            self.slow_down(self.currentFriction * s / magnitude / (self.tireHealth ** 0.2))
+                if self.x < 0:
+                    self.x += 2
+                    self.velLeft = -self.borderForce
+                if self.x > self.display.screenWidth:
+                    self.x -= 2
+                    self.velLeft = self.borderForce
+                if self.y < 0:
+                    self.y += 2
+                    self.velUp = -self.borderForce
+                if self.y > self.display.screenHeight_without_hotbar:
+                    self.y -= 2
+                    self.velUp = self.borderForce
 
-        if self.borderBounce:
-            if self.x < 0:
-                self.velLeft *= -self.borderBounciness
-                self.x += 1
-            if self.x > self.display.screenWidth:
-                self.velLeft *= -self.borderBounciness
-                self.x -= 1
-            if self.y < 0:
-                self.velUp *= -self.borderBounciness
-                self.y += 1
-            if self.y > self.display.screenHeight_without_hotbar:
-                self.velUp *= -self.borderBounciness
-                self.y -= 1
+            self.archiveCords = [self.x, self.y]
+            self.next_x -= self.velLeft * self.display.game.delta_time
+            self.next_y -= self.velUp * self.display.game.delta_time
+            self.delta_x, self.delta_y = self.next_x - self.x, self.next_y - self.y
+            self.next_rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
+            self.velAng *= self.damping
 
-        else:
-            if self.x < 0:
-                self.x += 2
-                self.velLeft = -self.borderForce
-            if self.x > self.display.screenWidth:
-                self.x -= 2
-                self.velLeft = self.borderForce
-            if self.y < 0:
-                self.y += 2
-                self.velUp = -self.borderForce
-            if self.y > self.display.screenHeight_without_hotbar:
-                self.y -= 2
-                self.velUp = self.borderForce
 
-        self.archiveCords = [self.x, self.y]
-        self.next_x -= self.velLeft * self.display.game.delta_time
-        self.next_y -= self.velUp * self.display.game.delta_time
-        self.delta_x, self.delta_y = self.next_x - self.x, self.next_y - self.y
-        self.next_rotation += lolino.degrees(self.velAng * self.display.game.delta_time)
-        self.velAng *= self.damping
+    def get_distance_to_nearest_checkpoint(self):
+        try:
+            if self.current_checkpoint + 1 == self.display.amount_of_checkpoints:
+                x1, y1 = self.display.checkpoints[0].start_pos
+                x2, y2 = self.display.checkpoints[0].end_pos
+            else:
+                x1, y1 = self.display.checkpoints[self.current_checkpoint + 1].start_pos
+                x2, y2 = self.display.checkpoints[self.current_checkpoint + 1].end_pos
+
+            segment_length_sq = (x2 - x1) ** 2 + (y2 - y1) ** 2
+            if segment_length_sq == 0:
+                return lolino.dist(self.display.checkpoints[0].start_pos, (self.x, self.y))
+
+            t = ((self.x - x1) * (x2 - x1) + (self.y - y1) * (y2 - y1)) / segment_length_sq
+
+
+            t = max(0, min(1, t))
+
+            closest_x = x1 + t * (x2 - x1)
+            closest_y = y1 + t * (y2 - y1)
+
+
+            return lolino.dist((closest_x, closest_y), (self.x, self.y))
+        except:
+            pass
+
+
+
 
     def use_powerup(self):
         if len(self.inventory) == 0:
@@ -757,7 +850,8 @@ class Car:
                         self.recentCollisions[car] = 0
 
         for car in self.recentCollisions:
-            if self.recentCollisions[car] != 0 and not self.collision_detection(car.car_mask, car.rect.topleft[0], car.rect.topleft[1]):
+            # if self.recentCollisions[car] != 0 and not self.collision_detection(car.car_mask, car.rect.topleft[0] + car.delta_x, car.rect.topleft[1] + car.delta_y):
+            if self.recentCollisions[car] != 0:
                 if pygame.time.get_ticks() - self.recentCollisions[car] > self.bumpingCooldown:
                     self.recentCollisions[car] = 0
 
@@ -811,6 +905,13 @@ class Car:
                     self.velLeft *= -0.5
                 elif obstacle.type == 5:
                     self.currentMaxSpeed = self.gravelMaxSpeed
+                elif obstacle.type == 7:
+                    self.display.game.sound_manager.play_sound('coin')
+
+                    if self.isPlayer:
+                        self.display.db_manager.add_coin(self.player_name)
+
+                    obstacle.destroy()
 
         if not self.wall:
             self.wall_frames = 0
@@ -942,34 +1043,34 @@ class Car:
 
         self.velAng = -L / I
 
-
-    def wall_collision(self, mask, x, y):
-        dx = x - self.next_x
-        dy = y - self.next_y
-        distance = lolino.sqrt(dx ** 2 + dy ** 2)
-        if distance == 0:
-            n = (0, 0)
-        else:
-            n = (dx / distance, dy / distance)
-
-        t = (-n[1], n[0])
-
-        v1n = self.velLeft * n[0] + self.velUp * n[1]
-        v1t = self.velLeft * t[0] + self.velUp * t[1]
-
-        v1n_new = -v1n
-
-        self.velLeft = v1n_new * n[0] + v1t * t[0] * 0.2
-        self.velUp = v1n_new * n[1] + v1t * t[1] * 0.2
-        r = (self.next_x - x, self.next_y - y)
-        delta_px = self.mass * self.velLeft
-        delta_py = self.mass * self.velUp
-        L =  r[0] * delta_py - r[1] * delta_px
-        d = (r[0] ** 2 + r[1] ** 2) ** 0.5
-        I = (1 / 12) * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2) + self.mass * d ** 2
-        impulse = 2 * self.mass * abs(v1n)
-
-        self.velAng = L / I
+    #
+    # def wall_collision(self, mask, x, y):
+    #     dx = x - self.next_x
+    #     dy = y - self.next_y
+    #     distance = lolino.sqrt(dx ** 2 + dy ** 2)
+    #     if distance == 0:
+    #         n = (0, 0)
+    #     else:
+    #         n = (dx / distance, dy / distance)
+    #
+    #     t = (-n[1], n[0])
+    #
+    #     v1n = self.velLeft * n[0] + self.velUp * n[1]
+    #     v1t = self.velLeft * t[0] + self.velUp * t[1]
+    #
+    #     v1n_new = -v1n
+    #
+    #     self.velLeft = v1n_new * n[0] + v1t * t[0] * 0.2
+    #     self.velUp = v1n_new * n[1] + v1t * t[1] * 0.2
+    #     r = (self.next_x - x, self.next_y - y)
+    #     delta_px = self.mass * self.velLeft
+    #     delta_py = self.mass * self.velUp
+    #     L =  r[0] * delta_py - r[1] * delta_px
+    #     d = (r[0] ** 2 + r[1] ** 2) ** 0.5
+    #     I = (1 / 12) * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2) + self.mass * d ** 2
+    #     impulse = 2 * self.mass * abs(v1n)
+    #
+    #     self.velAng = L / I
 
     def teleport(self, coords):
         if self.isPlayer:
@@ -1109,7 +1210,7 @@ class Car:
                                 self.strength = False
                             back = 1
                             self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back][0], self.archiveWall[-back][1]
-                            self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back][2]
+                            self.next_rotation, self.rotation = self.archiveWall[-4][2], self.archiveWall[-4][2]
                             self.wallCollTime = pygame.time.get_ticks()
 
 
@@ -1132,6 +1233,11 @@ class Car:
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.prickWheels()
                     elif tile == 6:
-                        if self.deadTires > 0:
+                        while self.deadTires > 0:
                             self.display.game.sound_manager.play_sound('Pitstop')
-                            self.deadTires = 0
+                            self.deadTires -= 1
+                            self.tireHealth += self.tireDamage
+
+
+    def start_race(self):
+        self.begining_lap_time = time.time()
