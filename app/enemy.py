@@ -75,8 +75,8 @@ class Enemy(Car):
             if self.chk_index == self.max_chk_indx:
                 self.chk_index = 0
         
-        self.dx =8 *  (self.center_x - self.x)/(abs(self.center_x - self.x)+0.000001)
-        self.dy = 6 *  (self.center_y - self.y)/(abs(self.center_y - self.y)+0.000001)
+        self.dx = 8 *  (self.center_x - self.x)/(abs(self.center_x - self.x)+0.000001) * self.display.game.delta_time * self.display.game.calibration
+        self.dy = 6 *  (self.center_y - self.y)/(abs(self.center_y - self.y)+0.000001) * self.display.game.delta_time * self.display.game.calibration
         self.velLeft -= self.dx
         self.velUp -= self.dy
         self.angle = lolekszcz.degrees(lolekszcz.atan2(-self.dy, self.dx))
