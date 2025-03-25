@@ -35,7 +35,7 @@ class Enemy(Car):
         self.detected_up = False
         self.detected_down = False
         self.x_axis = self.map[int(self.y//self.display.block_height)]
-        for i in range(10): #MAŁO, BO PROBlEMY Z SKALOWALNOŚCIĄ (DLA 1,2 PRZECIWNIKÓW MOŻNA NA SPOKOJNIE 50/30 DAĆ)
+        for i in range(190): #MAŁO, BO PROBlEMY Z SKALOWALNOŚCIĄ (DLA 1,2 PRZECIWNIKÓW MOŻNA NA SPOKOJNIE 50/30 DAĆ)
             if int(self.y//self.display.block_height)+i < len(self.map)-1:
                 self.x_axis_up = self.map[int(self.y//self.display.block_height)+i]
             if int(self.y//self.display.block_height)-i>0:

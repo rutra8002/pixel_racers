@@ -614,7 +614,8 @@ class Car:
 
             magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
             dire = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
-
+            if not self.isPlayer and magnitude > 0:
+                self.rotation = dire
             if magnitude > self.currentFriction:
                 modifier = magnitude / 200
                 if modifier > 2:
