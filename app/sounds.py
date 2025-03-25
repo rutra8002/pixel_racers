@@ -27,6 +27,9 @@ class SoundManager:
 
     def load_music(self, filepath):
         self.music = filepath
+    def unload_music(self):
+        self.music = None
+        pygame.mixer.music.unload()
 
     def play_music(self, loops=-1):
         if self.music:

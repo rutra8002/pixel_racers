@@ -82,11 +82,6 @@ class game_display(basic_display):
     def __init__(self, game, difficulty):
         basic_display.__init__(self, game)
         self.difficulty = difficulty
-        if self.difficulty == "Finished_Level_One":
-            self.game.sound_manager.load_music('sounds/music/Neon Rush.wav')
-
-        elif self.difficulty == "Finished_Level_Three":
-            self.game.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
         self.hotbar = hotbar.Hotbar(self)
         self.screenHeight_without_hotbar = self.screenHeight - self.hotbar.h
 
@@ -224,10 +219,6 @@ class game_display(basic_display):
             temp_list_of_guideArrows = self.map_data['guideArrows']
             for i, sb in enumerate(temp_list_of_guideArrows):
                 self.obstacles.append(obstacle.Obstacle(self, sb[0], sb[1], "guideArrow", sb[2]))
-                print(self.obstacles)
-            for o in self.obstacles:
-                print(o.type)
-
             self.enemies = self.map_data['enemies']
 
             self.laps = self.map_data['laps']
@@ -353,8 +344,8 @@ class game_display(basic_display):
                 avg = sum(car.lap_times)/len(car.lap_times)
             except:
                 avg = 0
-
-            print(car.isPlayer, car.lap_times, avg)
+            #
+            # print(car.isPlayer, car.lap_times, avg)
 
 
 class map_display(basic_display):
@@ -463,7 +454,6 @@ class map_display(basic_display):
     def add_lap(self, amount):
         if self.laps + amount >= 1:
             self.laps += amount
-            print('lap 1')
             self.lapstext.update_text(f'{self.laps}')
 
     def load_map(self, map_data):
