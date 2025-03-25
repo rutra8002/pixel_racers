@@ -28,35 +28,38 @@ class Enemy(Car):
         self.velUp += 30/self.distance_down - 30/self.distance_up
 
     def avoid_walls(self):
-        self.distance_right = 10000
-        self.distance_down = 10000
-        self.distance_up = 10000
-        self.detected_right = False
-        self.detected_up = False
-        self.detected_down = False
-        self.x_axis = self.map[int(self.y//self.display.block_height)]
-        for i in range(190): #MAŁO, BO PROBlEMY Z SKALOWALNOŚCIĄ (DLA 1,2 PRZECIWNIKÓW MOŻNA NA SPOKOJNIE 50/30 DAĆ)
-            if int(self.y//self.display.block_height)+i < len(self.map)-1:
-                self.x_axis_up = self.map[int(self.y//self.display.block_height)+i]
-            if int(self.y//self.display.block_height)-i>0:
-                self.x_axis_down = self.map[int(self.y//self.display.block_height)-i]
-            for j in range(30):
-                if int(self.x//self.display.block_width)+j < len(self.x_axis)-1:
-                    self.wall_right = self.x_axis[int(self.x//self.display.block_width)+j]
-                
-                self.adj_x = self.x//self.display.block_width
+        try:
+            self.distance_right = 10000
+            self.distance_down = 10000
+            self.distance_up = 10000
+            self.detected_right = False
+            self.detected_up = False
+            self.detected_down = False
+            self.x_axis = self.map[int(self.y//self.display.block_height)]
+            for i in range(10): #MAŁO, BO PROBlEMY Z SKALOWALNOŚCIĄ (DLA 1,2 PRZECIWNIKÓW MOŻNA NA SPOKOJNIE 50/30 DAĆ)
+                if int(self.y//self.display.block_height)+i < len(self.map)-1:
+                    self.x_axis_up = self.map[int(self.y//self.display.block_height)+i]
+                if int(self.y//self.display.block_height)-i>0:
+                    self.x_axis_down = self.map[int(self.y//self.display.block_height)-i]
+                for j in range(30):
+                    if int(self.x//self.display.block_width)+j < len(self.x_axis)-1:
+                        self.wall_right = self.x_axis[int(self.x//self.display.block_width)+j]
 
-                self.wall_up = self.x_axis_up[int(self.adj_x)]
-                self.wall_down = self.x_axis_down[int(self.adj_x)]
-                if self.wall_right == 1 and not self.detected_right:
-                    self.detected_right = True
-                    self.distance_right = j + 0.000001 #negligible value to avoid / by 0  
-                if self.wall_up == 1 and not self.detected_up:
-                    self.detected_up = True
-                    self.distance_up = i + 0.000001 
-                if self.wall_down == 1 and not self.detected_down:
-                    self.detected_down = True
-                    self.distance_down = i + 0.000001
+                    self.adj_x = self.x//self.display.block_width
+
+                    self.wall_up = self.x_axis_up[int(self.adj_x)]
+                    self.wall_down = self.x_axis_down[int(self.adj_x)]
+                    if self.wall_right == 1 and not self.detected_right:
+                        self.detected_right = True
+                        self.distance_right = j + 0.000001 #negligible value to avoid / by 0
+                    if self.wall_up == 1 and not self.detected_up:
+                        self.detected_up = True
+                        self.distance_up = i + 0.000001
+                    if self.wall_down == 1 and not self.detected_down:
+                        self.detected_down = True
+                        self.distance_down = i + 0.000001
+        except:
+            pass
 
 
             
