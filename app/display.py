@@ -22,6 +22,7 @@ import json
 class basic_display:
     def __init__(self, game):
         self.game = game
+        self.map_dir = self.game.map_dir
         self.screen = self.game.screen
         self.screenWidth, self.screenHeight = self.game.width, self.game.height
         self.objects = []
@@ -84,6 +85,8 @@ class game_display(basic_display):
     def __init__(self, game, difficulty):
         basic_display.__init__(self, game)
         self.difficulty = difficulty
+        self.diff = difficulty
+
 
         self.db_manager = DatabaseManager()
 
