@@ -3,6 +3,8 @@ import time
 from configparser import ConfigParser
 import cv2
 import numpy
+
+from app.database import DatabaseManager
 from customObjects import custom_images, custom_text, custom_button
 from jeff_the_objects.slider import Slider
 from jeff_the_objects.stacked_sprite import StackedSprite
@@ -82,6 +84,9 @@ class game_display(basic_display):
     def __init__(self, game, difficulty):
         basic_display.__init__(self, game)
         self.difficulty = difficulty
+
+        self.db_manager = DatabaseManager()
+
         self.hotbar = hotbar.Hotbar(self)
         self.screenHeight_without_hotbar = self.screenHeight - self.hotbar.h
 
@@ -124,6 +129,36 @@ class game_display(basic_display):
         self.draw_map()
         self.map_surface.set_colorkey(self.bgColor)
         self.mapMask = pygame.mask.from_surface(self.map_surface)
+
+    def add_snow_particles(self):
+        for _ in range(10):
+            x = random.randint(0, self.game.width)
+            y = random.randint(-50, 10)
+
+            vel_x = random.uniform(-0.5, 0.5)
+            vel_y = random.uniform(0.5, 2)
+
+            acc_x = 0
+            acc_y = 0.05
+
+            ang_vel = 0
+            ang_acc = 0
+
+            size = random.randint(1, 5)
+            lifetime = 690
+
+            speed = 100
+
+            r = random.randint(200, 255)
+            g = random.randint(200, 255)
+            b = random.randint(240, 255)
+            alpha = random.randint(200, 250)
+
+            shape = 'circle'
+
+            self.particle_system.add_particle(x, y, vel_x, vel_y, acc_x, acc_y,
+                                              ang_vel, ang_acc, speed, lifetime, size,
+                                              r, g, b, alpha, shape)
 
     #check collision between particles and map
     def check_particle_collision(self, particle):
@@ -276,7 +311,8 @@ class game_display(basic_display):
                 car.start_race()
             self.started_race = True
 
-
+        if self.difficulty == "Finished_Level_Three":
+            self.add_snow_particles()
 
         if self.hotbar.stopwatch.start_time == 0:
             self.hotbar.start_counting_time()
