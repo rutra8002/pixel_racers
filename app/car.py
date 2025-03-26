@@ -273,7 +273,7 @@ class Car:
 
 
                 if bonus == 0:
-                    self.nitroAmount += 20
+                    self.nitroAmount += 50
 
                     if self.nitroAmount > 100:
                         self.nitroAmount = 100
