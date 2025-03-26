@@ -50,6 +50,9 @@ class DatabaseManager:
         if session.query(Coins).count() == 0:
             session.add(Coins(total_count=0))
             session.commit()
+        if session.query(Player).count() == 0:
+            session.add(Player(name='jeff'))
+            session.commit()
         session.close()
 
     def add_player(self, name):
