@@ -125,6 +125,11 @@ class Button:  # A button class
             elif self.action == 'add_lap':
                 self.display.add_lap(1)
 
+            elif self.action == 'change_player_name':
+                self.display.game.change_display('change_player_name')
+            elif self.action == 'save_player_name':
+                self.display.save_player_name()
+
             elif 'edit_map_titled_' in self.action:
                 with open(f"{self.display.game.map_dir}/{self.action.removeprefix('edit_map_titled_')}.json", 'r') as f:
                     map_data = json.load(f)

@@ -966,7 +966,7 @@ class main_menu_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
 
-        self.amount_of_buttons = 6
+        self.amount_of_buttons = 7
         self.button_padding = self.game.height * (1/96)
         self.button_width_modifier = 45.5/256
         self.button_heigh_modifier = 10.4/144
@@ -1004,6 +1004,12 @@ class main_menu_display(basic_display):
                                              self.amount_of_buttons - 4), self.button_width, self.button_height,
                                  text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                                  outline_color=(50, 50, 50), outline_width=2)
+            custom_button.Button(self, 'change_player_name',self.game.width / 2,
+                                 self.game.height + (- self.button_padding - self.button_height) * (
+                                         self.amount_of_buttons - 5), self.button_width, self.button_height,
+                                text = "CHANGE PLAYER NAME", border_radius = 0, color = (26, 26, 26),
+                                text_color = (150, 150, 150), outline_color = (50, 50, 50),
+                                outline_width = 2)
 
 
         else:
@@ -1020,7 +1026,12 @@ class main_menu_display(basic_display):
             custom_button.Button(self, 'to_map_maker_menu', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 3), self.button_width, self.button_height, text='Make a map', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
             custom_button.Button(self, 'credits', self.button_padding,self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 4), self.button_width, self.button_height, text='Credits', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
             custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 5), self.button_width, self.button_height, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-
+            custom_button.Button(self, 'change_player_name',self.game.width / 2,
+                                 self.game.height + (- self.button_padding - self.button_height) * (
+                                         self.amount_of_buttons - 6), self.button_width, self.button_height,
+                                text = "CHANGE PLAYER NAME", border_radius = 0, color = (26, 26, 26),
+                                text_color = (150, 150, 150), outline_color = (50, 50, 50),
+                                outline_width = 2)
         self.particle_system = self.game.menu_particle_system
 
     def render(self):
@@ -1600,3 +1611,122 @@ class leaderboard(basic_display):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.game.change_display('main_menu_display')
+
+
+class change_player_name(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
+        self.particle_system = self.game.menu_particle_system
+
+        # Button dimensions
+        self.button_width_modifier = 45.5 / 256
+        self.button_heigh_modifier = 10.4 / 144
+        self.button_width = self.game.width * self.button_width_modifier
+        self.button_height = self.game.height * self.button_heigh_modifier
+
+        # Title
+        custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5,
+                                'CHANGE PLAYER NAME', text_color='white',
+                                font_height=int(self.game.height * (19 / 216)))
+
+        # Get current player name from the game object
+        self.db_manager = DatabaseManager()
+        try:
+            current_player = self.game.displays['game_display'].p.player_name
+        except (AttributeError, KeyError):
+            current_player = 'jeff'  # Default name
+
+        self.name_input = current_player
+        self.cursor_visible = True
+        self.cursor_timer = 0
+
+        # Player name display
+        self.name_display = custom_text.Custom_text(
+            self, self.game.width / 2, self.game.height / 2,
+                  self.name_input + '|', text_color='white', font_height=40
+        )
+
+        # Instruction
+        custom_text.Custom_text(
+            self, self.game.width / 2, self.game.height / 2 + 60,
+            'Type your name and press Enter', text_color=(150, 150, 150), font_height=25
+        )
+
+        # Buttons
+        custom_button.Button(
+            self, 'save_player_name', self.game.width / 2 + 7.5,
+                                      self.game.height - 150, self.button_width, self.button_height,
+            text='SAVE', border_radius=0, color=(26, 26, 26),
+            text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2
+        )
+
+        custom_button.Button(
+            self, 'to_main_menu', self.game.width / 2 - self.button_width - 7.5,
+                                  self.game.height - 150, self.button_width, self.button_height,
+            text='CANCEL', border_radius=0, color=(26, 26, 26),
+            text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2
+        )
+
+    def mainloop(self):
+        self.particle_system.update(self.game.delta_time)
+
+        # Update cursor blink
+        self.cursor_timer += self.game.delta_time
+        if self.cursor_timer >= 0.5:
+            self.cursor_timer = 0
+            self.cursor_visible = not self.cursor_visible
+
+            if self.cursor_visible:
+                self.name_display.update_text(self.name_input + '|')
+            else:
+                self.name_display.update_text(self.name_input)
+
+    def render(self):
+        # Background particles
+        self.particle_system.add_particle(
+            random.randint(0, self.game.width), random.uniform(0, self.game.height),
+            random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
+            random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
+            random.randint(0, 255), 100, 'square'
+        )
+        self.particle_system.draw(self.game.screen)
+
+        # Render all UI elements
+        for obj in self.objects:
+            obj.render()
+
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')
+            elif event.key == pygame.K_BACKSPACE:
+                if len(self.name_input) > 0:
+                    self.name_input = self.name_input[:-1]
+                    self.name_display.update_text(self.name_input + '|' if self.cursor_visible else self.name_input)
+            elif event.key == pygame.K_RETURN:
+                self.save_player_name()
+            elif event.unicode and len(self.name_input) < 15:  # Limit name length
+                # Only allow alphanumeric characters and underscore
+                if event.unicode.isalnum() or event.unicode == '_':
+                    self.name_input += event.unicode
+                    self.name_display.update_text(self.name_input + '|' if self.cursor_visible else self.name_input)
+
+    def save_player_name(self):
+        if not self.name_input:
+            return  # Don't save empty names
+
+        # Update name in all relevant places
+        try:
+            # Update player object if game display exists
+            if 'game_display' in self.game.displays:
+                self.game.displays['game_display'].p.player_name = self.name_input
+
+            # Make sure player exists in database
+            self.db_manager.get_player_coins(self.name_input)
+
+            self.game.change_display('main_menu_display')
+        except Exception as e:
+            print(f"Error saving player name: {e}")
