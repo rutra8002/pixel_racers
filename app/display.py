@@ -1287,17 +1287,16 @@ class level_selector(basic_display):
         self.particle_system.draw(self.screen)
 
         top_scores = self.fetch_top_scores()
-        if len(top_scores) == 0:
-            for j in range(self.top):
-                self.texts[f'text_{j}'].update_text('')
-        else:
-            for i, (name, score, full_time, fastest_lap) in enumerate(top_scores):
-                milliseconds_full = int((full_time % 1) * 1000)
-                seconds_full = round(full_time % 60)
-                milliseconds_lap = int((fastest_lap % 1) * 1000)
-                seconds_lap = round(fastest_lap % 60)
-                self.texts[f'text_{i}'].update_text(
-                    f'{i + 1}. {name if name != "Player" else self.game.player_name}: {score}, Full time: {int(full_time // 60)}:{seconds_full:02}:{milliseconds_full:03}, Fastest lap time: {int(fastest_lap // 60)}:{seconds_lap:02}:{milliseconds_lap:03}')
+
+        for j in range(self.top):
+            self.texts[f'text_{j}'].update_text('')
+        for i, (name, score, full_time, fastest_lap) in enumerate(top_scores):
+            milliseconds_full = int((full_time % 1) * 1000)
+            seconds_full = round(full_time % 60)
+            milliseconds_lap = int((fastest_lap % 1) * 1000)
+            seconds_lap = round(fastest_lap % 60)
+            self.texts[f'text_{i}'].update_text(
+                f'{i + 1}. {name if name != "Player" else self.game.player_name}: {score}, Full time: {int(full_time // 60)}:{seconds_full:02}:{milliseconds_full:03}, Fastest lap time: {int(fastest_lap // 60)}:{seconds_lap:02}:{milliseconds_lap:03}')
 
 
         for i, lvl in enumerate(list(self.levels.values())):
