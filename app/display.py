@@ -117,14 +117,16 @@ class game_display(basic_display):
             {"type": "tree", "sprite": StackedSprite(self, images.castle, 21, (21, 21), 3, random.randint(0, 359), rotate=True), "coords": (400, 500)},
         ]
 
+        self.snow_timer = 0
+        self.snowing = False
 
         self.p = player.Player(self, self.player_position, self.player_rotation, self.game.player_model)
 
         self.leaderboard = {}
         self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
         self.hotbar.after_player_setup()
-        for e in self.enemies:
-            enemy.Enemy(self, e[0], e[1], 1)
+        for number, e in enumerate(self.enemies):
+            enemy.Enemy(self, e[0], e[1], 1, name=f'Enemy {number+1}')
 
 
 
@@ -314,7 +316,16 @@ class game_display(basic_display):
                 car.start_race()
             self.started_race = True
 
-        if self.difficulty == "Finished_Level_Three":
+        self.snow_timer += self.game.delta_time
+        if self.snow_timer >= 10.0:
+            if self.difficulty == "Finished_Level_Three":
+                if self.snowing:
+                    self.snowing = False
+                else:
+                    self.snowing = True
+            self.snow_timer = 0
+
+        if self.snowing:
             self.add_snow_particles()
 
         if self.hotbar.stopwatch.start_time == 0:
@@ -376,6 +387,7 @@ class game_display(basic_display):
 
     def update_standings(self):
         self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+        self.game.currentLeaderboard = self.leaderboard_list
 
     def end_race(self):
         for car in self.leaderboard_list:
@@ -1183,8 +1195,9 @@ class pause_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
         custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
-        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2, self.game.height / 2, 350, 80,
-                             text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
+        width = 460
+        custom_button.Button(self, 'leaderboard', self.game.width / 2 - width // 2, self.game.height / 2, width, 80,
+                             text='View score and quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                              outline_color=(50, 50, 50), outline_width=2)
 
 
@@ -1194,9 +1207,7 @@ class pause_display(basic_display):
     def events(self, event):
         for obj in self.objects:
             obj.events(event)
-
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self.game.change_display(list(self.game.displays['level_selector'].levels.keys())[self.game.displays['level_selector'].currently_selected])
+        # self.game.change_display(list(self.game.displays['level_selector'].levels.keys())[self.game.displays['level_selector'].currently_selected])
 
 
 class level_selector(basic_display):
@@ -1579,29 +1590,42 @@ class credits(basic_display):
 class leaderboard(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
-        self.players = self.load()
+        # self.players = self.load()
         self.texts = {}
-        for i, (name, score) in enumerate(self.players):
+        self.number_of_players = 5
+        score = "No score"
+        # for i, car in enumerate(self.game.displays['game_display'].leaderboard_list):
+        #     self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 60 * i,
+        #                                                      f'{i + 1}. {car.name}: {score}', font_height=40, text_color=(255, 255, 255),
+        #                                                      background_color=(0, 0, 0), center=True,
+        #                                                      append=True)
+        for i in range(5):
             self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 60 * i,
-                                                             f'{name}: {score}', font_height=40, text_color=(255, 255, 255),
+                                                             f'', font_height=40, text_color=(255, 255, 255),
                                                              background_color=(0, 0, 0), center=True,
                                                              append=True)
         self.title = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 10,
                                             "Leaderboard", font_height=60, text_color=(255, 255, 255),
                                             background_color=(0, 0, 0), center=True,
                                             append=True)
+        width = 500
+        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - width // 2, self.game.height / 10 * 7, width, 80,
+                             text='Back to level selector', border_radius=0, color=(26, 26, 26),
+                             text_color=(150, 150, 150),
+                             outline_color=(50, 50, 50), outline_width=2)
     def mainloop(self):
         pass
-    def load(self):
-        players = []
-        with open('app/leaderboard.txt', 'r') as file:
-            for line in file:
-                name, score = line.strip().split(',')
-                players.append((name, int(score)))
-        return players
+    # def load(self):
+    #     players = []
+    #     with open('app/leaderboard.txt', 'r') as file:
+    #         for line in file:
+    #             name, score = line.strip().split(',')
+    #             players.append((name, int(score)))
+    #     return players
     def render(self):
-        for i, (name, score) in enumerate(self.players):
-            self.texts[f'text_{i}'].update_text(f'{name}: {score}')
+        score = "No score"
+        for i, car in enumerate(self.game.currentLeaderboard):
+            self.texts[f'text_{i}'].update_text(f'{i + 1}. {car.name}: {score}')
         for obj in self.objects:
             obj.render()
 

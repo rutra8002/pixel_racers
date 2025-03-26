@@ -6,8 +6,9 @@ from app import display as dsp
 import json
 
 class Enemy(Car):
-    def __init__(self, display, coordinates, rotation,model, crazy=False):
-        super().__init__(display, coordinates, rotation,isPlayer=False,model=model)
+    def __init__(self, display, coordinates, rotation, model, crazy=False, name="None"):
+        super().__init__(display, coordinates, rotation, isPlayer=False, model=model, name=name)
+        self.crazy = crazy
         self.game_dir = display.map_dir
         self.lv = display.diff
         self.map_data = display.map_data
@@ -18,6 +19,7 @@ class Enemy(Car):
         self.distance_right = 10000
         self.distance_down = 10000
         self.distance_up = 10000
+
 
 
     def loop(self):
@@ -62,7 +64,7 @@ class Enemy(Car):
             pass
 
 
-            
+
     def sigmoid(x):
         return 1/(1+lolekszcz.exp(-x))
     def new_to_chk(self):
@@ -71,13 +73,13 @@ class Enemy(Car):
         self.center_x = (i[0][0] + i[1][0])/2 * self.display.block_width
         self.center_y = (i[0][1] + i[1][1])/2 * self.display.block_height
         self.true_i = [[i[0][0]* self.display.block_width, i[0][1]* self.display.block_height], [i[1][0]* self.display.block_width, i[1][1]* self.display.block_height]]
-        
+
         if self.rect.clipline ((self.true_i[0][0],self.true_i[0][1]), (self.true_i[1][0], self.true_i[1][1])):
             if self.chk_index != self.max_chk_indx:
                 self.chk_index+=1
             if self.chk_index == self.max_chk_indx:
                 self.chk_index = 0
-        
+
         self.dx = 8 *  (self.center_x - self.x)/(abs(self.center_x - self.x)+0.000001) * self.display.game.delta_time * self.display.game.calibration
         self.dy = 6 *  (self.center_y - self.y)/(abs(self.center_y - self.y)+0.000001) * self.display.game.delta_time * self.display.game.calibration
         self.velLeft -= self.dx

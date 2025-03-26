@@ -44,6 +44,7 @@ class Game:
         self.calibration = 60
 
         self.objects = []
+        self.currentLeaderboard = None
 
         self.menu_particle_system = particle_system.ParticleSystem()
 

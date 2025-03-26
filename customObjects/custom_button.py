@@ -99,7 +99,8 @@ class Button:  # A button class
                     lvl_display.update_surfaces(1)
             elif self.action == 'to_map_maker_menu':
                 self.display.game.change_display('map_maker_menu')
-
+            elif self.action == 'leaderboard':
+                self.display.game.change_display('leaderboard')
             elif self.action == 'new_map':
                 self.display.game.displays['map_display'].reset_map()
                 self.display.game.change_display('map_display')
