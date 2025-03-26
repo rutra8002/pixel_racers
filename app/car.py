@@ -890,8 +890,8 @@ class Car:
                 elif obstacle.type == 2:
                     self.barrier = True
                     self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], \
-                    self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
-                    self.next_rotation, self.rotation = self.archiveBarrier[-1][2], self.archiveBarrier[-1][2]
+                    self.archiveBarrier[-2][0], self.archiveBarrier[-2][1]
+                    self.next_rotation, self.rotation = self.archiveBarrier[-1][2], self.archiveBarrier[-2][2]
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
                 elif obstacle.type == 3 and not obstacle.falling:
@@ -903,8 +903,8 @@ class Car:
                 elif obstacle.type == 4:
                     self.barrier = True
                     self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], \
-                    self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
-                    self.next_rotation, self.rotation = self.archiveBarrier[-1][2], self.archiveBarrier[-1][2]
+                    self.archiveBarrier[-2][0], self.archiveBarrier[-2][1]
+                    self.next_rotation, self.rotation = self.archiveBarrier[-1][2], self.archiveBarrier[-2][2]
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
                     elapsed = time.time() - obstacle.start_time
@@ -931,8 +931,8 @@ class Car:
             if self.wall_frames > 10:
                 back = 2
                 self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], \
-                self.archiveWall[-back][0], self.archiveWall[-back][1]
-                self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back][2]
+                self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
+                self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back - 1][2]
 
         if not self.car:
             self.archiveCars.append([self.x, self.y, self.rotation])
@@ -1004,13 +1004,13 @@ class Car:
                 check_y = map_y + dy
 
                 if 0 <= check_y < map_height and 0 <= check_x < map_width:
-                    if self.display.map[check_y][check_x] == 1:  # If wall
+                    if self.display.map[check_y][check_x] == 1:
                         total_x += dx
                         total_y += dy
                         count += 1
 
         if count == 0:
-            return (0, 1), (-1, 0)  # Default fallback normal and tangent
+            return (0, 1), (-1, 0)
 
         avg_x = total_x / count
         avg_y = total_y / count
@@ -1028,6 +1028,7 @@ class Car:
         tangent = (-normal[1], normal[0])
 
         return normal, tangent
+
     def improved_wall_collision(self, mask, x, y):
         center_x, center_y = x, y
         if center_x is None or center_y is None:
@@ -1054,6 +1055,12 @@ class Car:
         I = (1 / 12) * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2) + self.mass * d ** 2
 
         self.velAng = -L / I
+
+        move_away_distance = 2
+        self.next_x += normal[0] * move_away_distance
+        self.next_y += normal[1] * move_away_distance
+        self.x = self.next_x
+        self.y = self.next_y
 
     #
     # def wall_collision(self, mask, x, y):
@@ -1135,6 +1142,11 @@ class Car:
              other.velLeft, other.velUp, other.velAng = v2[0], v2[1], omega_B
         else:
             other.strength = False
+        power = 2
+        self.next_x += n[0] * power
+        self.next_y += n[1] * power
+        other.next_x -= n[0] * power
+        other.next_y -= n[1] * power
 
     def collision_detection(self, mask, x, y):
         offset = (x - (self.rect.topleft[0] + self.delta_x), y - (self.rect.topleft[1] + self.delta_y))
@@ -1222,8 +1234,8 @@ class Car:
                                 self.display.game.sound_manager.play_sound('bounce')
                                 self.strength = False
                             back = 1
-                            self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back][0], self.archiveWall[-back][1]
-                            self.next_rotation, self.rotation = self.archiveWall[-3][2], self.archiveWall[-3][2]
+                            # self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
+                            self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back - 1][2]
                             self.wallCollTime = pygame.time.get_ticks()
 
 
