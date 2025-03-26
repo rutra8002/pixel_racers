@@ -1072,40 +1072,6 @@ class Car:
 
         self.velAng = -L / I
 
-        move_away_distance = 2
-        self.next_x += normal[0] * move_away_distance
-        self.next_y += normal[1] * move_away_distance
-        self.x = self.next_x
-        self.y = self.next_y
-
-    #
-    # def wall_collision(self, mask, x, y):
-    #     dx = x - self.next_x
-    #     dy = y - self.next_y
-    #     distance = lolino.sqrt(dx ** 2 + dy ** 2)
-    #     if distance == 0:
-    #         n = (0, 0)
-    #     else:
-    #         n = (dx / distance, dy / distance)
-    #
-    #     t = (-n[1], n[0])
-    #
-    #     v1n = self.velLeft * n[0] + self.velUp * n[1]
-    #     v1t = self.velLeft * t[0] + self.velUp * t[1]
-    #
-    #     v1n_new = -v1n
-    #
-    #     self.velLeft = v1n_new * n[0] + v1t * t[0] * 0.2
-    #     self.velUp = v1n_new * n[1] + v1t * t[1] * 0.2
-    #     r = (self.next_x - x, self.next_y - y)
-    #     delta_px = self.mass * self.velLeft
-    #     delta_py = self.mass * self.velUp
-    #     L =  r[0] * delta_py - r[1] * delta_px
-    #     d = (r[0] ** 2 + r[1] ** 2) ** 0.5
-    #     I = (1 / 12) * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2) + self.mass * d ** 2
-    #     impulse = 2 * self.mass * abs(v1n)
-    #
-    #     self.velAng = L / I
 
     def teleport(self, coords):
         if self.isPlayer:
@@ -1158,11 +1124,6 @@ class Car:
              other.velLeft, other.velUp, other.velAng = v2[0], v2[1], omega_B
         else:
             other.strength = False
-        power = 2
-        self.next_x += n[0] * power
-        self.next_y += n[1] * power
-        other.next_x -= n[0] * power
-        other.next_y -= n[1] * power
 
     def collision_detection(self, mask, x, y):
         offset = (x - (self.rect.topleft[0] + self.delta_x), y - (self.rect.topleft[1] + self.delta_y))
@@ -1252,7 +1213,7 @@ class Car:
                                 self.display.game.sound_manager.play_sound('bounce')
                                 self.strength = False
                             back = 1
-                            # self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
+                            self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
                             self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back - 1][2]
                             self.wallCollTime = pygame.time.get_ticks()
 
