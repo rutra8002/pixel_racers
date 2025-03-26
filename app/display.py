@@ -178,10 +178,10 @@ class game_display(basic_display):
 
     def draw_map(self):
         #draw test_map_one img
-        if self.difficulty == "Finished_Level_One":
+        if self.difficulty == "Finished_Level_1":
             self.map_surface.blit(images.mapone, (0, 0))
 
-        elif self.difficulty == "Finished_Level_Three":
+        elif self.difficulty == "Finished_Level_3":
             self.map_surface.blit(images.mapthree, (0, 0))
 
         else:
@@ -318,7 +318,7 @@ class game_display(basic_display):
 
         self.snow_timer += self.game.delta_time
         if self.snow_timer >= 10.0:
-            if self.difficulty == "Finished_Level_Three":
+            if self.difficulty == "Finished_Level_3":
                 if self.snowing:
                     self.snowing = False
                 else:

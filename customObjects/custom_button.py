@@ -76,8 +76,14 @@ class Button:  # A button class
                     self.display.game.sound_manager.load_music('sounds/music/Neon Rush.wav')
                     self.display.game.sound_manager.play_music()
 
+                if course_to_play == 1:
+                    self.display.game.sound_manager.unload_music()
+                    self.display.game.sound_manager.set_music_volume(0.15)
+                    self.display.game.sound_manager.load_music('sounds/music/Volcanic Rush.wav')
+                    self.display.game.sound_manager.play_music()
 
-                elif course_to_play == 1:
+
+                elif course_to_play == 2:
                     self.display.game.sound_manager.unload_music()
                     self.display.game.sound_manager.set_music_volume(0.2)
                     self.display.game.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
