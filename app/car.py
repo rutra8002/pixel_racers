@@ -13,14 +13,7 @@ from customObjects.custom_text import Custom_text
 from app import images, obstacle
 from jeff_the_objects import stacked_sprite
 
-#TO DO:
-#leaderboard - ???
 
-# There are four different car models, each with different advantages and drawbacks. The user can change the current car to use in the races in the main menu. The different models are listed here:
-# 1. Basic car - has all the stats on a balanced level.
-# 2. Jeep - more bulky, less agile, but hard for opponents to push around.
-# 3. Toy car - lightweight and swift, only has three tires
-# 4. Police car - has better stats than others but only when driving backwards, boost still pushes the car forward and powerup obstacles spawn behind though.
 class Car:
     def __init__(self, display, coordinates, rotation, isPlayer, model, car3d_height_factor=None):
         self.display = display
@@ -904,6 +897,10 @@ class Car:
                     self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
+                    elapsed = time.time() - obstacle.start_time
+                    if elapsed < 0.15:
+                        self.x -= 20
+                        self.barrier = False
                 elif obstacle.type == 5:
                     self.currentMaxSpeed = self.gravelMaxSpeed
                 elif obstacle.type == 7:
