@@ -130,6 +130,8 @@ class Car:
 
         self.nitroAmount = 0
 
+        self.bounce_sound_timer = 0
+
 
         self.particle_system.add_generator(self.backwheel1_pgen)
         self.particle_system.add_generator(self.backwheel2_pgen)
@@ -843,6 +845,8 @@ class Car:
                     if car not in self.recentCollisions:
                         self.recentCollisions[car] = 0
 
+        self.bounce_sound_timer -= self.display.game.delta_time
+
         for car in self.recentCollisions:
             # if self.recentCollisions[car] != 0 and not self.collision_detection(car.car_mask, car.rect.topleft[0] + car.delta_x, car.rect.topleft[1] + car.delta_y):
             if self.recentCollisions[car] != 0:
@@ -1203,7 +1207,8 @@ class Car:
                             center_x, center_y = self.detect_collision_area(mask, 0, 0)
                             if center_x and center_y:
                                 self.improved_wall_collision(mask, int(center_x), int(center_y))
-                            if self.isPlayer:
+                            if self.isPlayer and self.bounce_sound_timer <= 0:
+                                self.bounce_sound_timer = 0.3
                                 self.display.game.sound_manager.play_sound('bounce')
                                 self.strength = False
                             back = 1
