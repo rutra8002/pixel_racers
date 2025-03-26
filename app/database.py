@@ -5,6 +5,15 @@ from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
 
 
+class UnlockedCars(Base):
+    __tablename__ = 'unlocked_cars'
+
+    id = Column(Integer, primary_key=True)
+    car_model = Column(Integer, nullable=False)
+
+    def __repr__(self):
+        return f"<UnlockedCars(car_model={self.car_model})>"
+
 class Player(Base):
     __tablename__ = 'players'
 
@@ -77,3 +86,39 @@ class DatabaseManager:
             return coins.total_count
         finally:
             session.close()
+
+    def is_car_unlocked(self, car_model):
+        session = self.Session()
+        try:
+            result = session.query(UnlockedCars).filter_by(car_model=car_model).count() > 0
+            return result
+        finally:
+            session.close()
+
+    def unlock_car(self, car_model):
+        session = self.Session()
+        try:
+            if not self.is_car_unlocked(car_model):
+                session.add(UnlockedCars(car_model=car_model))
+                session.commit()
+                return True
+            return False
+        finally:
+            session.close()
+
+    def buy_car(self, car_model, price):
+        if self.is_car_unlocked(car_model):
+            return True
+
+        coins = self.get_coins()
+        if coins >= price:
+            session = self.Session()
+            try:
+                coins_record = session.query(Coins).first()
+                coins_record.total_count -= price
+                session.commit()
+                self.unlock_car(car_model)
+                return True
+            finally:
+                session.close()
+        return False

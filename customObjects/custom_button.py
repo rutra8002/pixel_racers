@@ -123,10 +123,8 @@ class Button:  # A button class
             elif self.action == 'move_selected_car_to_right':
                 self.display.move_selected_car_to_right()
 
-            elif self.action == 'select_car':
-                self.display.game.player_model = self.display.selected_car_model
-                self.display.game.update_player_model()
-                self.display.game.change_display('main_menu_display')
+            elif self.action == 'car_action':
+                self.display.handle_car_action()
             elif self.action == "export_png":
                 self.display.export_png()
 

@@ -1449,6 +1449,19 @@ class change_vehicle(basic_display):
         self.large_cars = []
         self.small_cars = []
         self.selected_car_model = 1
+
+        self.car_prices = {
+            1: 0,
+            2: 100,
+            3: 250,
+            4: 500,
+            5: 1000,
+            6: 2000
+        }
+
+        if not self.db_manager.is_car_unlocked(1):
+            self.db_manager.unlock_car(1)
+
         for i in range(6):
             # Position large car at center
             large_car = car.Car(self, (self.game.width / 2, self.game.height / 2), 0, False, i + 1,
@@ -1474,6 +1487,18 @@ class change_vehicle(basic_display):
         custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5, 'SELECT A VEHICLE', text_color='white',
                                 font_height=int(self.game.height * (19 / 216)))
 
+        self.coins_text = custom_text.Custom_text(self, self.game.width - 350, 50,
+                                                  f"Coins: {self.db_manager.get_coins()}",
+                                                  text_color='yellow',
+                                                  font_height=30,
+                                                  center=False)
+
+        self.price_text = custom_text.Custom_text(self, self.game.width / 2,
+                                                  self.game.height - 400,
+                                                  "",
+                                                  text_color='yellow',
+                                                  font_height=30)
+
         custom_button.Button(self, 'move_selected_car_to_left', self.game.width / 2 - self.button_width - 7.5,
                              (self.game.height - 150) - self.button_height - 15,
                              self.button_width, self.button_height, text='<-', border_radius=0, color=(26, 26, 26),
@@ -1484,9 +1509,12 @@ class change_vehicle(basic_display):
                              self.button_width, self.button_height, text='->', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
-        custom_button.Button(self, 'select_car', self.game.width / 2 + 7.5, self.game.height - 150, self.button_width,
-                             self.button_height, text='Select', border_radius=0, color=(26, 26, 26),
-                             text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        self.action_button = custom_button.Button(self, 'car_action', self.game.width / 2 + 7.5, self.game.height - 150,
+                                                  self.button_width, self.button_height, text='SELECT',
+                                                  border_radius=0,
+                                                  color=(26, 26, 26), text_color=(150, 150, 150),
+                                                  outline_color=(50, 50, 50), outline_width=2)
+
         custom_button.Button(self, 'to_main_menu', self.game.width / 2 - self.button_width - 7.5,
                              self.game.height - 150,
                              self.button_width, self.button_height, text='BACK', border_radius=0, color=(26, 26, 26),
@@ -1507,6 +1535,18 @@ class change_vehicle(basic_display):
                                           random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
                                           random.randint(0, 255), 100, 'square')
         self.particle_system.draw(self.game.screen)
+
+        self.coins_text.update_text(f"Coins: {self.db_manager.get_coins()}")
+
+        is_unlocked = self.db_manager.is_car_unlocked(self.selected_car_model)
+
+        if is_unlocked:
+            self.action_button.update_text("Select")
+            self.price_text.update_text("")
+        else:
+            price = self.car_prices[self.selected_car_model]
+            self.action_button.update_text(f"Buy: {price}")
+            self.price_text.update_text(f"Price: {price} coins")
 
         if self.selected_car_model < 1:
             self.selected_car_model = 1
@@ -1544,6 +1584,17 @@ class change_vehicle(basic_display):
         # Render other objects
         for obj in self.objects:
             obj.render()
+
+    def handle_car_action(self):
+        is_unlocked = self.db_manager.is_car_unlocked(self.selected_car_model)
+
+        if is_unlocked:
+            self.game.player_model = self.selected_car_model
+            self.game.update_player_model()
+            self.game.change_display('main_menu_display')
+        else:
+            price = self.car_prices[self.selected_car_model]
+            self.db_manager.buy_car(self.selected_car_model, price)
 
     def start_animation(self):
         self.animation_progress = 0
