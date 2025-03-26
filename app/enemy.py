@@ -3,9 +3,10 @@ import math as lolekszcz
 from app.car import Car
 
 class Enemy(Car):
-    def __init__(self, display, coordinates, rotation, model, crazy=False):
-        super().__init__(display, coordinates, rotation, isPlayer=False, model=model)
+    def __init__(self, display, coordinates, rotation, model, crazy=False, name="None"):
+        super().__init__(display, coordinates, rotation, isPlayer=False, model=model, name=name)
         self.crazy = crazy
+
 
     def loop(self):
         super().loop()

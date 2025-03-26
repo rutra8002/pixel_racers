@@ -18,7 +18,7 @@ from jeff_the_objects import stacked_sprite
 
 
 class Car:
-    def __init__(self, display, coordinates, rotation, isPlayer, model, car3d_height_factor=None):
+    def __init__(self, display, coordinates, rotation, isPlayer, model, name: str="None", car3d_height_factor=None):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
@@ -33,7 +33,7 @@ class Car:
         self.car3d_height_factor = car3d_height_factor
         self.wall_frames = 0
         self.last_frames_len = 10
-
+        self.name = name
         self.current_checkpoint = -1
         self.lap = 1
 
@@ -55,6 +55,8 @@ class Car:
 
         self.strength = False # następne zderzenie z autem nie daje tobie knockbacku. Przy zderzeniu ze ścianą znika i nic nie robi
         self.infiNitro = False
+        if self.isPlayer:
+            self.name = "You"
 
         self.player_name = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
@@ -86,7 +88,7 @@ class Car:
 
 
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
-        self.bumpingCooldown = 30
+        self.bumpingCooldown = 20
         self.wallCollisionCooldown = 30
         self.wallCollTime = 0
 
@@ -233,7 +235,7 @@ class Car:
                     self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
                     if self.recentCollisions[c] == 0:
                         self.handle_bumping(c)
-                        back = 2
+                        back = 4
                         self.next_x, self.next_y, self.x, self.y = self.archiveCars[-back][0], self.archiveCars[-back][1], self.archiveCars[-back][0], self.archiveCars[-back][1]
                         self.next_rotation, self.rotation = self.archiveCars[-back][2], self.archiveCars[-back][2]
                         c.next_x, c.next_y, c.x, c.y = c.archiveCars[-back][0], c.archiveCars[-back][1], c.archiveCars[-back][0], c.archiveCars[-back][1]
@@ -838,8 +840,8 @@ class Car:
                         self.recentCollisions[car] = 0
 
         for car in self.recentCollisions:
-            # if self.recentCollisions[car] != 0 and not self.collision_detection(car.car_mask, car.rect.topleft[0] + car.delta_x, car.rect.topleft[1] + car.delta_y):
-            if self.recentCollisions[car] != 0:
+            if self.recentCollisions[car] != 0 and not self.collision_detection(car.car_mask, car.rect.topleft[0] + car.delta_x, car.rect.topleft[1] + car.delta_y):
+            # if self.recentCollisions[car] != 0:
                 if pygame.time.get_ticks() - self.recentCollisions[car] > self.bumpingCooldown:
                     self.recentCollisions[car] = 0
 
@@ -877,6 +879,7 @@ class Car:
                     self.barrier = True
                     self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], \
                     self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
+                    self.next_rotation, self.rotation = self.archiveBarrier[-1][2], self.archiveBarrier[-1][2]
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
                 elif obstacle.type == 3 and not obstacle.falling:
@@ -889,6 +892,7 @@ class Car:
                     self.barrier = True
                     self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], \
                     self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
+                    self.next_rotation, self.rotation = self.archiveBarrier[-1][2], self.archiveBarrier[-1][2]
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
                 elif obstacle.type == 5:
@@ -1194,7 +1198,7 @@ class Car:
                                 self.strength = False
                             back = 1
                             self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back][0], self.archiveWall[-back][1]
-                            self.next_rotation, self.rotation = self.archiveWall[-4][2], self.archiveWall[-4][2]
+                            self.next_rotation, self.rotation = self.archiveWall[-3][2], self.archiveWall[-3][2]
                             self.wallCollTime = pygame.time.get_ticks()
 
 
