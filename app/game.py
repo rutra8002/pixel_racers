@@ -5,6 +5,8 @@ from app import config, sounds, cheats
 from customObjects import custom_text, custom_images, custom_button
 import particle_system
 import ctypes
+import inspect
+
 if platform.system() == "Windows":
     ctypes.windll.user32.SetProcessDPIAware()
 class Game:
@@ -82,6 +84,9 @@ class Game:
             'custom_button': custom_button,
             'cheats': cheats
         }
+
+        for name, func in inspect.getmembers(cheats, inspect.isfunction):
+            self.custom_locals[name] = func
 
         self.console_active = False
         self.console_input = ""
