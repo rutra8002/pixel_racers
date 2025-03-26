@@ -54,8 +54,8 @@ class Hotbar:
         self.player_standing = custom_text.Custom_text(self.display, self.x + self.w*(6.5/7), self.y + self.h / 2,
                                                 f'1st', text_color=(255, 215, 0))
     def render(self):
-        pygame.draw.rect(self.game.screen, self.color, self.rect, border_radius=20)
-        pygame.draw.rect(self.game.screen, self.outline_color, self.rect, width=5, border_radius=20)
+        pygame.draw.rect(self.game.screen, self.color, self.rect)
+        pygame.draw.rect(self.game.screen, self.outline_color, self.rect, width=5)
         self.nitro_bar.render()
         self.inv.render()
         self.undercarge.render()
