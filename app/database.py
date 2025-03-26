@@ -43,15 +43,23 @@ class DatabaseManager:
             session.commit()
         session.close()
 
-    def add_coin(self, player_name):
-        """Increment the global coin count and ensure player exists."""
+    def add_player(self, name):
+        """Add a new player to the database."""
         session = self.Session()
 
-        # Find or create player (no longer tracking coins per player)
-        player = session.query(Player).filter_by(name=player_name).first()
-        if not player:
-            player = Player(name=player_name)
-            session.add(player)
+        # Ensure player doesn't already exist
+        if session.query(Player).filter_by(name=name).count() == 0:
+            session.add(Player(name=name))
+            session.commit()
+            session.close()
+            return True
+        else:
+            session.close()
+            return False
+
+    def add_coin(self):
+        """Increment the global coin count and ensure player exists."""
+        session = self.Session()
 
         # Increment global coin count
         coins = session.query(Coins).first()
@@ -60,17 +68,10 @@ class DatabaseManager:
         session.commit()
         session.close()
 
-    def get_player_coins(self, player_name):
+    def get_coins(self):
         """Get the global coin count and ensure player exists."""
         session = self.Session()
         try:
-            # Ensure player exists
-            player = session.query(Player).filter_by(name=player_name).first()
-            if not player:
-                player = Player(name=player_name)
-                session.add(player)
-                session.commit()
-
             # Get global coin count
             coins = session.query(Coins).first()
             return coins.total_count

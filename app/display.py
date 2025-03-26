@@ -36,6 +36,8 @@ class basic_display:
         self.spike_color = (255, 0, 0)
         self.pitstop_color = (50, 50, 200)
 
+        self.db_manager = game.db_manager
+
         self.color_map = {
             0: self.asphalt_color,
             1: self.wall_color,
@@ -87,8 +89,6 @@ class game_display(basic_display):
         self.difficulty = difficulty
         self.diff = difficulty
 
-
-        self.db_manager = DatabaseManager()
 
         self.hotbar = hotbar.Hotbar(self)
         self.screenHeight_without_hotbar = self.screenHeight - self.hotbar.h
@@ -1654,7 +1654,7 @@ class change_player_name(basic_display):
                                 font_height=int(self.game.height * (19 / 216)))
 
         # Get current player name from the game object
-        self.db_manager = DatabaseManager()
+
         try:
             current_player = self.game.displays['game_display'].p.player_name
         except (AttributeError, KeyError):
@@ -1753,8 +1753,7 @@ class change_player_name(basic_display):
                 if hasattr(display_instance, 'p') and hasattr(display_instance.p, 'player_name'):
                     display_instance.p.player_name = stored_name
 
-            # Make sure player exists in database
-            self.db_manager.get_player_coins(stored_name)
+            self.db_manager.add_player(stored_name)
 
             self.game.change_display('main_menu_display')
         except Exception as e:

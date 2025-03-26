@@ -2,6 +2,7 @@ import json
 import platform
 import pygame, sys, threading, code, os, sqlite3
 from app import config, sounds, cheats
+from app.database import DatabaseManager
 from customObjects import custom_text, custom_images, custom_button
 import particle_system
 import ctypes
@@ -28,6 +29,8 @@ class Game:
         self.sound_manager.set_music_volume(0.2)
 
         config.set_config()
+
+        self.db_manager = DatabaseManager()
 
         self.map_dir = 'maps'
         self.update_settings()

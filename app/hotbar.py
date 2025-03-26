@@ -111,7 +111,7 @@ class Hotbar:
 
         if player_car:
             # Get total coins from database
-            total_coins = self.display.db_manager.get_player_coins(player_car.player_name)
+            total_coins = self.display.db_manager.get_coins()
 
             # Create or update coin text
             if hasattr(self, 'coin_text'):
