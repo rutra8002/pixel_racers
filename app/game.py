@@ -79,6 +79,7 @@ class Game:
         for debug_item in self.debug_items:
             debug_item.hidden = True
 
+        self.cheats = cheats.Cheats(self)
         self.custom_locals = {
             'self': self,
             'pygame': pygame,
@@ -87,11 +88,12 @@ class Game:
             'custom_text': custom_text,
             'custom_images': custom_images,
             'custom_button': custom_button,
-            'cheats': cheats
+            'cheats': self.cheats
         }
 
-        for name, func in inspect.getmembers(cheats, inspect.isfunction):
-            self.custom_locals[name] = func
+        for name, method in inspect.getmembers(self.cheats, inspect.ismethod):
+            if not name.startswith('__'):
+                self.custom_locals[name] = method
 
         self.console_cursor_pos = 0
 
