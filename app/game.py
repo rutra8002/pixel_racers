@@ -198,7 +198,8 @@ class Game:
                         self.console_input = self.console_history[-self.console_history_index]["input"]
                     else:
                         self.console_input = ""
-            else:
+            # Check for ` and ignore it
+            elif event.key != pygame.K_BACKQUOTE:
                 if event.unicode:
                     self.console_input += event.unicode
 
