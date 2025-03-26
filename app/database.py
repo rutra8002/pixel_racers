@@ -10,10 +10,21 @@ class Player(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
-    coin_count = Column(Integer, default=0)
+
+    # Removed coin_count column
 
     def __repr__(self):
-        return f"<Player(name='{self.name}', coins={self.coin_count})>"
+        return f"<Player(name='{self.name}')>"
+
+
+class Coins(Base):
+    __tablename__ = 'coins'
+
+    id = Column(Integer, primary_key=True)
+    total_count = Column(Integer, default=0)
+
+    def __repr__(self):
+        return f"<Coins(total_count={self.total_count})>"
 
 
 class DatabaseManager:
@@ -25,36 +36,43 @@ class DatabaseManager:
 
     def initialize_db(self):
         Base.metadata.create_all(self.engine)
+        # Ensure there's exactly one entry in the coins table
+        session = self.Session()
+        if session.query(Coins).count() == 0:
+            session.add(Coins(total_count=0))
+            session.commit()
+        session.close()
 
     def add_coin(self, player_name):
-        """Increment coin count for the specified player."""
+        """Increment the global coin count and ensure player exists."""
         session = self.Session()
 
-        # Find or create player
+        # Find or create player (no longer tracking coins per player)
         player = session.query(Player).filter_by(name=player_name).first()
         if not player:
-            player = Player(name=player_name, coin_count=1)
+            player = Player(name=player_name)
             session.add(player)
-        else:
-            player.coin_count += 1
+
+        # Increment global coin count
+        coins = session.query(Coins).first()
+        coins.total_count += 1
 
         session.commit()
         session.close()
 
     def get_player_coins(self, player_name):
+        """Get the global coin count and ensure player exists."""
         session = self.Session()
         try:
+            # Ensure player exists
             player = session.query(Player).filter_by(name=player_name).first()
-
             if not player:
-                # create player
-                player = Player(name=player_name, coin_count=0)
+                player = Player(name=player_name)
                 session.add(player)
                 session.commit()
 
-            # Access coin_count while the session is still open
-            coin_count = player.coin_count
-            return coin_count
+            # Get global coin count
+            coins = session.query(Coins).first()
+            return coins.total_count
         finally:
-            # Always close the session
             session.close()
