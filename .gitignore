@@ -1,2 +1,3 @@
-game_data.db
-scores.sqlite
+/game_data.db
+/scores.sqlite
+/config.ini
