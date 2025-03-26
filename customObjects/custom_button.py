@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import pygame, json
 from customObjects import custom_text
@@ -68,6 +70,7 @@ class Button:  # A button class
                 self.display.game.sound_manager.stop_sound('Credits')
                 self.display.game.change_display('main_menu_display')
             elif self.action == 'play_course':
+                self.display.game.currentRaceStartTime = time.time()
                 course_to_play = self.display.game.displays['level_selector'].currently_selected
                 self.display.game.change_display(list(self.display.game.displays['level_selector'].levels.keys())[course_to_play])
                 if course_to_play == 0:

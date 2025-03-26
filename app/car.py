@@ -26,6 +26,8 @@ class Car:
         self.collision_draw = False
         self.wall = False
         self.barrier = False
+        self.finished = False
+        self.full_time = 0
         self.model = model
         self.car3d_height_factor = car3d_height_factor
         self.wall_frames = 0
@@ -33,7 +35,6 @@ class Car:
         self.name = name
         self.current_checkpoint = -1
         self.lap = 1
-
         self.damping = 0.7
 
         self.gravel_color = (128, 128, 128)
@@ -942,6 +943,10 @@ class Car:
             self.archiveBarrier.append([self.x, self.y, self.rotation])
             if len(self.archiveBarrier) > 10:
                 self.archiveBarrier.pop(0)
+
+        if self.lap > self.display.map_data['laps'] and not self.finished:
+            self.finished = True
+            self.full_time = time.time() - self.display.game.currentRaceStartTime
     def prickWheels(self):
         if self.invincibility < 1 and self.deadTires < self.tireAmount:
             self.invincibility = 20
