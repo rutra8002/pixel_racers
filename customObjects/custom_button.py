@@ -70,6 +70,20 @@ class Button:  # A button class
             elif self.action == 'play_course':
                 course_to_play = self.display.game.displays['level_selector'].currently_selected
                 self.display.game.change_display(list(self.display.game.displays['level_selector'].levels.keys())[course_to_play])
+                if course_to_play == 0:
+                    self.display.game.sound_manager.unload_music()
+                    self.display.game.sound_manager.set_music_volume(0.5)
+                    self.display.game.sound_manager.load_music('sounds/music/Neon Rush.wav')
+                    self.display.game.sound_manager.play_music()
+
+
+                elif course_to_play == 1:
+                    self.display.game.sound_manager.unload_music()
+                    self.display.game.sound_manager.set_music_volume(0.2)
+                    self.display.game.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
+
+                    self.display.game.sound_manager.play_music()
+
             elif self.action == 'back_to_level_selector':
                 self.display.game.displays['level_selector'].reload_maps()
                 self.display.game.change_display('level_selector')
@@ -111,6 +125,11 @@ class Button:  # A button class
                 self.display.add_lap(-1)
             elif self.action == 'add_lap':
                 self.display.add_lap(1)
+
+            elif self.action == 'change_player_name':
+                self.display.game.change_display('change_player_name')
+            elif self.action == 'save_player_name':
+                self.display.save_player_name()
 
             elif 'edit_map_titled_' in self.action:
                 with open(f"{self.display.game.map_dir}/{self.action.removeprefix('edit_map_titled_')}.json", 'r') as f:

@@ -16,7 +16,11 @@ from jeff_the_objects import stacked_sprite
 #TO DO:
 #leaderboard - ???
 
-
+# There are four different car models, each with different advantages and drawbacks. The user can change the current car to use in the races in the main menu. The different models are listed here:
+# 1. Basic car - has all the stats on a balanced level.
+# 2. Jeep - more bulky, less agile, but hard for opponents to push around.
+# 3. Toy car - lightweight and swift, only has three tires
+# 4. Police car - has better stats than others but only when driving backwards, boost still pushes the car forward and powerup obstacles spawn behind though.
 class Car:
     def __init__(self, display, coordinates, rotation, isPlayer, model, name: str="None", car3d_height_factor=None):
         self.display = display
@@ -161,14 +165,14 @@ class Car:
                 self.car3d_height = 1.5
             else:
                 self.car3d_height = 1.5 * self.car3d_height_factor
-        elif model == 3:
+        elif model == 4:
             self.num_of_sprites = 13
             self.img_size = (15, 34)
             if self.car3d_height_factor == None:
                 self.car3d_height = 1.5
             else:
                 self.car3d_height = 1.5 * self.car3d_height_factor
-        elif model == 4:
+        elif model == 3:
             self.num_of_sprites = 11
             self.img_size = (10, 18)
             if self.car3d_height_factor == None:
@@ -271,7 +275,7 @@ class Car:
 
 
                 if bonus == 0:
-                    self.nitroAmount += 20
+                    self.nitroAmount += 50
 
                     if self.nitroAmount > 100:
                         self.nitroAmount = 100
@@ -418,9 +422,11 @@ class Car:
             self.oilFriction = 0 * self.display.game.calibration
         #accelerator:
         elif self.model == 3:
-            self.image = images.police
+            self.image = images.bike
             self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites,
+                                                             self.img_size, self.car3d_height)
+
             self.backDifference = 0.65
             self.mass = 0.8
             self.nitroPower = 0.5 * self.display.game.calibration
@@ -442,11 +448,14 @@ class Car:
             self.normalFriction = 0.08 * self.display.game.calibration
             self.iceFriction = 0.02 * self.display.game.calibration
             self.oilFriction = 0 * self.display.game.calibration
+
         #mater:
         elif self.model == 4:
-            self.image = images.bike
+            self.image = images.police
             self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites,
+                                                             self.img_size, self.car3d_height)
+
             self.backDifference = 1.4
             self.mass = 1.1
             self.nitroPower = 0.3 * self.display.game.calibration
@@ -468,6 +477,9 @@ class Car:
             self.normalFriction = 0.14 * self.display.game.calibration
             self.iceFriction = 0.03 * self.display.game.calibration
             self.oilFriction = 0 * self.display.game.calibration
+
+
+
         elif self.model == 5:
             self.image = images.plane
             self.set_3d_parameters(self.model)
@@ -604,7 +616,8 @@ class Car:
 
             magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
             dire = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
-
+            if not self.isPlayer and magnitude > 0:
+                self.rotation = dire
             if magnitude > self.currentFriction:
                 modifier = magnitude / 200
                 if modifier > 2:
@@ -899,6 +912,10 @@ class Car:
                     self.currentMaxSpeed = self.gravelMaxSpeed
                 elif obstacle.type == 7:
                     self.display.game.sound_manager.play_sound('coin')
+
+                    if self.isPlayer:
+                        self.display.db_manager.add_coin(self.player_name)
+
                     obstacle.destroy()
 
         if not self.wall:

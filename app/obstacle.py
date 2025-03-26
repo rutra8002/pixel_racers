@@ -56,13 +56,13 @@ class Obstacle:
 
         elif type == "speedBump":
             self.image = images.speedBump.convert_alpha()
-            self.image = pygame.transform.scale(self.image, (100, 100))
+            self.image = pygame.transform.scale(self.image, (70, 70))
             self.image = pygame.transform.rotate(self.image, angle)
             self.rect = self.image.get_rect()
 
         elif type == "guideArrow":
             self.image = images.guideArrow.convert_alpha()
-            self.image = pygame.transform.scale(self.image, (200, 100))
+            self.image = pygame.transform.scale(self.image, (180, 90))
             self.image = pygame.transform.rotate(self.image, angle)
             self.rect = self.image.get_rect()
         elif type == "coin":

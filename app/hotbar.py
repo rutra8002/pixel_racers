@@ -35,6 +35,17 @@ class Hotbar:
         self.inv = Inventory(self.display, self.x+self.w*5/7, self.y+15, 150, 150)
         self.undercarge = Undercarge(self.display, self.w/1.6, self.y, 300, 180)
 
+        try:
+            player_name = self.display.p.player_name if hasattr(self.display, 'p') else 'jeff'
+        except AttributeError:
+            player_name = 'jeff'
+
+        self.player_name_text = custom_text.Custom_text(
+            self.game, self.w / 2, self.h / 2, player_name,
+            text_color=(255, 255, 255), font_height=30, append=False
+        )
+
+
     def set_laps(self):
         self.lap_text = custom_text.Custom_text(self.display, self.x + self.w / 7, self.y + self.h / 2.5 + 50,
                                                 f'Lap: 1/{self.display.laps}', text_color='white')
@@ -48,12 +59,18 @@ class Hotbar:
         self.nitro_bar.render()
         self.inv.render()
         self.undercarge.render()
+        self.player_name_text.render()
+
+        if hasattr(self, 'coin_text'):
+            self.coin_text.render()
 
 
     def mainloop(self):
         self.stopwatch.update_time()
+        self.update_coin_display()
         self.update_player_standing()
         self.nitro_bar.update_bar_height()
+        self.player_name_text.update_text(self.display.p.player_name)
 
     def start_counting_time(self):
         self.stopwatch.start_time = time.time()
@@ -83,6 +100,31 @@ class Hotbar:
                 self.player_standing.update_text(text)
                 self.player_standing.update_color(color, None)
                 break
+
+    def update_coin_display(self):
+        # Find the player car
+        player_car = None
+        for car in self.display.cars:
+            if car.isPlayer:
+                player_car = car
+                break
+
+        if player_car:
+            # Get total coins from database
+            total_coins = self.display.db_manager.get_player_coins(player_car.player_name)
+
+            # Create or update coin text
+            if hasattr(self, 'coin_text'):
+                self.coin_text.update_text(f"Coins: {total_coins}")
+            else:
+                self.coin_text = custom_text.Custom_text(
+                    self.display,
+                    self.display.game.width - 100,
+                    25,
+                    f"Coins: {total_coins}",
+                    font_height=20,
+                    text_color=(255, 215, 0)
+                )
 
 
 class StopWatch:
