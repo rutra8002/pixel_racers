@@ -117,6 +117,8 @@ class game_display(basic_display):
             {"type": "tree", "sprite": StackedSprite(self, images.castle, 21, (21, 21), 3, random.randint(0, 359), rotate=True), "coords": (400, 500)},
         ]
 
+        self.snow_timer = 0
+        self.snowing = False
 
         self.p = player.Player(self, self.player_position, self.player_rotation, self.game.player_model)
 
@@ -314,7 +316,16 @@ class game_display(basic_display):
                 car.start_race()
             self.started_race = True
 
-        if self.difficulty == "Finished_Level_Three":
+        self.snow_timer += self.game.delta_time
+        if self.snow_timer >= 10.0:
+            if self.difficulty == "Finished_Level_Three":
+                if self.snowing:
+                    self.snowing = False
+                else:
+                    self.snowing = True
+            self.snow_timer = 0
+
+        if self.snowing:
             self.add_snow_particles()
 
         if self.hotbar.stopwatch.start_time == 0:
