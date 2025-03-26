@@ -9,8 +9,6 @@ class Enemy(Car):
     def __init__(self, display, coordinates, rotation, model, crazy=False, name="None"):
         super().__init__(display, coordinates, rotation, isPlayer=False, model=model, name=name)
         self.crazy = crazy
-    def __init__(self, display, coordinates, rotation,model, crazy=False):
-        super().__init__(display, coordinates, rotation,isPlayer=False,model=model)
         self.game_dir = display.map_dir
         self.lv = display.diff
         self.map_data = display.map_data

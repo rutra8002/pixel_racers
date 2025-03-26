@@ -52,10 +52,9 @@ class Car:
 
         self.strength = False # następne zderzenie z autem nie daje tobie knockbacku. Przy zderzeniu ze ścianą znika i nic nie robi
         self.infiNitro = False
-        if self.isPlayer:
-            self.name = "You"
-
         self.player_name = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+
+
 
         self.velUp, self.velLeft, self.velAng = 0, 0, 0
         self.rotation = rotation
@@ -833,6 +832,8 @@ class Car:
     def loop(self):
         self.movement()
         self.invincibility -= 5 * self.display.game.delta_time
+        if self.isPlayer:
+            self.name = self.display.p.player_name
         if self.invincibility > 0 and self.isPlayer:
             if int(self.invincibility) % 2 == 0:
                 self.inviFlicker = not self.inviFlicker
