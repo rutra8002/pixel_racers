@@ -153,7 +153,7 @@ class Game:
             self.update()
             self.events()
             self.clock.tick(self.fps)
-
+            print(self.player_name)
         pygame.quit()
         sys.exit()
 

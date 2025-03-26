@@ -1757,6 +1757,8 @@ class change_player_name(basic_display):
 
             self.db_manager.add_player(stored_name)
 
+            self.game.player_name = self.name_input
+
             self.game.change_display('main_menu_display')
         except Exception as e:
             print(f"Error saving player name: {e}")
