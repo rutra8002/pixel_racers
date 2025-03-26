@@ -168,7 +168,7 @@ class Game:
                     for di in self.debug_items:
                         di.hidden = not di.hidden
 
-                elif event.key == pygame.K_BACKQUOTE:
+                elif event.key == pygame.K_BACKQUOTE and self.enable_debug:
                     self.console_active = not self.console_active
                     self.console_history_index = 0
 
