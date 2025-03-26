@@ -7,7 +7,7 @@ import math
 class Player(Car):
     def __init__(self, display, coordinates, rotation, model):
         super().__init__(display, coordinates, rotation, isPlayer=True, model=model)
-        self.player_name = 'jeff'
+        self.player_name = getattr(display.game, 'player_name', 'jeff')
         self.display.game.player_name = self.player_name
         self.wong_way_timer = 0
 
