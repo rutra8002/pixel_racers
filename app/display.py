@@ -1207,7 +1207,9 @@ class pause_display(basic_display):
     def events(self, event):
         for obj in self.objects:
             obj.events(event)
-        # self.game.change_display(list(self.game.displays['level_selector'].levels.keys())[self.game.displays['level_selector'].currently_selected])
+
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.game.change_display(list(self.game.displays['level_selector'].levels.keys())[self.game.displays['level_selector'].currently_selected])
 
 
 class level_selector(basic_display):
