@@ -88,6 +88,8 @@ class Game:
         for name, func in inspect.getmembers(cheats, inspect.isfunction):
             self.custom_locals[name] = func
 
+        self.console_cursor_pos = 0
+
         self.console_active = False
         self.console_input = ""
         self.console_history = []
@@ -180,17 +182,41 @@ class Game:
                     # Store result without formatting to preserve multiline structure
                     self.console_history.append({"input": self.console_input, "output": result})
                     self.console_input = ""
+                    self.console_cursor_pos = 0
                     self.console_history_index = 0
                 except Exception as e:
                     self.console_history.append({"input": self.console_input, "output": f"Error: {str(e)}"})
                     self.console_input = ""
+                    self.console_cursor_pos = 0
                     self.console_history_index = 0
             elif event.key == pygame.K_BACKSPACE:
-                self.console_input = self.console_input[:-1]
+                if self.console_cursor_pos > 0:
+                    # Delete character before cursor
+                    self.console_input = self.console_input[:self.console_cursor_pos - 1] + self.console_input[
+                                                                                            self.console_cursor_pos:]
+                    self.console_cursor_pos -= 1
+            elif event.key == pygame.K_DELETE:
+                # Delete character at cursor
+                if self.console_cursor_pos < len(self.console_input):
+                    self.console_input = self.console_input[:self.console_cursor_pos] + self.console_input[
+                                                                                        self.console_cursor_pos + 1:]
+            elif event.key == pygame.K_LEFT:
+                # Move cursor left
+                self.console_cursor_pos = max(0, self.console_cursor_pos - 1)
+            elif event.key == pygame.K_RIGHT:
+                # Move cursor right
+                self.console_cursor_pos = min(len(self.console_input), self.console_cursor_pos + 1)
+            elif event.key == pygame.K_HOME:
+                # Move cursor to start
+                self.console_cursor_pos = 0
+            elif event.key == pygame.K_END:
+                # Move cursor to end
+                self.console_cursor_pos = len(self.console_input)
             elif event.key == pygame.K_UP:
                 if self.console_history:
                     self.console_history_index = min(self.console_history_index + 1, len(self.console_history))
                     self.console_input = self.console_history[-self.console_history_index]["input"]
+                    self.console_cursor_pos = len(self.console_input)
             elif event.key == pygame.K_DOWN:
                 if self.console_history:
                     self.console_history_index = max(self.console_history_index - 1, 0)
@@ -198,10 +224,15 @@ class Game:
                         self.console_input = self.console_history[-self.console_history_index]["input"]
                     else:
                         self.console_input = ""
+                    self.console_cursor_pos = len(self.console_input)
             # Check for ` and ignore it
             elif event.key != pygame.K_BACKQUOTE:
                 if event.unicode:
-                    self.console_input += event.unicode
+                    # Insert character at cursor position
+                    self.console_input = self.console_input[
+                                         :self.console_cursor_pos] + event.unicode + self.console_input[
+                                                                                     self.console_cursor_pos:]
+                    self.console_cursor_pos += 1
 
     def render(self):
         self.screen.fill('black')
@@ -222,7 +253,8 @@ class Game:
 
             # Draw input prompt at the bottom
             y = self.height - 30
-            input_text = f"> {self.console_input}"
+            input_text = "> " + self.console_input[:self.console_cursor_pos] + "█" + self.console_input[
+                                                                                     self.console_cursor_pos:]
             input_surf = self.console_font.render(input_text, True, (0, 255, 0))
             self.screen.blit(input_surf, (10, y))
 
