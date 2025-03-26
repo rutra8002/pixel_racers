@@ -267,28 +267,35 @@ class Game:
             history_content = []
             lines_used = 0
 
-            # Process from oldest to newest, but limited by available space
-            start_idx = max(0, len(self.console_history) - max_history_lines)
-            for entry in self.console_history[start_idx:]:
-                # Add command
-                command_line = (f"> {entry['input']}", (0, 255, 0))
-                if lines_used < max_history_lines:
-                    history_content.append(command_line)
+            # Process from newest to oldest, limited by available space
+            for entry in reversed(self.console_history):
+                # Check if we've reached the maximum lines
+                if lines_used >= max_history_lines:
+                    break
+
+                # Calculate how many lines this entry will use (command + output)
+                entry_lines = 1  # Command line
+                output = entry['output']
+                output_lines_count = len(output.strip().split('\n')) if isinstance(output, str) else 1
+
+                # Skip this entry if it won't fit completely
+                if lines_used + entry_lines + output_lines_count > max_history_lines:
+                    continue
+
+                # Process output first (so oldest content appears at the top)
+                if isinstance(output, str):
+                    output_lines = output.strip().split('\n')
+                    for line in reversed(output_lines):
+                        history_content.insert(0, (line, (180, 255, 180)))
+                        lines_used += 1
+                else:
+                    history_content.insert(0, (f"Result: {output}", (180, 255, 180)))
                     lines_used += 1
 
-                # Process output
-                output = entry['output']
-                if isinstance(output, str):
-                    # Split multiline strings and maintain proper order
-                    output_lines = output.strip().split('\n')
-                    for line in output_lines:
-                        if lines_used < max_history_lines:
-                            history_content.append((line, (180, 255, 180)))
-                            lines_used += 1
-                else:
-                    if lines_used < max_history_lines:
-                        history_content.append((f"Result: {output}", (180, 255, 180)))
-                        lines_used += 1
+                # Add command (insert at beginning to maintain correct order)
+                command_line = (f"> {entry['input']}", (0, 255, 0))
+                history_content.insert(0, command_line)
+                lines_used += 1
 
             # Display history from bottom up
             # Show most recent entries (at the end of history_content)
