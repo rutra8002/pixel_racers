@@ -1720,12 +1720,17 @@ class change_player_name(basic_display):
 
         # Update name in all relevant places
         try:
-            # Update player object if game display exists
-            if 'game_display' in self.game.displays:
-                self.game.displays['game_display'].p.player_name = self.name_input
+            # Store the name for future game instances
+            stored_name = self.name_input
+
+            # Update name in any active game display instances
+            for display_name, display_instance in self.game.displays.items():
+                # Check if this is an actual game display instance
+                if hasattr(display_instance, 'p') and hasattr(display_instance.p, 'player_name'):
+                    display_instance.p.player_name = stored_name
 
             # Make sure player exists in database
-            self.db_manager.get_player_coins(self.name_input)
+            self.db_manager.get_player_coins(stored_name)
 
             self.game.change_display('main_menu_display')
         except Exception as e:
