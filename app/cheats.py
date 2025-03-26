@@ -114,6 +114,22 @@ def teleport_checkpoint(game, checkpoint_number=None):
         return "Failed to teleport"
 
 
+def fast_win(game):
+    """Teleport to next checkpoint until game is won"""
+    try:
+        player = game.current_display.p
+        display = game.current_display
+
+        while True:
+            teleport_checkpoint(game)
+            display.mainloop()
+            if player.lap > display.map_data['laps']:
+                break
+        return "Fast win cheat activated"
+    except Exception as e:
+        return "Failed to activate fast win cheat, error: " + str(e)
+
+
 
 def reset_cheats(game):
     """Reset all cheats to default values"""
@@ -145,6 +161,7 @@ def help():
            - invincible(game, duration) - Temporary invincibility,
            - fill_nitro(game) - Fill nitro to 100%,
            - teleport_checkpoint(game, checkpoint_number) - Teleport to target_checkpoint or next checkpoint,
-           - reset_cheats(game) - Reset all cheats to default
+           - fast_win(game) - Teleport to next checkpoint until game is won,
+           - reset_cheats(game) - Reset all cheats to default,
            - help(): Display this help message
            """
