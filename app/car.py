@@ -1,6 +1,6 @@
 import random
 import time
-from operator import invert
+from operator import invert, index
 import string
 
 import pygame
@@ -54,6 +54,11 @@ class Car:
         self.strength = False # następne zderzenie z autem nie daje tobie knockbacku. Przy zderzeniu ze ścianą znika i nic nie robi
         self.infiNitro = False
         self.player_name = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+
+        self.hits = 0
+        self.perfectLap = True
+        self.perfectLaps = 0
+        self.pupscollected = 0
 
 
 
@@ -247,6 +252,7 @@ class Car:
                 if self.isPlayer:
                     self.display.game.sound_manager.play_sound('Powerup')
                 bonus = random.randint(0, 4)
+                self.pupscollected += 1
 
                 powerup_names = ["NITRO", "STRENGTH", "BARRIER", "SPIKES", "HEAL"]
                 if self.isPlayer:
@@ -921,6 +927,8 @@ class Car:
 
                     obstacle.destroy()
 
+        self.countPoints()
+
         if not self.wall:
             self.wall_frames = 0
             self.archiveWall.append([self.x, self.y, self.rotation])
@@ -947,6 +955,8 @@ class Car:
         if self.lap > self.display.map_data['laps'] and not self.finished:
             self.finished = True
             self.full_time = time.time() - self.display.game.currentRaceStartTime
+            self.countPoints()
+
     def prickWheels(self):
         if self.invincibility < 1 and self.deadTires < self.tireAmount:
             self.invincibility = 20
@@ -956,6 +966,18 @@ class Car:
             return True
         else:
             return False
+
+    def countPoints(self):
+        try:
+            p = self.display.leaderboard_list.index(self) + 1
+            t = self.full_time
+            o = self.hits
+            l = self.perfectLaps
+            u = self.pupscollected
+
+        except:
+            pass
+
 
 
     def detect_collision_area(self, mask, x, y):
@@ -1221,6 +1243,8 @@ class Car:
                     elif tile == 1:
                         self.wall = True
                         wall_count += 1
+                        self.hits += 1
+                        self.perfectLap = False
                         self.particle_color = self.wall_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])

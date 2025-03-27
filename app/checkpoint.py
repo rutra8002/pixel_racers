@@ -34,6 +34,7 @@ class checkpoint: # A checkpoint is a line with 2 points
                     elif self.i == 0 and car.current_checkpoint == self.display.amount_of_checkpoints-1:
                         car.current_checkpoint = self.i
                         car.lap += 1
+                        car.perfectLaps += car.perfectLap
                         self.display.wong_way = False
                         car.lap_times.append(time.time() - car.begining_lap_time)
                         car.begining_lap_time = time.time()
