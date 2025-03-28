@@ -37,6 +37,9 @@ class Car:
         self.lap = 1
         self.damping = 0.7
 
+        self.nitrogen_colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (0, 255, 255), (255, 0, 255)]
+        self.nitrogen_color = random.choice(self.nitrogen_colors)
+
         self.gravel_color = (128, 128, 128)
         self.oil_color = (235, 180, 3)
         self.asphalt_color = (26, 26, 26)
@@ -84,8 +87,8 @@ class Car:
                                           -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
         self.backwheel2_pgen = ParticleGenerator(self.particle_system, back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp, -0.01 * self.velLeft,
                                           -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
-        self.nitrogen = ParticleGenerator(self.particle_system, nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, 200, 100,
-                                          30, 150, 'circle', True, 100)
+        self.nitrogen = ParticleGenerator(self.particle_system, nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, self.nitrogen_color[0], self.nitrogen_color[1],
+                                          self.nitrogen_color[2], 150, 'circle', True, 100)
         self.change_model(model)
 
 
