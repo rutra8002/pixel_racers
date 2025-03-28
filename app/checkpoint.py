@@ -64,6 +64,9 @@ class checkpoint: # A checkpoint is a line with 2 points
                         car.lap_times.append(time.time() - car.begining_lap_time)
                         car.begining_lap_time = time.time()
 
+                        if car.lap <= self.display.laps:
+                            car.end_race()
+
 
                 self.color = (0, 0, 255)
                 player_name = car.player_name

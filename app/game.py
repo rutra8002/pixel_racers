@@ -49,7 +49,6 @@ class Game:
 
         self.objects = []
         self.currentLeaderboard = None
-        self.currentRaceStartTime = 0
 
         self.menu_particle_system = particle_system.ParticleSystem()
 

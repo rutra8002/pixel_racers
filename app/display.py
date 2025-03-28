@@ -111,6 +111,10 @@ class game_display(basic_display):
         self.hasBanana = 1
         self.banana = None
 
+
+        self.paused = False
+        self.pause_start_time = 0
+
         self.started_race = False
 
         self.environment_objects = [
@@ -305,10 +309,7 @@ class game_display(basic_display):
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                for c in self.cars:
-                    if not c.finished:
-                        c.full_time = time.time() - self.game.currentRaceStartTime
-                self.game.change_display('pause_display')
+                 self.paused = True
 
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if 0 < pygame.mouse.get_pos()[0] < self.screenWidth and 0 < pygame.mouse.get_pos()[1] < self.screenHeight_without_hotbar:
@@ -316,6 +317,21 @@ class game_display(basic_display):
 
 
     def mainloop(self):
+        if self.paused == True:
+            self.paused = 3
+            self.pause_start_time = time.time()
+            self.game.change_display('pause_display')
+
+        elif self.paused == 3:
+            time_offset_caused_by_pause = time.time() - self.pause_start_time
+            for car in self.cars:
+                car.begining_lap_time += time_offset_caused_by_pause
+
+            self.hotbar.stopwatch.start_time += time_offset_caused_by_pause
+            self.paused = 0
+
+
+
         if self.started_race == False:
             for car in self.cars:
                 car.start_race()

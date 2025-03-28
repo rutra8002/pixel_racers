@@ -954,11 +954,6 @@ class Car:
             if len(self.archiveBarrier) > 10:
                 self.archiveBarrier.pop(0)
 
-        if self.lap > self.display.map_data['laps'] and not self.finished:
-            self.finished = True
-            self.full_time = time.time() - self.display.game.currentRaceStartTime
-            self.points = self.countPoints()
-
     def prickWheels(self):
         if self.invincibility < 1 and self.deadTires < self.tireAmount:
             self.invincibility = 20
@@ -1289,3 +1284,8 @@ class Car:
 
     def start_race(self):
         self.begining_lap_time = time.time()
+
+    def end_race(self):
+        self.finished = True
+        self.full_time = sum(self.lap_times)
+        self.points = self.countPoints()
