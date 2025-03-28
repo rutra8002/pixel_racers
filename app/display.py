@@ -137,7 +137,7 @@ class game_display(basic_display):
         self.mapMask = pygame.mask.from_surface(self.map_surface)
 
     def add_snow_particles(self):
-        for _ in range(10):
+        for _ in range(30):
             x = random.randint(0, self.game.width)
             y = random.randint(-50, 10)
 
@@ -150,7 +150,7 @@ class game_display(basic_display):
             ang_vel = 0
             ang_acc = 0
 
-            size = random.randint(1, 5)
+            size = random.randint(2, 6)
             lifetime = 690
 
             speed = 100
@@ -269,7 +269,6 @@ class game_display(basic_display):
     def render(self):
         self.screen.fill(self.bgColor)
         self.screen.blit(self.map_surface, (0, 0))
-        self.particle_system.draw(self.screen)
 
         for o in self.obstacles:
             o.render()
@@ -295,6 +294,8 @@ class game_display(basic_display):
 
         if self.wong_way:
             self.wong_way_image.render()
+        self.particle_system.draw(self.screen)
+
 
     def events(self, event):
         for obj in self.objects:
