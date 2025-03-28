@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import pygame, json
 from customObjects import custom_text
@@ -68,8 +70,29 @@ class Button:  # A button class
                 self.display.game.sound_manager.stop_sound('Credits')
                 self.display.game.change_display('main_menu_display')
             elif self.action == 'play_course':
+                self.display.game.currentRaceStartTime = time.time()
                 course_to_play = self.display.game.displays['level_selector'].currently_selected
                 self.display.game.change_display(list(self.display.game.displays['level_selector'].levels.keys())[course_to_play])
+                if course_to_play == 0:
+                    self.display.game.sound_manager.unload_music()
+                    self.display.game.sound_manager.set_music_volume(0.5)
+                    self.display.game.sound_manager.load_music('sounds/music/Neon Rush.wav')
+                    self.display.game.sound_manager.play_music()
+
+                if course_to_play == 1:
+                    self.display.game.sound_manager.unload_music()
+                    self.display.game.sound_manager.set_music_volume(0.15)
+                    self.display.game.sound_manager.load_music('sounds/music/Volcanic Rush.wav')
+                    self.display.game.sound_manager.play_music()
+
+
+                elif course_to_play == 2:
+                    self.display.game.sound_manager.unload_music()
+                    self.display.game.sound_manager.set_music_volume(0.2)
+                    self.display.game.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
+
+                    self.display.game.sound_manager.play_music()
+
             elif self.action == 'back_to_level_selector':
                 self.display.game.displays['level_selector'].reload_maps()
                 self.display.game.change_display('level_selector')
@@ -85,7 +108,8 @@ class Button:  # A button class
                     lvl_display.update_surfaces(1)
             elif self.action == 'to_map_maker_menu':
                 self.display.game.change_display('map_maker_menu')
-
+            elif self.action == 'leaderboard':
+                self.display.game.change_display('leaderboard')
             elif self.action == 'new_map':
                 self.display.game.displays['map_display'].reset_map()
                 self.display.game.change_display('map_display')
@@ -99,10 +123,8 @@ class Button:  # A button class
             elif self.action == 'move_selected_car_to_right':
                 self.display.move_selected_car_to_right()
 
-            elif self.action == 'select_car':
-                self.display.game.player_model = self.display.selected_car_model
-                self.display.game.update_player_model()
-                self.display.game.change_display('main_menu_display')
+            elif self.action == 'car_action':
+                self.display.handle_car_action()
             elif self.action == "export_png":
                 self.display.export_png()
 
@@ -110,6 +132,11 @@ class Button:  # A button class
                 self.display.add_lap(-1)
             elif self.action == 'add_lap':
                 self.display.add_lap(1)
+
+            elif self.action == 'change_player_name':
+                self.display.game.change_display('change_player_name')
+            elif self.action == 'save_player_name':
+                self.display.save_player_name()
 
             elif 'edit_map_titled_' in self.action:
                 with open(f"{self.display.game.map_dir}/{self.action.removeprefix('edit_map_titled_')}.json", 'r') as f:

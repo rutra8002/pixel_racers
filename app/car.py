@@ -1,6 +1,6 @@
 import random
 import time
-from operator import invert
+from operator import invert, index
 import string
 
 import pygame
@@ -13,16 +13,9 @@ from customObjects.custom_text import Custom_text
 from app import images, obstacle
 from jeff_the_objects import stacked_sprite
 
-#TO DO:
-#leaderboard - ???
 
-# There are four different car models, each with different advantages and drawbacks. The user can change the current car to use in the races in the main menu. The different models are listed here:
-# 1. Basic car - has all the stats on a balanced level.
-# 2. Jeep - more bulky, less agile, but hard for opponents to push around.
-# 3. Toy car - lightweight and swift, only has three tires
-# 4. Police car - has better stats than others but only when driving backwards, boost still pushes the car forward and powerup obstacles spawn behind though.
 class Car:
-    def __init__(self, display, coordinates, rotation, isPlayer, model, car3d_height_factor=None):
+    def __init__(self, display, coordinates, rotation, isPlayer, model, name: str="None", car3d_height_factor=None):
         self.display = display
         self.playerWidth, self.playerHeight = 25, 50
         self.isPlayer = isPlayer
@@ -33,14 +26,15 @@ class Car:
         self.collision_draw = False
         self.wall = False
         self.barrier = False
+        self.finished = False
+        self.full_time = 0
         self.model = model
         self.car3d_height_factor = car3d_height_factor
         self.wall_frames = 0
         self.last_frames_len = 10
-
+        self.name = name
         self.current_checkpoint = -1
         self.lap = 1
-
         self.damping = 0.7
 
         self.gravel_color = (128, 128, 128)
@@ -59,8 +53,14 @@ class Car:
 
         self.strength = False # następne zderzenie z autem nie daje tobie knockbacku. Przy zderzeniu ze ścianą znika i nic nie robi
         self.infiNitro = False
-
         self.player_name = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+
+        self.hits = 0
+        self.perfectLap = True
+        self.perfectLaps = 0
+        self.pupscollected = 0
+
+
 
         self.velUp, self.velLeft, self.velAng = 0, 0, 0
         self.rotation = rotation
@@ -90,7 +90,7 @@ class Car:
 
 
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
-        self.bumpingCooldown = 30
+        self.bumpingCooldown = 20
         self.wallCollisionCooldown = 30
         self.wallCollTime = 0
 
@@ -136,6 +136,8 @@ class Car:
         self.steering_speed = 9 * self.display.game.calibration
 
         self.nitroAmount = 0
+
+        self.bounce_sound_timer = 0
 
 
         self.particle_system.add_generator(self.backwheel1_pgen)
@@ -237,7 +239,7 @@ class Car:
                     self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
                     if self.recentCollisions[c] == 0:
                         self.handle_bumping(c)
-                        back = 2
+                        back = 4
                         self.next_x, self.next_y, self.x, self.y = self.archiveCars[-back][0], self.archiveCars[-back][1], self.archiveCars[-back][0], self.archiveCars[-back][1]
                         self.next_rotation, self.rotation = self.archiveCars[-back][2], self.archiveCars[-back][2]
                         c.next_x, c.next_y, c.x, c.y = c.archiveCars[-back][0], c.archiveCars[-back][1], c.archiveCars[-back][0], c.archiveCars[-back][1]
@@ -250,6 +252,7 @@ class Car:
                 if self.isPlayer:
                     self.display.game.sound_manager.play_sound('Powerup')
                 bonus = random.randint(0, 4)
+                self.pupscollected += 1
 
                 powerup_names = ["NITRO", "STRENGTH", "BARRIER", "SPIKES", "HEAL"]
                 if self.isPlayer:
@@ -273,7 +276,7 @@ class Car:
 
 
                 if bonus == 0:
-                    self.nitroAmount += 20
+                    self.nitroAmount += 50
 
                     if self.nitroAmount > 100:
                         self.nitroAmount = 100
@@ -614,7 +617,8 @@ class Car:
 
             magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
             dire = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
-
+            if not self.isPlayer and magnitude > 0:
+                self.rotation = dire
             if magnitude > self.currentFriction:
                 modifier = magnitude / 200
                 if modifier > 2:
@@ -837,6 +841,8 @@ class Car:
     def loop(self):
         self.movement()
         self.invincibility -= 5 * self.display.game.delta_time
+        if self.isPlayer:
+            self.name = self.display.p.player_name
         if self.invincibility > 0 and self.isPlayer:
             if int(self.invincibility) % 2 == 0:
                 self.inviFlicker = not self.inviFlicker
@@ -849,9 +855,11 @@ class Car:
                     if car not in self.recentCollisions:
                         self.recentCollisions[car] = 0
 
+        self.bounce_sound_timer -= self.display.game.delta_time
+
         for car in self.recentCollisions:
-            # if self.recentCollisions[car] != 0 and not self.collision_detection(car.car_mask, car.rect.topleft[0] + car.delta_x, car.rect.topleft[1] + car.delta_y):
-            if self.recentCollisions[car] != 0:
+            if self.recentCollisions[car] != 0 and not self.collision_detection(car.car_mask, car.rect.topleft[0] + car.delta_x, car.rect.topleft[1] + car.delta_y):
+            # if self.recentCollisions[car] != 0:
                 if pygame.time.get_ticks() - self.recentCollisions[car] > self.bumpingCooldown:
                     self.recentCollisions[car] = 0
 
@@ -888,7 +896,8 @@ class Car:
                 elif obstacle.type == 2:
                     self.barrier = True
                     self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], \
-                    self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
+                    self.archiveBarrier[-2][0], self.archiveBarrier[-2][1]
+                    self.next_rotation, self.rotation = self.archiveBarrier[-1][2], self.archiveBarrier[-2][2]
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
                 elif obstacle.type == 3 and not obstacle.falling:
@@ -900,18 +909,25 @@ class Car:
                 elif obstacle.type == 4:
                     self.barrier = True
                     self.next_x, self.next_y, self.x, self.y = self.archiveBarrier[-1][0], self.archiveBarrier[-1][1], \
-                    self.archiveBarrier[-1][0], self.archiveBarrier[-1][1]
+                    self.archiveBarrier[-2][0], self.archiveBarrier[-2][1]
+                    self.next_rotation, self.rotation = self.archiveBarrier[-1][2], self.archiveBarrier[-2][2]
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
+                    elapsed = time.time() - obstacle.start_time
+                    if elapsed < 0.15:
+                        self.x -= 20
+                        self.barrier = False
                 elif obstacle.type == 5:
                     self.currentMaxSpeed = self.gravelMaxSpeed
                 elif obstacle.type == 7:
                     self.display.game.sound_manager.play_sound('coin')
 
                     if self.isPlayer:
-                        self.display.db_manager.add_coin(self.player_name)
+                        self.display.db_manager.add_coin()
 
                     obstacle.destroy()
+
+        self.countPoints()
 
         if not self.wall:
             self.wall_frames = 0
@@ -923,8 +939,8 @@ class Car:
             if self.wall_frames > 10:
                 back = 2
                 self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], \
-                self.archiveWall[-back][0], self.archiveWall[-back][1]
-                self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back][2]
+                self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
+                self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back - 1][2]
 
         if not self.car:
             self.archiveCars.append([self.x, self.y, self.rotation])
@@ -935,6 +951,12 @@ class Car:
             self.archiveBarrier.append([self.x, self.y, self.rotation])
             if len(self.archiveBarrier) > 10:
                 self.archiveBarrier.pop(0)
+
+        if self.lap > self.display.map_data['laps'] and not self.finished:
+            self.finished = True
+            self.full_time = time.time() - self.display.game.currentRaceStartTime
+            self.countPoints()
+
     def prickWheels(self):
         if self.invincibility < 1 and self.deadTires < self.tireAmount:
             self.invincibility = 20
@@ -944,6 +966,18 @@ class Car:
             return True
         else:
             return False
+
+    def countPoints(self):
+        try:
+            p = self.display.leaderboard_list.index(self) + 1
+            t = self.full_time
+            o = self.hits
+            l = self.perfectLaps
+            u = self.pupscollected
+
+        except:
+            pass
+
 
 
     def detect_collision_area(self, mask, x, y):
@@ -992,13 +1026,13 @@ class Car:
                 check_y = map_y + dy
 
                 if 0 <= check_y < map_height and 0 <= check_x < map_width:
-                    if self.display.map[check_y][check_x] == 1:  # If wall
+                    if self.display.map[check_y][check_x] == 1:
                         total_x += dx
                         total_y += dy
                         count += 1
 
         if count == 0:
-            return (0, 1), (-1, 0)  # Default fallback normal and tangent
+            return (0, 1), (-1, 0)
 
         avg_x = total_x / count
         avg_y = total_y / count
@@ -1016,6 +1050,7 @@ class Car:
         tangent = (-normal[1], normal[0])
 
         return normal, tangent
+
     def improved_wall_collision(self, mask, x, y):
         center_x, center_y = x, y
         if center_x is None or center_y is None:
@@ -1042,6 +1077,12 @@ class Car:
         I = (1 / 12) * self.mass * (self.playerWidth ** 2 + self.playerHeight ** 2) + self.mass * d ** 2
 
         self.velAng = -L / I
+
+        move_away_distance = 2
+        self.next_x += normal[0] * move_away_distance
+        self.next_y += normal[1] * move_away_distance
+        self.x = self.next_x
+        self.y = self.next_y
 
     #
     # def wall_collision(self, mask, x, y):
@@ -1123,6 +1164,11 @@ class Car:
              other.velLeft, other.velUp, other.velAng = v2[0], v2[1], omega_B
         else:
             other.strength = False
+        power = 2
+        self.next_x += n[0] * power
+        self.next_y += n[1] * power
+        other.next_x -= n[0] * power
+        other.next_y -= n[1] * power
 
     def collision_detection(self, mask, x, y):
         offset = (x - (self.rect.topleft[0] + self.delta_x), y - (self.rect.topleft[1] + self.delta_y))
@@ -1197,6 +1243,8 @@ class Car:
                     elif tile == 1:
                         self.wall = True
                         wall_count += 1
+                        self.hits += 1
+                        self.perfectLap = False
                         self.particle_color = self.wall_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
@@ -1205,12 +1253,13 @@ class Car:
                             center_x, center_y = self.detect_collision_area(mask, 0, 0)
                             if center_x and center_y:
                                 self.improved_wall_collision(mask, int(center_x), int(center_y))
-                            if self.isPlayer:
+                            if self.isPlayer and self.bounce_sound_timer <= 0:
+                                self.bounce_sound_timer = 0.3
                                 self.display.game.sound_manager.play_sound('bounce')
                                 self.strength = False
                             back = 1
-                            self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back][0], self.archiveWall[-back][1]
-                            self.next_rotation, self.rotation = self.archiveWall[-4][2], self.archiveWall[-4][2]
+                            # self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
+                            self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back - 1][2]
                             self.wallCollTime = pygame.time.get_ticks()
 
 

@@ -3,6 +3,7 @@ import time
 from configparser import ConfigParser
 import cv2
 import numpy
+import sqlite3
 
 from app.database import DatabaseManager
 from customObjects import custom_images, custom_text, custom_button
@@ -35,6 +36,8 @@ class basic_display:
         self.ice_color = (63, 208, 212)
         self.spike_color = (255, 0, 0)
         self.pitstop_color = (50, 50, 200)
+
+        self.db_manager = game.db_manager
 
         self.color_map = {
             0: self.asphalt_color,
@@ -88,13 +91,6 @@ class game_display(basic_display):
         self.diff = difficulty
 
 
-        self.db_manager = DatabaseManager()
-
-        if self.difficulty == "Finished_Level_One":
-            self.game.sound_manager.load_music('sounds/music/Neon Rush.wav')
-
-        elif self.difficulty == "Finished_Level_Three":
-            self.game.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
         self.hotbar = hotbar.Hotbar(self)
         self.screenHeight_without_hotbar = self.screenHeight - self.hotbar.h
 
@@ -122,6 +118,8 @@ class game_display(basic_display):
             {"type": "tree", "sprite": StackedSprite(self, images.castle, 21, (21, 21), 3, random.randint(0, 359), rotate=True), "coords": (400, 500)},
         ]
 
+        self.snow_timer = 0
+        self.snowing = False
 
         self.p = player.Player(self, self.player_position, self.player_rotation, self.game.player_model)
 
@@ -129,7 +127,7 @@ class game_display(basic_display):
         self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
         self.hotbar.after_player_setup()
         for i, e in enumerate(self.enemies):
-            enemy.Enemy(self, e[0], e[1], 1, player = self.p, SubClass=i)
+            enemy.Enemy(self, e[0], e[1], 1, player = self.p, SubClass=i, name=f'Enemy {number+1}')
 
 
 
@@ -181,10 +179,10 @@ class game_display(basic_display):
 
     def draw_map(self):
         #draw test_map_one img
-        if self.difficulty == "Finished_Level_One":
+        if self.difficulty == "Finished_Level_1":
             self.map_surface.blit(images.mapone, (0, 0))
 
-        elif self.difficulty == "Finished_Level_Three":
+        elif self.difficulty == "Finished_Level_3":
             self.map_surface.blit(images.mapthree, (0, 0))
 
         else:
@@ -262,10 +260,6 @@ class game_display(basic_display):
             temp_list_of_guideArrows = self.map_data['guideArrows']
             for i, sb in enumerate(temp_list_of_guideArrows):
                 self.obstacles.append(obstacle.Obstacle(self, sb[0], sb[1], "guideArrow", sb[2]))
-                print(self.obstacles)
-            for o in self.obstacles:
-                print(o.type)
-
             self.enemies = self.map_data['enemies']
 
             self.laps = self.map_data['laps']
@@ -310,6 +304,9 @@ class game_display(basic_display):
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
+                for c in self.cars:
+                    if not c.finished:
+                        c.full_time = time.time() - self.game.currentRaceStartTime
                 self.game.change_display('pause_display')
 
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -323,7 +320,16 @@ class game_display(basic_display):
                 car.start_race()
             self.started_race = True
 
-        if self.difficulty == "Finished_Level_Three":
+        self.snow_timer += self.game.delta_time
+        if self.snow_timer >= 10.0:
+            if self.difficulty == "Finished_Level_3":
+                if self.snowing:
+                    self.snowing = False
+                else:
+                    self.snowing = True
+            self.snow_timer = 0
+
+        if self.snowing:
             self.add_snow_particles()
 
         if self.hotbar.stopwatch.start_time == 0:
@@ -359,9 +365,13 @@ class game_display(basic_display):
         for particle in self.particle_system.particles:
             if self.check_particle_collision(particle):
                 self.particle_system.particles.remove(particle)
-
+        finishes = 0
         for c in self.cars:
             c.loop()
+            if c.finished:
+                finishes += 1
+            if finishes == len(self.cars):
+                self.game.change_display('leaderboard')
 
         for chpo in self.checkpoints:
             chpo.collision()
@@ -385,6 +395,7 @@ class game_display(basic_display):
 
     def update_standings(self):
         self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+        self.game.currentLeaderboard = self.leaderboard_list
 
     def end_race(self):
         for car in self.leaderboard_list:
@@ -392,8 +403,8 @@ class game_display(basic_display):
                 avg = sum(car.lap_times)/len(car.lap_times)
             except:
                 avg = 0
-
-            print(car.isPlayer, car.lap_times, avg)
+            #
+            # print(car.isPlayer, car.lap_times, avg)
 
 
 class map_display(basic_display):
@@ -502,7 +513,6 @@ class map_display(basic_display):
     def add_lap(self, amount):
         if self.laps + amount >= 1:
             self.laps += amount
-            print('lap 1')
             self.lapstext.update_text(f'{self.laps}')
 
     def load_map(self, map_data):
@@ -976,7 +986,7 @@ class main_menu_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
 
-        self.amount_of_buttons = 6
+        self.amount_of_buttons = 7
         self.button_padding = self.game.height * (1/96)
         self.button_width_modifier = 45.5/256
         self.button_heigh_modifier = 10.4/144
@@ -1014,6 +1024,12 @@ class main_menu_display(basic_display):
                                              self.amount_of_buttons - 4), self.button_width, self.button_height,
                                  text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                                  outline_color=(50, 50, 50), outline_width=2)
+            custom_button.Button(self, 'change_player_name',self.game.width / 2,
+                                 self.game.height + (- self.button_padding - self.button_height) * (
+                                         self.amount_of_buttons - 5), self.button_width + 75, self.button_height,
+                                text = "CHANGE PLAYER NAME", border_radius = 0, color = (26, 26, 26),
+                                text_color = (150, 150, 150), outline_color = (50, 50, 50),
+                                outline_width = 2)
 
 
         else:
@@ -1030,7 +1046,12 @@ class main_menu_display(basic_display):
             custom_button.Button(self, 'to_map_maker_menu', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 3), self.button_width, self.button_height, text='Make a map', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
             custom_button.Button(self, 'credits', self.button_padding,self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 4), self.button_width, self.button_height, text='Credits', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
             custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 5), self.button_width, self.button_height, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-
+            custom_button.Button(self, 'change_player_name',self.game.width / 2,
+                                 self.game.height + (- self.button_padding - self.button_height) * (
+                                         self.amount_of_buttons - 6), self.button_width + 75, self.button_height,
+                                text = "CHANGE PLAYER NAME", border_radius = 0, color = (26, 26, 26),
+                                text_color = (150, 150, 150), outline_color = (50, 50, 50),
+                                outline_width = 2)
         self.particle_system = self.game.menu_particle_system
 
     def render(self):
@@ -1046,9 +1067,6 @@ class main_menu_display(basic_display):
     def events(self, event):
         for obj in self.objects:
             obj.events(event)
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_l:
-                self.game.change_display('leaderboard')
 
 class settings_display(basic_display):
     def __init__(self, game):
@@ -1182,8 +1200,9 @@ class pause_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
         custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
-        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2, self.game.height / 2, 350, 80,
-                             text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
+        width = 460
+        custom_button.Button(self, 'leaderboard', self.game.width / 2 - width // 2, self.game.height / 2, width, 80,
+                             text='View score and quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                              outline_color=(50, 50, 50), outline_width=2)
 
 
@@ -1201,7 +1220,7 @@ class pause_display(basic_display):
 class level_selector(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
-        custom_text.Custom_text(self, self.game.width/2, self.game.height/5, 'SELECT A COURSE', text_color='white', font_height=int(self.game.height*(19/216)))
+        custom_text.Custom_text(self, self.game.width/2, self.game.height/9, 'SELECT A COURSE', text_color='white', font_height=int(self.game.height*(19/216)))
 
         self.button_width_modifier = 45.5 / 256
         self.button_heigh_modifier = 10.4 / 144
@@ -1214,7 +1233,7 @@ class level_selector(basic_display):
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
         self.particle_system = self.game.menu_particle_system
-
+        self.top = 3
         self.descaling_factor = 3
         self.currently_selected = 0
 
@@ -1233,7 +1252,12 @@ class level_selector(basic_display):
                              (self.game.height - 150  - self.button_height - 15),
                              self.button_width, self.button_height, text='->', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-
+        self.texts = {}
+        for i in range(3):
+            self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 5 + 40 * i,
+                                                             f'', font_height=35, text_color=(255, 255, 255),
+                                                             background_color=(0, 0, 0), center=True,
+                                                             append=True)
 
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
@@ -1245,12 +1269,35 @@ class level_selector(basic_display):
             if event.key == pygame.K_ESCAPE:
                 self.game.change_display('main_menu_display')
 
+    def fetch_top_scores(self):
+        conn = sqlite3.connect('scores.sqlite')
+        cursor = conn.cursor()
+        course_to_play = self.currently_selected
+        level = list(self.levels.keys())[course_to_play]
+        cursor.execute('''SELECT name, score, full_time, fastest_lap FROM scores WHERE level = ? ORDER BY score DESC, full_time ASC LIMIT ?''', (level, self.top,))
+        top_scores = cursor.fetchall()
+        conn.close()
+        return top_scores
+
     def render(self):
         self.particle_system.add_particle(random.randint(0, self.game.width), random.uniform(0, self.game.height),
                                           random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
                                           random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
                                           random.randint(0, 255), 100, 'square')
         self.particle_system.draw(self.screen)
+
+        top_scores = self.fetch_top_scores()
+
+        for j in range(self.top):
+            self.texts[f'text_{j}'].update_text('')
+        for i, (name, score, full_time, fastest_lap) in enumerate(top_scores):
+            milliseconds_full = int((full_time % 1) * 1000)
+            seconds_full = round(full_time % 60)
+            milliseconds_lap = int((fastest_lap % 1) * 1000)
+            seconds_lap = round(fastest_lap % 60)
+            self.texts[f'text_{i}'].update_text(
+                f'{i + 1}. {name if name != "Player" else self.game.player_name}: {score}, Full time: {int(full_time // 60)}:{seconds_full:02}:{milliseconds_full:03}, Fastest lap time: {int(fastest_lap // 60)}:{seconds_lap:02}:{milliseconds_lap:03}')
+
 
         for i, lvl in enumerate(list(self.levels.values())):
             if i - self.currently_selected == 0:
@@ -1401,6 +1448,19 @@ class change_vehicle(basic_display):
         self.large_cars = []
         self.small_cars = []
         self.selected_car_model = 1
+
+        self.car_prices = {
+            1: 0,
+            2: 100,
+            3: 250,
+            4: 500,
+            5: 1000,
+            6: 2000
+        }
+
+        if not self.db_manager.is_car_unlocked(1):
+            self.db_manager.unlock_car(1)
+
         for i in range(6):
             # Position large car at center
             large_car = car.Car(self, (self.game.width / 2, self.game.height / 2), 0, False, i + 1,
@@ -1426,6 +1486,18 @@ class change_vehicle(basic_display):
         custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5, 'SELECT A VEHICLE', text_color='white',
                                 font_height=int(self.game.height * (19 / 216)))
 
+        self.coins_text = custom_text.Custom_text(self, self.game.width - 350, 50,
+                                                  f"Coins: {self.db_manager.get_coins()}",
+                                                  text_color='yellow',
+                                                  font_height=30,
+                                                  center=False)
+
+        self.price_text = custom_text.Custom_text(self, self.game.width / 2,
+                                                  self.game.height - 400,
+                                                  "",
+                                                  text_color='yellow',
+                                                  font_height=30)
+
         custom_button.Button(self, 'move_selected_car_to_left', self.game.width / 2 - self.button_width - 7.5,
                              (self.game.height - 150) - self.button_height - 15,
                              self.button_width, self.button_height, text='<-', border_radius=0, color=(26, 26, 26),
@@ -1436,9 +1508,12 @@ class change_vehicle(basic_display):
                              self.button_width, self.button_height, text='->', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
-        custom_button.Button(self, 'select_car', self.game.width / 2 + 7.5, self.game.height - 150, self.button_width,
-                             self.button_height, text='Select', border_radius=0, color=(26, 26, 26),
-                             text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        self.action_button = custom_button.Button(self, 'car_action', self.game.width / 2 + 7.5, self.game.height - 150,
+                                                  self.button_width, self.button_height, text='SELECT',
+                                                  border_radius=0,
+                                                  color=(26, 26, 26), text_color=(150, 150, 150),
+                                                  outline_color=(50, 50, 50), outline_width=2)
+
         custom_button.Button(self, 'to_main_menu', self.game.width / 2 - self.button_width - 7.5,
                              self.game.height - 150,
                              self.button_width, self.button_height, text='BACK', border_radius=0, color=(26, 26, 26),
@@ -1459,6 +1534,18 @@ class change_vehicle(basic_display):
                                           random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
                                           random.randint(0, 255), 100, 'square')
         self.particle_system.draw(self.game.screen)
+
+        self.coins_text.update_text(f"Coins: {self.db_manager.get_coins()}")
+
+        is_unlocked = self.db_manager.is_car_unlocked(self.selected_car_model)
+
+        if is_unlocked:
+            self.action_button.update_text("Select")
+            self.price_text.update_text("")
+        else:
+            price = self.car_prices[self.selected_car_model]
+            self.action_button.update_text(f"Buy: {price}")
+            self.price_text.update_text(f"Price: {price} coins")
 
         if self.selected_car_model < 1:
             self.selected_car_model = 1
@@ -1496,6 +1583,17 @@ class change_vehicle(basic_display):
         # Render other objects
         for obj in self.objects:
             obj.render()
+
+    def handle_car_action(self):
+        is_unlocked = self.db_manager.is_car_unlocked(self.selected_car_model)
+
+        if is_unlocked:
+            self.game.player_model = self.selected_car_model
+            self.game.update_player_model()
+            self.game.change_display('main_menu_display')
+        else:
+            price = self.car_prices[self.selected_car_model]
+            self.db_manager.buy_car(self.selected_car_model, price)
 
     def start_animation(self):
         self.animation_progress = 0
@@ -1578,29 +1676,66 @@ class credits(basic_display):
 class leaderboard(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
-        self.players = self.load()
+        # self.players = self.load()
         self.texts = {}
-        for i, (name, score) in enumerate(self.players):
-            self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 60 * i,
-                                                             f'{name}: {score}', font_height=40, text_color=(255, 255, 255),
+        self.number_of_players = 5
+        self.db_path = 'scores.sqlite'
+        self.saved = False
+
+        score = "No score"
+        # for i, car in enumerate(self.game.displays['game_display'].leaderboard_list):
+        #     self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 60 * i,
+        #                                                      f'{i + 1}. {car.name}: {score}', font_height=40, text_color=(255, 255, 255),
+        #                                                      background_color=(0, 0, 0), center=True,
+        #                                                      append=True)
+        for i in range(5):
+            self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 45 * i,
+                                                             f'', font_height=25, text_color=(255, 255, 255),
                                                              background_color=(0, 0, 0), center=True,
                                                              append=True)
-        self.title = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 10,
+        self.title = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 7,
                                             "Leaderboard", font_height=60, text_color=(255, 255, 255),
                                             background_color=(0, 0, 0), center=True,
                                             append=True)
+        width = 500
+        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - width // 2, self.game.height / 10 * 7, width, 80,
+                             text='Back to level selector', border_radius=0, color=(26, 26, 26),
+                             text_color=(150, 150, 150),
+                             outline_color=(50, 50, 50), outline_width=2)
+
     def mainloop(self):
-        pass
-    def load(self):
-        players = []
-        with open('app/leaderboard.txt', 'r') as file:
-            for line in file:
-                name, score = line.strip().split(',')
-                players.append((name, int(score)))
-        return players
+        if not self.saved:
+            self.save()
+            self.saved = True
+
+    def save(self):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        for i, car in enumerate(self.game.currentLeaderboard):
+            if car.finished:
+                name = car.name if not car.isPlayer else 'Player'
+                full_time = car.full_time
+                fastest_lap = min(car.lap_times) if car.lap_times else 0
+                score = 0
+                course_to_play = self.game.displays['level_selector'].currently_selected
+                level = list(self.game.displays['level_selector'].levels.keys())[course_to_play]
+                cursor.execute('''INSERT INTO scores (name, level, full_time, fastest_lap, score)VALUES (?, ?, ?, ?, ?)''',
+                               (name, level, full_time, fastest_lap, score))
+
+        conn.commit()
+        conn.close()
+
+
     def render(self):
-        for i, (name, score) in enumerate(self.players):
-            self.texts[f'text_{i}'].update_text(f'{name}: {score}')
+        score = "No score"
+        for i, car in enumerate(self.game.currentLeaderboard):
+            # {car.full_time}
+            milliseconds_full = int((car.full_time % 1) * 1000)
+            seconds_full = round(car.full_time % 60)
+            milliseconds_lap = int((min(car.lap_times) % 1) * 1000) if car.lap_times else 0
+            seconds_lap = round(min(car.lap_times) % 60) if car.lap_times else 0
+            self.texts[f'text_{i}'].update_text(f'{i + 1}. {car.name}: {score}, Full time: {int(car.full_time // 60)}:{seconds_full:02}:{milliseconds_full:03}, Fastest lap time: {int(min(car.lap_times) // 60) if car.lap_times else 0}:{seconds_lap:02}:{milliseconds_lap:03}, Finished? {"Yes" if car.finished else "No"}')
         for obj in self.objects:
             obj.render()
 
@@ -1610,3 +1745,127 @@ class leaderboard(basic_display):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.game.change_display('main_menu_display')
+
+
+class change_player_name(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
+        self.particle_system = self.game.menu_particle_system
+
+        # Button dimensions
+        self.button_width_modifier = 45.5 / 256
+        self.button_heigh_modifier = 10.4 / 144
+        self.button_width = self.game.width * self.button_width_modifier
+        self.button_height = self.game.height * self.button_heigh_modifier
+
+        # Title
+        custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5,
+                                'CHANGE PLAYER NAME', text_color='white',
+                                font_height=int(self.game.height * (19 / 216)))
+
+        # Get current player name from the game object
+
+        try:
+            current_player = self.game.displays['game_display'].p.player_name
+        except (AttributeError, KeyError):
+            current_player = 'jeff'  # Default name
+
+        self.name_input = current_player
+        self.cursor_visible = True
+        self.cursor_timer = 0
+
+        # Player name display
+        self.name_display = custom_text.Custom_text(
+            self, self.game.width / 2, self.game.height / 2,
+                  self.name_input + '|', text_color='white', font_height=40
+        )
+
+        # Instruction
+        custom_text.Custom_text(
+            self, self.game.width / 2, self.game.height / 2 + 60,
+            'Type your name and press Enter', text_color=(150, 150, 150), font_height=25
+        )
+
+        # Buttons
+        custom_button.Button(
+            self, 'save_player_name', self.game.width / 2 + 7.5,
+                                      self.game.height - 150, self.button_width, self.button_height,
+            text='SAVE', border_radius=0, color=(26, 26, 26),
+            text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2
+        )
+
+        custom_button.Button(
+            self, 'to_main_menu', self.game.width / 2 - self.button_width - 7.5,
+                                  self.game.height - 150, self.button_width, self.button_height,
+            text='CANCEL', border_radius=0, color=(26, 26, 26),
+            text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2
+        )
+
+    def mainloop(self):
+        self.particle_system.update(self.game.delta_time)
+
+        # Update cursor blink
+        self.cursor_timer += self.game.delta_time
+        if self.cursor_timer >= 0.5:
+            self.cursor_timer = 0
+            self.cursor_visible = not self.cursor_visible
+
+            if self.cursor_visible:
+                self.name_display.update_text(self.name_input + '|')
+            else:
+                self.name_display.update_text(self.name_input)
+
+    def render(self):
+        # Background particles
+        self.particle_system.add_particle(
+            random.randint(0, self.game.width), random.uniform(0, self.game.height),
+            random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
+            random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
+            random.randint(0, 255), 100, 'square'
+        )
+        self.particle_system.draw(self.game.screen)
+
+        # Render all UI elements
+        for obj in self.objects:
+            obj.render()
+
+    def events(self, event):
+        for obj in self.objects:
+            obj.events(event)
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game.change_display('main_menu_display')
+            elif event.key == pygame.K_BACKSPACE:
+                if len(self.name_input) > 0:
+                    self.name_input = self.name_input[:-1]
+                    self.name_display.update_text(self.name_input + '|' if self.cursor_visible else self.name_input)
+            elif event.key == pygame.K_RETURN:
+                self.save_player_name()
+            elif event.unicode and len(self.name_input) < 15:  # Limit name length
+                # Only allow alphanumeric characters and underscore
+                if event.unicode.isalnum() or event.unicode == '_':
+                    self.name_input += event.unicode
+                    self.name_display.update_text(self.name_input + '|' if self.cursor_visible else self.name_input)
+
+    def save_player_name(self):
+        if not self.name_input:
+            return  # Don't save empty names
+
+        # Update name in all relevant places
+        try:
+            # Store the name for future game instances
+            stored_name = self.name_input
+
+            # Update name in any active game display instances
+            for display_name, display_instance in self.game.displays.items():
+                # Check if this is an actual game display instance
+                if hasattr(display_instance, 'p') and hasattr(display_instance.p, 'player_name'):
+                    display_instance.p.player_name = stored_name
+
+            self.db_manager.add_player(stored_name)
+            self.game.player_name = self.name_input
+
+            self.game.change_display('main_menu_display')
+        except Exception as e:
+            print(f"Error saving player name: {e}")

@@ -1,10 +1,13 @@
 import json
 import platform
 import pygame, sys, threading, code, os, sqlite3
-from app import config, sounds
+from app import config, sounds, cheats
+from app.database import DatabaseManager
 from customObjects import custom_text, custom_images, custom_button
 import particle_system
 import ctypes
+import inspect
+
 if platform.system() == "Windows":
     ctypes.windll.user32.SetProcessDPIAware()
 class Game:
@@ -22,10 +25,13 @@ class Game:
         self.sound_manager.load_sound('Strength', 'sounds/Strength.wav')
         self.sound_manager.load_sound('Pitstop', 'sounds/Pitstop.wav')
         self.sound_manager.load_sound('Banana', 'sounds/goofy-slip.wav')
-        self.sound_manager.load_sound('coin', 'sounds/coin.wav')
+        self.sound_manager.load_sound('coin', 'sounds/Coin.wav')
+        self.sound_manager.load_sound('kaching', 'sounds/ka-ching.wav')
         self.sound_manager.set_music_volume(0.2)
 
         config.set_config()
+
+        self.db_manager = DatabaseManager()
 
         self.map_dir = 'maps'
         self.update_settings()
@@ -42,6 +48,8 @@ class Game:
         self.calibration = 60
 
         self.objects = []
+        self.currentLeaderboard = None
+        self.currentRaceStartTime = 0
 
         self.menu_particle_system = particle_system.ParticleSystem()
 
@@ -53,7 +61,7 @@ class Game:
         self.template_display = display.basic_display(self)
         self.upgrade_worlds()
 
-        self.displays = {'template_display': self.template_display, 'game_display': display.game_display, 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self), 'change_vehicle': display.change_vehicle(self), 'credits': display.credits(self), 'leaderboard': display.leaderboard(self)}
+        self.displays = {'template_display': self.template_display, 'game_display': display.game_display, 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self), 'change_vehicle': display.change_vehicle(self), 'credits': display.credits(self), 'leaderboard': display.leaderboard(self), 'change_player_name': display.change_player_name(self)}
         self.current_display = self.displays['main_menu_display']
 
         self.displays['level_selector'].load_maps()
@@ -72,6 +80,7 @@ class Game:
         for debug_item in self.debug_items:
             debug_item.hidden = True
 
+        self.cheats = cheats.Cheats(self)
         self.custom_locals = {
             'self': self,
             'pygame': pygame,
@@ -79,13 +88,41 @@ class Game:
             'display': display,
             'custom_text': custom_text,
             'custom_images': custom_images,
-            'custom_button': custom_button
+            'custom_button': custom_button,
+            'cheats': self.cheats
         }
+
+        for name, method in inspect.getmembers(self.cheats, inspect.ismethod):
+            if not name.startswith('__'):
+                self.custom_locals[name] = method
+
+        self.console_cursor_pos = 0
 
         self.console_active = False
         self.console_input = ""
         self.console_history = []
-        self.console_font = pygame.font.Font(None, 24)
+        db_path = 'scores.sqlite'
+        if not os.path.exists(db_path):
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE scores (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    level TEXT NOT NULL,
+                    full_time REAL NOT NULL,
+                    fastest_lap REAL NOT NULL,
+                    score INTEGER NOT NULL
+                )
+            ''')
+            conn.commit()
+            conn.close()
+
+        try:
+            self.console_font = pygame.font.Font('fonts/JetBrainsMonoNLNerdFontMono-Regular.ttf', 20)
+        except FileNotFoundError:
+            print("Warning: JetBrainsMonoNLNerdFontMono-Regular font not found, using default font")
+            self.console_font = pygame.font.Font(None, 24)
 
         self.console_history_index = 0
 
@@ -136,7 +173,6 @@ class Game:
             self.update()
             self.events()
             self.clock.tick(self.fps)
-
         pygame.quit()
         sys.exit()
 
@@ -151,7 +187,7 @@ class Game:
                     for di in self.debug_items:
                         di.hidden = not di.hidden
 
-                elif event.key == pygame.K_BACKQUOTE:
+                elif event.key == pygame.K_BACKQUOTE and self.enable_debug:
                     self.console_active = not self.console_active
                     self.console_history_index = 0
 
@@ -166,24 +202,60 @@ class Game:
             if event.key == pygame.K_RETURN:
                 try:
                     result = eval(self.console_input, self.custom_locals, {})
-                    self.console_history.append({"input": self.console_input, "output": f"Result: {result}"})
+                    # Store result without formatting to preserve multiline structure
+                    self.console_history.append({"input": self.console_input, "output": result})
+                    self.console_input = ""
+                    self.console_cursor_pos = 0
+                    self.console_history_index = 0
                 except Exception as e:
                     self.console_history.append({"input": self.console_input, "output": f"Error: {str(e)}"})
-                self.console_input = ""
-                self.console_history_index = 0  # Reset history index after executing command
+                    self.console_input = ""
+                    self.console_cursor_pos = 0
+                    self.console_history_index = 0
             elif event.key == pygame.K_BACKSPACE:
-                self.console_input = self.console_input[:-1]
+                if self.console_cursor_pos > 0:
+                    # Delete character before cursor
+                    self.console_input = self.console_input[:self.console_cursor_pos - 1] + self.console_input[
+                                                                                            self.console_cursor_pos:]
+                    self.console_cursor_pos -= 1
+            elif event.key == pygame.K_DELETE:
+                # Delete character at cursor
+                if self.console_cursor_pos < len(self.console_input):
+                    self.console_input = self.console_input[:self.console_cursor_pos] + self.console_input[
+                                                                                        self.console_cursor_pos + 1:]
+            elif event.key == pygame.K_LEFT:
+                # Move cursor left
+                self.console_cursor_pos = max(0, self.console_cursor_pos - 1)
+            elif event.key == pygame.K_RIGHT:
+                # Move cursor right
+                self.console_cursor_pos = min(len(self.console_input), self.console_cursor_pos + 1)
+            elif event.key == pygame.K_HOME:
+                # Move cursor to start
+                self.console_cursor_pos = 0
+            elif event.key == pygame.K_END:
+                # Move cursor to end
+                self.console_cursor_pos = len(self.console_input)
             elif event.key == pygame.K_UP:
                 if self.console_history:
                     self.console_history_index = min(self.console_history_index + 1, len(self.console_history))
                     self.console_input = self.console_history[-self.console_history_index]["input"]
+                    self.console_cursor_pos = len(self.console_input)
             elif event.key == pygame.K_DOWN:
                 if self.console_history:
                     self.console_history_index = max(self.console_history_index - 1, 0)
-                    self.console_input = self.console_history[-self.console_history_index]["input"]
-            else:
+                    if self.console_history_index > 0:
+                        self.console_input = self.console_history[-self.console_history_index]["input"]
+                    else:
+                        self.console_input = ""
+                    self.console_cursor_pos = len(self.console_input)
+            # Check for ` and ignore it
+            elif event.key != pygame.K_BACKQUOTE:
                 if event.unicode:
-                    self.console_input += event.unicode
+                    # Insert character at cursor position
+                    self.console_input = self.console_input[
+                                         :self.console_cursor_pos] + event.unicode + self.console_input[
+                                                                                     self.console_cursor_pos:]
+                    self.console_cursor_pos += 1
 
     def render(self):
         self.screen.fill('black')
@@ -199,20 +271,61 @@ class Game:
             console_surface.fill((0, 0, 0, 180))
             self.screen.blit(console_surface, (0, self.height - console_height))
 
-            y = self.height - console_height + 10
-            for entry in reversed(self.console_history[-10:]):
-                input_text = f"> {entry['input']}"
-                output_text = entry['output']
-                input_surf = self.console_font.render(input_text, True, (0, 255, 0))
-                output_surf = self.console_font.render(output_text, True, (0, 255, 0))
-                self.screen.blit(input_surf, (10, y))
-                y += 20
-                self.screen.blit(output_surf, (10, y))
-                y += 20
+            line_height = 20
+            max_history_lines = (console_height - 30) // line_height
 
-            input_text = f"> {self.console_input}"
+            # Draw input prompt at the bottom
+            y = self.height - 30
+            input_text = "> " + self.console_input[:self.console_cursor_pos] + "█" + self.console_input[
+                                                                                     self.console_cursor_pos:]
             input_surf = self.console_font.render(input_text, True, (0, 255, 0))
-            self.screen.blit(input_surf, (10, self.height - 30))
+            self.screen.blit(input_surf, (10, y))
+
+            # Prepare visible history in correct order
+            y -= line_height
+            history_content = []
+            lines_used = 0
+
+            # Process from newest to oldest, limited by available space
+            for entry in reversed(self.console_history):
+                # Check if we've reached the maximum lines
+                if lines_used >= max_history_lines:
+                    break
+
+                # Calculate how many lines this entry will use (command + output)
+                entry_lines = 1  # Command line
+                output = entry['output']
+                output_lines_count = len(output.strip().split('\n')) if isinstance(output, str) else 1
+
+                # Skip this entry if it won't fit completely
+                if lines_used + entry_lines + output_lines_count > max_history_lines:
+                    continue
+
+                # Process output first (so oldest content appears at the top)
+                if isinstance(output, str):
+                    output_lines = output.strip().split('\n')
+                    for line in reversed(output_lines):
+                        history_content.insert(0, (line, (180, 255, 180)))
+                        lines_used += 1
+                else:
+                    history_content.insert(0, (f"Result: {output}", (180, 255, 180)))
+                    lines_used += 1
+
+                # Add command (insert at beginning to maintain correct order)
+                command_line = (f"> {entry['input']}", (0, 255, 0))
+                history_content.insert(0, command_line)
+                lines_used += 1
+
+            # Display history from bottom up
+            # Show most recent entries (at the end of history_content)
+            display_count = min(max_history_lines, len(history_content))
+            for i in range(display_count):
+                idx = len(history_content) - 1 - i
+                if idx >= 0:
+                    text, color = history_content[idx]
+                    text_surf = self.console_font.render(text, True, color)
+                    self.screen.blit(text_surf, (10, y))
+                    y -= line_height
 
 
     def update(self):

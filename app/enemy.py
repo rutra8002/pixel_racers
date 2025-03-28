@@ -7,8 +7,8 @@ from app import display as dsp
 import random
 import pygame
 class Enemy(Car):
-    def __init__(self, display, coordinates, rotation,model,player, SubClass=2):
-        super().__init__(display, coordinates, rotation,isPlayer=False,model=model)
+    def __init__(self, display, coordinates, rotation,model,player, SubClass=2, name="None"):
+        super().__init__(display, coordinates, rotation,isPlayer=False,model=model, name=name)
         self.game_dir = display.map_dir
 
         self.player = player
@@ -47,12 +47,12 @@ class Enemy(Car):
                 if self.distance_player<200:
                     self.velLeft += (-self.dx + 250/self.distance_right - 250/self.distance_left)*0.1 + (self.x-self.player.x)/(abs(self.x-self.player.x)+0.0001)*15
                     self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy)*0.1 - (self.y-self.player.y)/(abs(self.y-self.player.y)+0.0001)*15
-            
-                    
+
+
 
             else:
-                self.velLeft += (250/self.distance_right - 250/self.distance_left - self.dx) 
-                self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy ) 
+                self.velLeft += (250/self.distance_right - 250/self.distance_left - self.dx)
+                self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy )
 
 
 
@@ -71,8 +71,8 @@ class Enemy(Car):
 
 
             else:
-                self.velLeft += (250/self.distance_right - 250/self.distance_left - self.dx) 
-                self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy ) 
+                self.velLeft += (250/self.distance_right - 250/self.distance_left - self.dx)
+                self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy )
 
 
         if self.type == 1:
@@ -81,9 +81,9 @@ class Enemy(Car):
             self.scale_left = self.tanh(self.target_velocity, abs(self.velLeft))
             self.scale_up = self.tanh(self.target_velocity, abs(self.velUp))
             self.velLeft += (200/self.distance_right - 200/self.distance_left - self.dx * self.scale_left)
-            self.velUp -= (-200/self.distance_down + 200/self.distance_up + self.dy* self.scale_up) 
+            self.velUp -= (-200/self.distance_down + 200/self.distance_up + self.dy* self.scale_up)
         if self.type == 0:
-            
+
             self.velLeft += (-self.dx) + 250/self.distance_right - 250/self.distance_left
             self.velUp -= -250/self.distance_down + 250/self.distance_up + self.dy
 
@@ -100,29 +100,29 @@ class Enemy(Car):
         self.x_axis = self.map[int(self.y//self.display.block_height)]
         self.adj_x = self.x//self.display.block_width
         for i in range(70): #MAŁO, BO PROBlEMY Z SKALOWALNOŚCIĄ (DLA 1,2 PRZECIWNIKÓW MOŻNA NA SPOKOJNIE 50/30 DAĆ)
-            
 
-            
+
+
             if int(self.y//self.display.block_height)+i < len(self.map):
                 self.x_axis_down = self.map[int(self.y//self.display.block_height)+i]
                 self.wall_down = self.x_axis_down[int(self.adj_x)]
             if int(self.y//self.display.block_height)-i>=0:
-                    
+
                 self.x_axis_up = self.map[int(self.y//self.display.block_height)-i]
-                
+
                 self.wall_up = self.x_axis_up[int(self.adj_x)]
-            
-            
+
+
             if self.wall_up == 1 and not self.detected_up:
                 self.detected_up = True
-                self.distance_up = i + 0.000001 
+                self.distance_up = i + 0.000001
             if self.wall_down == 1 and not self.detected_down:
                 self.detected_down = True
                 self.distance_down = i + 0.000001
         for j in range(70):
 
             if int(self.x//self.display.block_width ) -j >= 0:
-                
+
                 self.wall_left = self.x_axis[int(self.x//self.display.block_width -j)]
 
             if int(self.x//self.display.block_width)+j < len(self.x_axis):
@@ -132,14 +132,14 @@ class Enemy(Car):
 
             if self.wall_right == 1 and not self.detected_right:
                 self.detected_right = True
-                self.distance_right = j + 0.000001 #negligible value to avoid / by 0  
+                self.distance_right = j + 0.000001 #negligible value to avoid / by 0
 
             if self.wall_left == 1 and not self.detected_left:
                 self.detected_left = True
-                self.distance_left = j + 0.000001 #negligible value to avoid / by 0  
+                self.distance_left = j + 0.000001 #negligible value to avoid / by 0
 
-        
-                
+
+
 
 
 
@@ -160,8 +160,8 @@ class Enemy(Car):
             if self.chk_index == self.max_chk_indx:
                 self.chk_index = 0
         
-        self.dx =7 *  (self.center_x - self.x)/(abs(self.center_x - self.x)+0.000001)
-        self.dy = 7 *  (self.center_y - self.y)/(abs(self.center_y - self.y)+0.000001)
+        self.dx =7 *  (self.center_x - self.x)/(abs(self.center_x - self.x)+0.000001) * self.display.game.delta_time * self.display.game.calibration
+        self.dy = 7 *  (self.center_y - self.y)/(abs(self.center_y - self.y)+0.000001)* self.display.game.delta_time * self.display.game.calibration
         self.angle = lolekszcz.degrees(lolekszcz.atan2(-self.dy, self.dx))
         self.rotation = self.angle #TEMP OFC
 
@@ -171,9 +171,9 @@ class Enemy(Car):
         if lolekszcz.sqrt( (self.x-self.player.x)**2 + (self.y-self.player.y) ** 2)<200 :
             self.player_vector_x = (self.x-self.player.x)/(abs(self.x-self.player.x)+0.0001)
             self.player_vector_y = (self.y-self.player.y)/(abs(self.y-self.player.y)+0.0001)
-        
+
     def brakecheck(self):
-        
+
         self.distance_player = lolekszcz.sqrt( (self.x-self.player.x)**2 + (self.y-self.player.y) ** 2)
         self.chk_dif = self.chk_index - self.player.current_checkpoint
         if self.chk_dif==2:
