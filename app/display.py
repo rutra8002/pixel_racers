@@ -372,6 +372,10 @@ class game_display(basic_display):
                 finishes += 1
             if finishes == len(self.cars):
                 self.game.change_display('leaderboard')
+            elif c.finished and c.isPlayer:
+                self.game.change_display('leaderboard')
+
+
 
         for chpo in self.checkpoints:
             chpo.collision()
@@ -1722,6 +1726,7 @@ class leaderboard(basic_display):
                 level = list(self.game.displays['level_selector'].levels.keys())[course_to_play]
                 cursor.execute('''INSERT INTO scores (name, level, full_time, fastest_lap, score)VALUES (?, ?, ?, ?, ?)''',
                                (name, level, full_time, fastest_lap, score))
+
 
         conn.commit()
         conn.close()
