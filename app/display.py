@@ -114,8 +114,8 @@ class game_display(basic_display):
         self.started_race = False
 
         self.environment_objects = [
-            {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=True), "coords": (200, 300)},
-            {"type": "tree", "sprite": StackedSprite(self, images.castle, 21, (21, 21), 3, random.randint(0, 359), rotate=True), "coords": (400, 500)},
+        #     {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=True), "coords": (200, 300)},
+        #     {"type": "tree", "sprite": StackedSprite(self, images.castle, 21, (21, 21), 3, random.randint(0, 359), rotate=True), "coords": (400, 500)},
         ]
 
         self.snow_timer = 0
@@ -1466,7 +1466,7 @@ class change_vehicle(basic_display):
         if not self.db_manager.is_car_unlocked(1):
             self.db_manager.unlock_car(1)
 
-        for i in range(6):
+        for i in range(5):
             # Position large car at center
             large_car = car.Car(self, (self.game.width / 2, self.game.height / 2), 0, False, i + 1,
                                 car3d_height_factor=2.8)
