@@ -43,15 +43,17 @@ class DatabaseManager:
 
     def get_player_coins(self, player_name):
         session = self.Session()
-        player = session.query(Player).filter_by(name=player_name).first()
+        try:
+            player = session.query(Player).filter_by(name=player_name).first()
 
-        if not player:
-            #create player
-            player = Player(name=player_name, coin_count=0)
-            session.add(player)
-            session.commit()
+            if not player:
+                # Create player
+                player = Player(name=player_name, coin_count=0)
+                session.add(player)
+                session.commit()
+
+            # Get the coin count while session is still open
+            return player.coin_count
+        finally:
+            # Always close the session
             session.close()
-
-        coin_count = player.coin_count
-        session.close()
-        return coin_count
