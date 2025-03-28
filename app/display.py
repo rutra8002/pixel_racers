@@ -1750,7 +1750,8 @@ class leaderboard(basic_display):
             obj.events(event)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                self.game.change_display('main_menu_display')
+                self.game.displays['level_selector'].reload_maps()
+                self.game.change_display('level_selector')
 
 
 class change_player_name(basic_display):
