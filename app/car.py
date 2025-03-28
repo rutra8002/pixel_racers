@@ -927,7 +927,6 @@ class Car:
 
                     obstacle.destroy()
 
-        self.countPoints()
 
         if not self.wall:
             self.wall_frames = 0
@@ -955,12 +954,13 @@ class Car:
         if self.lap > self.display.map_data['laps'] and not self.finished:
             self.finished = True
             self.full_time = time.time() - self.display.game.currentRaceStartTime
-            self.countPoints()
+            self.points = self.countPoints()
 
     def prickWheels(self):
         if self.invincibility < 1 and self.deadTires < self.tireAmount:
             self.invincibility = 20
             self.deadTires += 1
+            self.hits += 30
             self.tireHealth -= self.tireDamage
             self.display.game.sound_manager.play_sound('Boom')
             return True
@@ -968,17 +968,13 @@ class Car:
             return False
 
     def countPoints(self):
-        try:
-            p = self.display.leaderboard_list.index(self) + 1
-            t = self.full_time
-            o = self.hits
-            l = self.perfectLaps
-            u = self.pupscollected
 
-        except:
-            pass
-
-
+        p = self.display.leaderboard_list.index(self) + 1
+        t = self.full_time
+        o = self.hits
+        l = self.perfectLaps
+        u = self.pupscollected
+        return 100 * (5 - p) + 5 * (100 - t) - o + 100 * l + 10 * u
 
     def detect_collision_area(self, mask, x, y):
         xs, ys = [], []
