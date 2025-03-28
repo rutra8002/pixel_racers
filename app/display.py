@@ -128,8 +128,8 @@ class game_display(basic_display):
         self.leaderboard = {}
         self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
         self.hotbar.after_player_setup()
-        for e in self.enemies:
-            enemy.Enemy(self, e[0], e[1], 1)
+        for i, e in enumerate(self.enemies):
+            enemy.Enemy(self, e[0], e[1], 1, player = self.p, SubClass=i)
 
 
 
