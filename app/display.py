@@ -1465,7 +1465,7 @@ class change_vehicle(basic_display):
         if not self.db_manager.is_car_unlocked(1):
             self.db_manager.unlock_car(1)
 
-        for i in range(6):
+        for i in range(5):
             # Position large car at center
             large_car = car.Car(self, (self.game.width / 2, self.game.height / 2), 0, False, i + 1,
                                 car3d_height_factor=2.8)
