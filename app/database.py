@@ -1,6 +1,6 @@
 import time
 
-from sqlalchemy import create_engine, Column, Integer, String, Float, desc
+from sqlalchemy import create_engine, Column, Integer, String, Float, desc, asc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -66,7 +66,7 @@ class DatabaseManager:
             session.add(Coins(total_count=0))
             session.commit()
         if session.query(Player).count() == 0:
-            session.add(Player(name='jeff', last_login=time.time()))
+            session.add(Player(name='Jeff', last_login=time.time()))
             session.commit()
         session.close()
 
@@ -74,11 +74,11 @@ class DatabaseManager:
         """Add a new player to the database."""
         session = self.Session()
 
-        player = session.query(Player).filter_by(name=name)
+        player = session.query(Player).filter_by(name=name.capitalize())
 
         # Ensure player doesn't already exist
         if player.count() == 0:
-            session.add(Player(name=name, last_login=time.time()))
+            session.add(Player(name=name.capitalize(), last_login=time.time()))
             session.commit()
             session.close()
             return True
@@ -98,10 +98,37 @@ class DatabaseManager:
     def add_time(self, player_name, level, full_time, fastest_lap):
         session = self.Session()
 
-        session.add(Times(player_name=player_name, level=level, full_time=full_time, fastest_lap=fastest_lap))
+        session.add(Times(player_name=player_name.capitalize(), level=level, full_time=full_time, fastest_lap=fastest_lap))
         session.commit()
         session.close()
         return True
+
+    def get_personal_best(self, player_name, level):
+        session = self.Session()
+        try:
+            best_time = session.query(Times).filter_by(player_name=player_name, level=level).order_by(asc(Times.full_time)).first()
+            return best_time.full_time
+        except:
+            return None
+        finally:
+            session.close()
+
+
+    def get_times(self, level):
+        session = self.Session()
+        times_list = []
+        try:
+            times = session.query(Times).filter_by(level=level).all()
+            for t in times:
+                times_list.append((t.player_name, t.full_time, t.fastest_lap))
+
+            return times_list
+
+        except:
+            pass
+        finally:
+            session.close()
+
 
     def add_coin(self):
         """Increment the global coin count and ensure player exists."""

@@ -48,6 +48,8 @@ class Button:  # A button class
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.rect.collidepoint(event.pos):  # Checks if the button has been pressed
             if self.action == 'to_level_selector':
                 self.display.game.change_display('level_selector')
+                self.display.game.current_display.get_pb()
+                self.display.game.current_display.update_pb_text()
             elif self.action == 'to_map_maker_display':
                 self.display.game.change_display('map_display')
             elif self.action == "export_map":
@@ -95,16 +97,20 @@ class Button:  # A button class
             elif self.action == 'back_to_level_selector':
                 self.display.game.displays['level_selector'].reload_maps()
                 self.display.game.change_display('level_selector')
+            elif self.action == 'back_to_level_selector_no_reload':
+                self.display.game.change_display('level_selector')
             elif self.action == 'move_selection_to_left':
                 lvl_display = self.display.game.displays['level_selector']
                 if lvl_display.currently_selected > 0:
                     lvl_display.currently_selected -= 1
                     lvl_display.update_surfaces(-1)
+                self.display.update_pb_text()
             elif self.action == 'move_selection_to_right':
                 lvl_display = self.display.game.displays['level_selector']
                 if lvl_display.currently_selected < len(list(lvl_display.levels.values())) - 1:
                     lvl_display.currently_selected += 1
                     lvl_display.update_surfaces(1)
+                self.display.update_pb_text()
             elif self.action == 'to_map_maker_menu':
                 self.display.game.change_display('map_maker_menu')
             elif self.action == 'leaderboard':
@@ -136,6 +142,11 @@ class Button:  # A button class
                 self.display.game.change_display('change_player_name')
             elif self.action == 'save_player_name':
                 self.display.save_player_name()
+
+            elif self.action == 'to_new_leaderboard':
+                self.display.game.change_display('new_leaderboard')
+                self.display.game.current_display.level = list(self.display.levels.keys())[self.display.currently_selected]
+                self.display.game.current_display.loaded = 0
 
             elif 'edit_map_titled_' in self.action:
                 with open(f"{self.display.game.map_dir}/{self.action.removeprefix('edit_map_titled_')}.json", 'r') as f:

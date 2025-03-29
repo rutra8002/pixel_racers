@@ -14,7 +14,7 @@ import random
 import math as lolekszcz
 import pygame
 import json
-from app import car, enemy, obstacle, images, player, enemy, checkpoint, hotbar, powerup
+from app import car, enemy, obstacle, images, player, enemy, checkpoint, hotbar, powerup, scoreboard
 from particle_system import ParticleSystem
 from datetime import datetime
 import os
@@ -1254,6 +1254,13 @@ class level_selector(basic_display):
                              self.button_width, self.button_height, text='BACK', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
+        custom_button.Button(self, 'to_new_leaderboard', self.game.width / 2 + 21.5 + self.button_width, self.game.height - 150, self.button_height,
+                             self.button_height, text='', border_radius=0, color=(26, 26, 26),
+                             text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+
+        custom_images.Custom_image(self, 'images/puchar.png', self.game.width / 2 + 21.5 + self.button_width + self.button_height/2, self.game.height - 150 + self.button_height/2, self.button_height,
+                             self.button_height, )
+
         self.particle_system = self.game.menu_particle_system
         self.top = 3
         self.descaling_factor = 3
@@ -1274,13 +1281,14 @@ class level_selector(basic_display):
                              (self.game.height - 150  - self.button_height - 15),
                              self.button_width, self.button_height, text='->', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-        self.texts = {}
-        for i in range(3):
-            self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 5 + 40 * i,
-                                                             f'', font_height=35, text_color=(255, 255, 255),
-                                                             background_color=(0, 0, 0), center=True,
-                                                             append=True)
+        # self.texts = {}
+        # for i in range(3):
+        #     self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 5 + 40 * i,
+        #                                                      f'', font_height=35, text_color=(255, 255, 255),
+        #                                                      background_color=(0, 0, 0), center=True,
+        #                                                      append=True)
 
+        self.pb_text = custom_text.Custom_text(self, self.game.width//2, self.game.height//5 + 80, 'Personal Best: N/A', text_color=(255, 223, 0))
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
 
@@ -1301,6 +1309,32 @@ class level_selector(basic_display):
         conn.close()
         return top_scores
 
+    def get_pb(self):
+        levels_list = list(self.levels.keys())
+        self.pb_times = {}
+        for level in levels_list:
+            time = self.db_manager.get_personal_best(self.game.player_name, level)
+            if time != None:
+                self.pb_times[level] = time
+            else:
+                self.pb_times[level] = 'N/A'
+
+    def update_pb_text(self):
+        full_time = self.pb_times[list(self.levels.keys())[self.currently_selected]]
+        if full_time != 'N/A':
+            milliseconds = int((full_time % 1) * 1000)
+            total_seconds = int(full_time)
+            minutes, seconds = divmod(total_seconds, 60)
+
+            if total_seconds < 60:
+                formatted_time = f"{total_seconds}:{milliseconds:03d}"
+            else:
+                formatted_time = f"{minutes}:{seconds:02d}:{milliseconds:03d}"
+
+
+            self.pb_text.update_text(f'Personal Best: {formatted_time}')
+        else:
+            self.pb_text.update_text(f'Personal Best: N/A')
     def render(self):
         self.particle_system.add_particle(random.randint(0, self.game.width), random.uniform(0, self.game.height),
                                           random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
@@ -1310,15 +1344,15 @@ class level_selector(basic_display):
 
         top_scores = self.fetch_top_scores()
 
-        for j in range(self.top):
-            self.texts[f'text_{j}'].update_text('')
-        for i, (name, score, full_time, fastest_lap) in enumerate(top_scores):
-            milliseconds_full = int((full_time % 1) * 1000)
-            seconds_full = round(full_time % 60)
-            milliseconds_lap = int((fastest_lap % 1) * 1000)
-            seconds_lap = round(fastest_lap % 60)
-            self.texts[f'text_{i}'].update_text(
-                f'{i + 1}. {name if name != "Player" else self.game.player_name}: {score}, Full time: {int(full_time // 60)}:{seconds_full:02}:{milliseconds_full:03}, Fastest lap time: {int(fastest_lap // 60)}:{seconds_lap:02}:{milliseconds_lap:03}')
+        # for j in range(self.top):
+        #     self.texts[f'text_{j}'].update_text('')
+        # for i, (name, score, full_time, fastest_lap) in enumerate(top_scores):
+        #     milliseconds_full = int((full_time % 1) * 1000)
+        #     seconds_full = round(full_time % 60)
+        #     milliseconds_lap = int((fastest_lap % 1) * 1000)
+        #     seconds_lap = round(fastest_lap % 60)
+        #     self.texts[f'text_{i}'].update_text(
+        #         f'{i + 1}. {name if name != "Player" else self.game.player_name}: {score}, Full time: {int(full_time // 60)}:{seconds_full:02}:{milliseconds_full:03}, Fastest lap time: {int(fastest_lap // 60)}:{seconds_lap:02}:{milliseconds_lap:03}')
 
 
         for i, lvl in enumerate(list(self.levels.values())):
@@ -1356,6 +1390,9 @@ class level_selector(basic_display):
                                              (self.not_selected_surface_width, self.not_selected_surface_height))
             self.levels[lvl] = sur
 
+        self.get_pb()
+        self.update_pb_text()
+
     def reload_maps(self):
         try:
             for i, lvl in enumerate(list(self.levels.keys())):
@@ -1368,9 +1405,11 @@ class level_selector(basic_display):
                 else:
                     sur = pygame.transform.scale(self.game.displays[lvl].map_surface, (self.not_selected_surface_width, self.not_selected_surface_height))
                 self.levels[lvl] = sur
-
+                self.get_pb()
+                self.update_pb_text()
         except:
             self.load_maps()
+
 
     def update_surfaces(self, dir): # if changing to the left dir = -1, if changing to the right dir = 1
         for i, lvl in enumerate(list(self.levels.values())):
@@ -1771,6 +1810,40 @@ class leaderboard(basic_display):
                 self.game.change_display('level_selector')
 
 
+class new_leaderboard(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
+        self.level = None
+        self.loaded = False
+
+        self.leaderboard = self.leaderboard = scoreboard.Scoreboard(self, ("name", 'Time', 'Fastest Lap'), [])
+
+        self.button_width_modifier = 45.5 / 256
+        self.button_heigh_modifier = 10.4 / 144
+        self.button_width = self.game.width * self.button_width_modifier
+        self.button_height = self.game.height * self.button_heigh_modifier
+        custom_text.Custom_text(self, self.game.width/2, self.game.height/7, 'Leaderboard', text_color=(255, 223, 0))
+        custom_button.Button(self, 'back_to_level_selector_no_reload', self.game.width/2 - self.button_width/2, self.game.height*5.5/7, self.button_width, self.button_height, text='Back', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+
+        self.particle_system = self.game.menu_particle_system
+    def mainloop(self):
+        if not self.loaded:
+            self.load_leaderboard()
+            self.loaded = 1
+        self.particle_system.update(self.game.delta_time)
+    def load_leaderboard(self):
+        self.leaderboard.delete()
+        times = self.db_manager.get_times(self.level)
+        self.leaderboard = scoreboard.Scoreboard(self, ("name", 'Time', 'Fastest Lap'), times, max_height=550)
+
+    def render(self):
+        super().render()
+        self.particle_system.add_particle(random.randint(0, self.game.width), random.uniform(0, self.game.height),
+                                          random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
+                                          random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
+                                          random.randint(0, 255), 100, 'square')
+        self.particle_system.draw(self.screen)
+
 class change_player_name(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
@@ -1874,7 +1947,7 @@ class change_player_name(basic_display):
         # Update name in all relevant places
         try:
             # Store the name for future game instances
-            stored_name = self.name_input
+            stored_name = self.name_input.capitalize()
 
             # Update name in any active game display instances
             for display_name, display_instance in self.game.displays.items():
