@@ -1816,7 +1816,7 @@ class new_leaderboard(basic_display):
         self.level = None
         self.loaded = False
 
-        self.leaderboard = self.leaderboard = scoreboard.Scoreboard(self, ("name", 'Time', 'Fastest Lap'), [])
+        self.leaderboard = self.leaderboard = scoreboard.Scoreboard(self, ("name", 'Time', 'Fastest Lap'), [], max_height=550)
 
         self.button_width_modifier = 45.5 / 256
         self.button_heigh_modifier = 10.4 / 144
