@@ -1689,10 +1689,19 @@ class credits(basic_display):
         self.video = cv2.VideoCapture('videos/credits.mp4')
         self.currentText = 0
         self.last_fps = self.game.fps
-        self.texts = ['papapapapa papapapapa', 'credits', 'RYBA', 'óąśćęłńżź']
-        self.text = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 2, self.texts[self.currentText], font_height=40, text_color=(255, 255, 255),
-                                background_color=(0, 0, 0), center=True,
-                                append=False)
+        custom_text.Custom_text(self, self.game.width/2, self.game.height/11, 'Credits', font_height=int(self.game.height*(19/216)),text_color=(255, 255, 255),
+                                background_color=(0, 0, 0), center=True)
+
+        # self.texts = ['papapapapa papapapapa', 'credits', 'RYBA', 'óąśćęłńżź']
+        self.texts = {}
+        names = ("rutra8002", "MalyszekTobias", "Hohenzoler", "Saniccxx", "O5Romano")
+        for i in range(5):
+            self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 60 * i,
+                                                         f'{names[i]}', font_height=45, text_color=(255, 255, 255),
+                                                         background_color=(0, 0, 0), center=True)
+        # self.text = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 2, self.texts[self.currentText], font_height=40, text_color=(255, 255, 255),
+        #                         background_color=(0, 0, 0), center=True,
+        #                         append=False)
     def mainloop(self):
         pass
     def render(self):
@@ -1707,15 +1716,14 @@ class credits(basic_display):
         frame = pygame.surfarray.make_surface(frame)
         self.game.screen.blit(frame, (0, 0))
 
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_update_time > 500:
-            self.currentText += 1
-            if self.currentText >= len(self.texts):
-                self.currentText = 0
-            self.text.update_text(self.texts[self.currentText])
-            self.last_update_time = current_time
-            self.text.update_position(random.randint(250, self.game.width - 250), random.randint(100, self.game.height - 100))
-        self.text.render()
+        # current_time = pygame.time.get_ticks()
+        # if current_time - self.last_update_time > 500:
+        #     self.currentText += 1
+        #     if self.currentText >= len(self.texts):
+        #         self.currentText = 0
+        #     self.text.update_text(self.texts[self.currentText])
+        #     self.last_update_time = current_time
+        #     self.text.update_position(random.randint(250, self.game.width - 250), random.randint(100, self.game.height - 100))
         for obj in self.objects:
             obj.render()
 
