@@ -36,7 +36,7 @@ class Scoreboard:
                 max_widths[i] = max(max_widths[i], text_surface.get_width())
 
         for i, width in enumerate(max_widths):
-            width += 30
+            width += 35
             max_widths[i] = width
         return max_widths
 
