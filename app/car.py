@@ -939,10 +939,11 @@ class Car:
         else:
             self.wall_frames += 1
             if self.wall_frames > 10:
-                back = 2
-                self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], \
-                self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
-                self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back - 1][2]
+                # back = 2
+                # self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], \
+                # self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
+                # self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back - 1][2]
+                self.push_away_from_closest_wall()
 
         if not self.car:
             self.archiveCars.append([self.x, self.y, self.rotation])
@@ -1212,9 +1213,10 @@ class Car:
                                 self.bounce_sound_timer = 0.3
                                 self.display.game.sound_manager.play_sound('bounce')
                                 self.strength = False
-                            back = 1
-                            self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
-                            self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back - 1][2]
+                            self.push_away_from_closest_wall()
+                            # back = 1
+                            # self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
+                            # self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back - 1][2]
                             self.wallCollTime = pygame.time.get_ticks()
 
 
@@ -1243,6 +1245,22 @@ class Car:
                             self.tireHealth += self.tireDamage
 
 
+    def find_closest_wall(self):
+        for x in range(self.rect.topleft[0], self.rect.bottomright[0]):
+            for y in range(self.rect.topleft[1], self.rect.bottomright[1]):
+                yy = int((y + self.delta_y) // self.display.block_height)
+                xx = int((x + self.delta_x) // self.display.block_width)
+                if self.display.map[yy][xx] == 1:
+                    return x, y
+        return None, None
+
+    def push_away_from_closest_wall(self):
+        x, y = self.find_closest_wall()
+        if x is not None and y is not None:
+            self.next_x, self.next_y = self.x, self.y
+            self.next_rotation = self.rotation
+            self.next_x += (self.x - x) * 0.1
+            self.next_y += (self.y - y) * 0.1
     def start_race(self):
         self.begining_lap_time = time.time()
 
