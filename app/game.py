@@ -101,22 +101,22 @@ class Game:
         self.console_active = False
         self.console_input = ""
         self.console_history = []
-        db_path = 'scores.sqlite'
-        if not os.path.exists(db_path):
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            cursor.execute('''
-                CREATE TABLE scores (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    level TEXT NOT NULL,
-                    full_time REAL NOT NULL,
-                    fastest_lap REAL NOT NULL,
-                    score INTEGER NOT NULL
-                )
-            ''')
-            conn.commit()
-            conn.close()
+        # db_path = 'scores.sqlite'
+        # if not os.path.exists(db_path):
+        #     conn = sqlite3.connect(db_path)
+        #     cursor = conn.cursor()
+        #     cursor.execute('''
+        #         CREATE TABLE scores (
+        #             id INTEGER PRIMARY KEY AUTOINCREMENT,
+        #             name TEXT NOT NULL,
+        #             level TEXT NOT NULL,
+        #             full_time REAL NOT NULL,
+        #             fastest_lap REAL NOT NULL,
+        #             score INTEGER NOT NULL
+        #         )
+        #     ''')
+        #     conn.commit()
+        #     conn.close()
 
         try:
             self.console_font = pygame.font.Font('fonts/JetBrainsMonoNLNerdFontMono-Regular.ttf', 20)
@@ -126,8 +126,8 @@ class Game:
 
         self.console_history_index = 0
 
-        self.db = sqlite3.connect('scores.sqlite')
-        self.cursor = self.db.cursor()
+        # self.db = sqlite3.connect('scores.sqlite')
+        # self.cursor = self.db.cursor()
 
 
     #     console_thread = threading.Thread(target=self.start_console, args=(custom_locals,))

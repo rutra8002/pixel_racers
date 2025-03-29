@@ -19,7 +19,8 @@ class Hotbar:
 
         self.display.objects.append(self)
 
-        self.stopwatch = StopWatch(self)
+        self.stopwatch = StopWatch(self, top=1)
+        self.stopwatch2 = StopWatch(self)
 
 
 
@@ -47,12 +48,15 @@ class Hotbar:
 
 
     def set_laps(self):
-        self.lap_text = custom_text.Custom_text(self.display, self.x + self.w / 7, self.y + self.h / 2.5 + 50,
-                                                f'Lap: 1/{self.display.laps}', text_color='white')
+        self.lap_text = custom_text.Custom_text(self.display, self.stopwatch2.text.rect.x, self.stopwatch2.text.rect.y + self.stopwatch2.text.rect.height + 15,
+                                                f'Lap: 1/{self.display.laps}', text_color='white', center=False, font_height=30)
 
     def set_player_standing(self):
         self.player_standing = custom_text.Custom_text(self.display, self.x + self.w*(6.5/7), self.y + self.h / 2,
                                                 f'1st', text_color=(255, 215, 0))
+
+    def reset_lap_timer(self):
+        self.stopwatch2.start_time = time.time()
     def render(self):
         pygame.draw.rect(self.game.screen, self.color, self.rect)
         pygame.draw.rect(self.game.screen, self.outline_color, self.rect, width=5)
@@ -67,6 +71,7 @@ class Hotbar:
 
     def mainloop(self):
         self.stopwatch.update_time()
+        self.stopwatch2.update_time()
         self.update_coin_display()
         self.update_player_standing()
         self.nitro_bar.update_bar_height()
@@ -75,6 +80,9 @@ class Hotbar:
     def start_counting_time(self):
         self.stopwatch.start_time = time.time()
         self.stopwatch.start_counting_time = True
+
+        self.stopwatch2.start_time = time.time()
+        self.stopwatch2.start_counting_time = True
 
     def update_lap_text(self):
         self.lap_text.update_text(f'Lap: {self.display.p.lap}/{self.display.laps}')
@@ -128,14 +136,27 @@ class Hotbar:
 
 
 class StopWatch:
-    def __init__(self, hotbar):
+    def __init__(self, hotbar, top=False):
         self.hotbar = hotbar
         self.display = self.hotbar.display
 
-        self.x = self.hotbar.x + self.hotbar.w / 7
-        self.y = self.hotbar.y + self.hotbar.h / 2.5
+        self.x = self.hotbar.x + self.hotbar.w / 11
+        self.y = self.hotbar.y + self.hotbar.h / 4
 
-        self.text = custom_text.Custom_text(self.display, self.x, self.y, '', text_color='white')
+        if not top:
+            self.y += 45
+            self.text234 = custom_text.Custom_text(self.display, self.x, self.y, 'Time: 00:00', text_color='white',
+                                                font_height=30, append=False)
+            self.text = custom_text.Custom_text(self.display, self.text234.rect.x, self.y - 15, 'Lap time: 00:00', text_color='white',
+                                                font_height=30, center=False)
+
+            self.text234.delete()
+
+        else:
+            self.text = custom_text.Custom_text(self.display, self.x, self.y, 'Time: 00:00', text_color='white',
+                                                font_height=30)
+        self.top = top
+
 
         self.start_time = 0
         self.current_time = 0
@@ -154,7 +175,10 @@ class StopWatch:
             else:
                 seconds_time = f'{seconds_time}'
 
-            self.text.update_text(f'Time: {split_str[1]}:{seconds_time}')
+            if self.top:
+                self.text.update_text(f'Time: {split_str[1]}:{seconds_time}')
+            else:
+                self.text.update_text(f'Lap time: {split_str[1]}:{seconds_time}')
 
 
 class Nitrobar:
