@@ -419,13 +419,14 @@ class game_display(basic_display):
         self.game.currentLeaderboard = self.leaderboard_list
 
     def end_race(self):
-        for car in self.leaderboard_list:
-            try:
-                avg = sum(car.lap_times)/len(car.lap_times)
-            except:
-                avg = 0
+        # for car in self.leaderboard_list:
+        #     try:
+        #         avg = sum(car.lap_times)/len(car.lap_times)
+        #     except:
+        #         avg = 0
             #
             # print(car.isPlayer, car.lap_times, avg)
+        self.game.db_manager.add_time(self.p.player_name, self.difficulty, sum(self.p.lap_times), min(self.p.lap_times))
 
 
 class map_display(basic_display):
@@ -1788,12 +1789,7 @@ class change_player_name(basic_display):
 
         # Get current player name from the game object
 
-        try:
-            current_player = self.game.displays['game_display'].p.player_name
-        except (AttributeError, KeyError):
-            current_player = 'jeff'  # Default name
-
-        self.name_input = current_player
+        self.name_input = self.game.player_name
         self.cursor_visible = True
         self.cursor_timer = 0
 

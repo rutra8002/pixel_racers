@@ -32,6 +32,7 @@ class Game:
         config.set_config()
 
         self.db_manager = DatabaseManager()
+        self.player_name = self.db_manager.get_last_player_name()
 
         self.map_dir = 'maps'
         self.update_settings()
