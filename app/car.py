@@ -242,11 +242,12 @@ class Car:
                     self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
                     if self.recentCollisions[c] == 0:
                         self.handle_bumping(c)
-                        back = 4
-                        self.next_x, self.next_y, self.x, self.y = self.archiveCars[-back][0], self.archiveCars[-back][1], self.archiveCars[-back][0], self.archiveCars[-back][1]
-                        self.next_rotation, self.rotation = self.archiveCars[-back][2], self.archiveCars[-back][2]
-                        c.next_x, c.next_y, c.x, c.y = c.archiveCars[-back][0], c.archiveCars[-back][1], c.archiveCars[-back][0], c.archiveCars[-back][1]
-                        c.next_rotation, c.rotation = c.archiveCars[-back][2], c.archiveCars[-back][2]
+                        self.push_away_from_closest_enemy(c)
+                        # back = 4
+                        # self.next_x, self.next_y, self.x, self.y = self.archiveCars[-back][0], self.archiveCars[-back][1], self.archiveCars[-back][0], self.archiveCars[-back][1]
+                        # self.next_rotation, self.rotation = self.archiveCars[-back][2], self.archiveCars[-back][2]
+                        # c.next_x, c.next_y, c.x, c.y = c.archiveCars[-back][0], c.archiveCars[-back][1], c.archiveCars[-back][0], c.archiveCars[-back][1]
+                        # c.next_rotation, c.rotation = c.archiveCars[-back][2], c.archiveCars[-back][2]
                         self.recentCollisions[c] = pygame.time.get_ticks()
                         c.recentCollisions[self] = pygame.time.get_ticks()
 
@@ -1261,6 +1262,18 @@ class Car:
             self.next_rotation = self.rotation
             self.next_x += (self.x - x) * 0.1
             self.next_y += (self.y - y) * 0.1
+
+    def push_away_from_closest_enemy(self, enemy):
+        if enemy is not None:
+            self.next_x, self.next_y = self.x, self.y
+            enemy.next_x, enemy.next_y = enemy.x, enemy.y
+            self.next_rotation = self.rotation
+            enemy.next_rotation = enemy.rotation
+            self.next_x += (self.x - enemy.x) * 0.1
+            enemy.next_x += (enemy.x - self.x) * 0.1
+            self.next_y += (self.y - enemy.y) * 0.1
+            enemy.next_y += (enemy.y - self.y) * 0.1
+
     def start_race(self):
         self.begining_lap_time = time.time()
 
