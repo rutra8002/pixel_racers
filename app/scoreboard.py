@@ -31,7 +31,7 @@ class Scoreboard:
         max_widths = [0] * num_columns
         for tup in [self.column_names] + self.tuple_list:
             for i in range(num_columns):
-                text = str(tup[i])
+                text = f"{tup[i]} "
                 text_surface = self.font.render(text, True, self.colors["text"])
                 max_widths[i] = max(max_widths[i], text_surface.get_width())
 
