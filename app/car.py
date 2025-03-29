@@ -1285,7 +1285,11 @@ class Car:
     def start_race(self):
         self.begining_lap_time = time.time()
 
-    def end_race(self):
-        self.finished = True
-        self.full_time = sum(self.lap_times)
-        self.points = self.countPoints()
+    def end_race(self, after_player=False):
+        if not self.finished:
+            if self.isPlayer:
+                self.finished = True
+            elif after_player ==  False:
+                self.finished = True
+            self.full_time = sum(self.lap_times)
+            self.points = self.countPoints()

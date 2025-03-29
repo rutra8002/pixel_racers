@@ -40,6 +40,21 @@ class Scoreboard:
             max_widths[i] = width
         return max_widths
 
+
+    def format(self, t):
+        full_time = t
+        milliseconds = int((full_time % 1) * 1000)
+        total_seconds = int(full_time)
+        minutes, seconds = divmod(total_seconds, 60)
+
+        if total_seconds < 60:
+            formatted_time = f"{total_seconds}:{milliseconds:03d}"
+        else:
+            formatted_time = f"{minutes}:{seconds:02d}:{milliseconds:03d}"
+        return formatted_time
+
+
+
     def events(self, event):
         if event.type == pygame.MOUSEWHEEL:
             self.scroll_offset -= event.y * self.line_height
@@ -133,7 +148,10 @@ class Scoreboard:
         for idx, tup in enumerate(self.tuple_list):
             xpos = x
             for i in range(len(tup)):
-                text = str(tup[i])
+                if i == 0:
+                    text = str(tup[i])
+                else:
+                    text = str(self.format(tup[i]))
                 if i == 0:
                     text_surface = self.font.render(f"{idx + 1}. {text}", True, self.colors["text"])
                 else:

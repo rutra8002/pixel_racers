@@ -27,7 +27,8 @@ class checkpoint: # A checkpoint is a line with 2 points
         for car in self.display.cars:
             if car.rect.clipline(self.start_pos, self.end_pos):
                 if isinstance(car, player.Player):
-                    if car.current_checkpoint == self.i or car.current_checkpoint == self.i - 1:
+
+                    if car.current_checkpoint == self.i or car.current_checkpoint == self.i - 1 or car.current_checkpoint == self.i - 2 or car.current_checkpoint == self.i - 3:
                         car.current_checkpoint = self.i
                         self.display.wong_way = False
 
@@ -55,6 +56,7 @@ class checkpoint: # A checkpoint is a line with 2 points
                     car.last_passed_checkpoint = self.i
 
                 else:
+
                     if car.current_checkpoint == self.i or car.current_checkpoint == self.i - 1 or car.current_checkpoint == self.i - 2 or car.current_checkpoint == self.i - 3:
                         car.current_checkpoint = self.i
 
@@ -63,9 +65,9 @@ class checkpoint: # A checkpoint is a line with 2 points
                         car.lap += 1
                         car.lap_times.append(time.time() - car.begining_lap_time)
                         car.begining_lap_time = time.time()
-
-                        if car.lap <= self.display.laps:
+                        if car.lap >= self.display.laps:
                             car.end_race()
+                            print('sad')
 
 
                 self.color = (0, 0, 255)

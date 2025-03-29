@@ -120,28 +120,7 @@ class DatabaseManager:
         try:
             times = session.query(Times).filter_by(level=level).all()
             for t in times:
-                full_time = t.full_time
-                milliseconds = int((full_time % 1) * 1000)
-                total_seconds = int(full_time)
-                minutes, seconds = divmod(total_seconds, 60)
-
-                if total_seconds < 60:
-                    formatted_time = f"{total_seconds}:{milliseconds:03d}"
-                else:
-                    formatted_time = f"{minutes}:{seconds:02d}:{milliseconds:03d}"
-
-                lap_time = t.fastest_lap
-                milliseconds = int((lap_time % 1) * 1000)
-                total_seconds = int(lap_time)
-                minutes, seconds = divmod(total_seconds, 60)
-
-                if total_seconds < 60:
-                    formatted_time2 = f"{total_seconds}:{milliseconds:03d}"
-                else:
-                    formatted_time2 = f"{minutes}:{seconds:02d}:{milliseconds:03d}"
-
-
-                times_list.append((t.player_name, formatted_time, formatted_time2))
+                times_list.append((t.player_name, t.full_time, t.fastest_lap))
 
             return times_list
 

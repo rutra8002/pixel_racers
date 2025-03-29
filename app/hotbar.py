@@ -85,7 +85,7 @@ class Hotbar:
 
                 if i == 0:
                     text = f"1st"
-                    color = (255, 215, 0)
+                    color = (255, 223, 0)
                 elif i == 1:
                     text = f"2nd"
                     color = (192, 192, 192)

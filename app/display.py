@@ -385,15 +385,9 @@ class game_display(basic_display):
         for particle in self.particle_system.particles:
             if self.check_particle_collision(particle):
                 self.particle_system.particles.remove(particle)
-        finishes = 0
         for c in self.cars:
             c.loop()
-            if c.finished:
-                finishes += 1
-            if finishes == len(self.cars):
-                self.game.change_display('leaderboard')
-            elif c.finished and c.isPlayer:
-                self.game.change_display('leaderboard')
+
 
 
 
@@ -419,17 +413,15 @@ class game_display(basic_display):
 
     def update_standings(self):
         self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
-        self.game.currentLeaderboard = self.leaderboard_list
 
     def end_race(self):
-        # for car in self.leaderboard_list:
-        #     try:
-        #         avg = sum(car.lap_times)/len(car.lap_times)
-        #     except:
-        #         avg = 0
-            #
-            # print(car.isPlayer, car.lap_times, avg)
         self.game.db_manager.add_time(self.p.player_name, self.difficulty, sum(self.p.lap_times), min(self.p.lap_times))
+
+        for car in self.cars:
+            car.end_race(after_player=True)
+        self.game.change_display('leaderboard')
+        self.game.current_display.leaderboard_list = self.leaderboard_list
+        self.game.current_display.update_placements()
 
 
 class map_display(basic_display):
@@ -1011,17 +1003,18 @@ class main_menu_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
 
-        self.amount_of_buttons = 7
+        self.amount_of_buttons = 6
         self.button_padding = self.game.height * (1/96)
         self.button_width_modifier = 45.5/256
         self.button_heigh_modifier = 10.4/144
         self.button_width = self.game.width*self.button_width_modifier
         self.button_height = self.game.height*self.button_heigh_modifier
 
+        custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5, 'VROOM!\n    VROOM!',
+                                text_color='white', font_height=int(self.game.height * (19 / 216)))
+
         if self.game.enable_debug == False:
             self.amount_of_buttons -= 1
-            custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5, 'VROOM!\n    VROOM!',
-                                    text_color='white', font_height=int(self.game.height * (19 / 216)))
             custom_button.Button(self, 'to_level_selector', self.button_padding, self.game.height + (
                         - self.button_padding - self.button_height) * self.amount_of_buttons, self.button_width,
                                  self.button_height, text='Play', border_radius=0, color=(26, 26, 26),
@@ -1059,7 +1052,6 @@ class main_menu_display(basic_display):
 
         else:
 
-            custom_text.Custom_text(self, self.game.width/2, self.game.height/5, 'VROOM!\n    VROOM!', text_color='white', font_height=int(self.game.height*(19/216)))
             custom_button.Button(self, 'to_level_selector', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * self.amount_of_buttons, self.button_width, self.button_height, text='Play', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
             custom_button.Button(self, 'change_vehicle', self.button_padding,
                                  self.game.height + (- self.button_padding - self.button_height) * (
@@ -1071,9 +1063,9 @@ class main_menu_display(basic_display):
             custom_button.Button(self, 'to_map_maker_menu', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 3), self.button_width, self.button_height, text='Make a map', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
             custom_button.Button(self, 'credits', self.button_padding,self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 4), self.button_width, self.button_height, text='Credits', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
             custom_button.Button(self, 'quit', self.button_padding, self.game.height + (- self.button_padding - self.button_height) * (self.amount_of_buttons - 5), self.button_width, self.button_height, text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-            custom_button.Button(self, 'change_player_name',self.game.width / 2,
+            custom_button.Button(self, 'change_player_name', self.game.width - (self.button_width + 75) - self.button_padding,
                                  self.game.height + (- self.button_padding - self.button_height) * (
-                                         self.amount_of_buttons - 6), self.button_width + 75, self.button_height,
+                                         self.amount_of_buttons - 5), self.button_width + 75, self.button_height,
                                 text = "CHANGE PLAYER NAME", border_radius = 0, color = (26, 26, 26),
                                 text_color = (150, 150, 150), outline_color = (50, 50, 50),
                                 outline_width = 2)
@@ -1226,8 +1218,8 @@ class pause_display(basic_display):
         basic_display.__init__(self, game)
         custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
         width = 460
-        custom_button.Button(self, 'leaderboard', self.game.width / 2 - width // 2, self.game.height / 2, width, 80,
-                             text='View score and quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
+        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - width // 2, self.game.height / 2, width, 80,
+                             text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                              outline_color=(50, 50, 50), outline_width=2)
 
 
@@ -1737,81 +1729,207 @@ class credits(basic_display):
                 self.game.sound_manager.stop_sound('Credits')
                 self.game.change_display('main_menu_display')
 
-class leaderboard(basic_display):
-    def __init__(self, game):
-        basic_display.__init__(self, game)
+# class leaderboard(basic_display):
+#     def __init__(self, game):
+#         basic_display.__init__(self, game)
         # self.players = self.load()
-        self.texts = {}
-        self.number_of_players = 5
-        self.db_path = 'scores.sqlite'
-        self.saved = False
+        # self.texts = {}
+        # self.number_of_players = 5
+        # self.db_path = 'scores.sqlite'
+        # self.saved = False
 
-        score = "No score"
+        # score = "No score"
         # for i, car in enumerate(self.game.displays['game_display'].leaderboard_list):
         #     self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 60 * i,
         #                                                      f'{i + 1}. {car.name}: {score}', font_height=40, text_color=(255, 255, 255),
         #                                                      background_color=(0, 0, 0), center=True,
         #                                                      append=True)
-        for i in range(5):
-            self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 45 * i,
-                                                             f'', font_height=25, text_color=(255, 255, 255),
-                                                             background_color=(0, 0, 0), center=True,
-                                                             append=True)
-        self.title = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 7,
-                                            "Leaderboard", font_height=60, text_color=(255, 255, 255),
-                                            background_color=(0, 0, 0), center=True,
-                                            append=True)
-        width = 500
-        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - width // 2, self.game.height / 10 * 7, width, 80,
-                             text='Back to level selector', border_radius=0, color=(26, 26, 26),
-                             text_color=(150, 150, 150),
+        # for i in range(5):
+        #     self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 45 * i,
+        #                                                      f'', font_height=25, text_color=(255, 255, 255),
+        #                                                      background_color=(0, 0, 0), center=True,
+        #                                                      append=True)
+        # self.title = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 7,
+        #                                     "Leaderboard", font_height=60, text_color=(255, 255, 255),
+        #                                     background_color=(0, 0, 0), center=True,
+        #                                     append=True)
+        # width = 500
+        # custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - width // 2, self.game.height / 10 * 7, width, 80,
+        #                      text='Back to level selector', border_radius=0, color=(26, 26, 26),
+        #                      text_color=(150, 150, 150),
+        #                      outline_color=(50, 50, 50), outline_width=2)
+
+    # def mainloop(self):
+        # if not self.saved:
+        #     self.save()
+        #     self.saved = True
+
+
+
+    # def save(self):
+    #     conn = sqlite3.connect(self.db_path)
+    #     cursor = conn.cursor()
+    #
+    #     for i, car in enumerate(self.game.currentLeaderboard):
+    #         if car.finished:
+    #             name = car.name if not car.isPlayer else 'Player'
+    #             full_time = car.full_time
+    #             fastest_lap = min(car.lap_times) if car.lap_times else 0
+    #             score = 0
+    #             course_to_play = self.game.displays['level_selector'].currently_selected
+    #             level = list(self.game.displays['level_selector'].levels.keys())[course_to_play]
+    #             cursor.execute('''INSERT INTO scores (name, level, full_time, fastest_lap, score)VALUES (?, ?, ?, ?, ?)''',
+    #                            (name, level, full_time, fastest_lap, score))
+    #
+    #
+    #     conn.commit()
+    #     conn.close()
+
+
+    # def render(self):
+    #     score = "No score"
+    #     for i, car in enumerate(self.game.currentLeaderboard):
+    #         # {car.full_time}
+    #         milliseconds_full = int((car.full_time % 1) * 1000)
+    #         seconds_full = round(car.full_time % 60)
+    #         milliseconds_lap = int((min(car.lap_times) % 1) * 1000) if car.lap_times else 0
+    #         seconds_lap = round(min(car.lap_times) % 60) if car.lap_times else 0
+    #         self.texts[f'text_{i}'].update_text(f'{i + 1}. {car.name}: {score}, Full time: {int(car.full_time // 60)}:{seconds_full:02}:{milliseconds_full:03}, Fastest lap time: {int(min(car.lap_times) // 60) if car.lap_times else 0}:{seconds_lap:02}:{milliseconds_lap:03}, Finished? {"Yes" if car.finished else "No"}')
+    #     for obj in self.objects:
+    #         obj.render()
+    #
+    # def events(self, event):
+    #     for obj in self.objects:
+    #         obj.events(event)
+    #     if event.type == pygame.KEYDOWN:
+    #         if event.key == pygame.K_ESCAPE:
+    #             self.game.displays['level_selector'].reload_maps()
+    #             self.game.change_display('level_selector')
+
+class leaderboard(basic_display):
+    def __init__(self, game):
+        basic_display.__init__(self, game)
+        self.leaderboard_list = []
+        custom_text.Custom_text(self, self.game.width/2, self.game.height/7, 'Placements', text_color=(255, 223, 0), font_height=60)
+        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - 460 // 2, 902,
+                             460, 80,
+                             text='continue', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                              outline_color=(50, 50, 50), outline_width=2)
+        self.text_obj = []
 
+        self.particle_system = self.game.menu_particle_system
     def mainloop(self):
-        if not self.saved:
-            self.save()
-            self.saved = True
-
-    def save(self):
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-
-        for i, car in enumerate(self.game.currentLeaderboard):
-            if car.finished:
-                name = car.name if not car.isPlayer else 'Player'
-                full_time = car.full_time
-                fastest_lap = min(car.lap_times) if car.lap_times else 0
-                score = 0
-                course_to_play = self.game.displays['level_selector'].currently_selected
-                level = list(self.game.displays['level_selector'].levels.keys())[course_to_play]
-                cursor.execute('''INSERT INTO scores (name, level, full_time, fastest_lap, score)VALUES (?, ?, ?, ?, ?)''',
-                               (name, level, full_time, fastest_lap, score))
-
-
-        conn.commit()
-        conn.close()
+        self.particle_system.update(self.game.delta_time)
 
 
     def render(self):
-        score = "No score"
-        for i, car in enumerate(self.game.currentLeaderboard):
-            # {car.full_time}
-            milliseconds_full = int((car.full_time % 1) * 1000)
-            seconds_full = round(car.full_time % 60)
-            milliseconds_lap = int((min(car.lap_times) % 1) * 1000) if car.lap_times else 0
-            seconds_lap = round(min(car.lap_times) % 60) if car.lap_times else 0
-            self.texts[f'text_{i}'].update_text(f'{i + 1}. {car.name}: {score}, Full time: {int(car.full_time // 60)}:{seconds_full:02}:{milliseconds_full:03}, Fastest lap time: {int(min(car.lap_times) // 60) if car.lap_times else 0}:{seconds_lap:02}:{milliseconds_lap:03}, Finished? {"Yes" if car.finished else "No"}')
-        for obj in self.objects:
-            obj.render()
+        super().render()
+        self.particle_system.add_particle(random.randint(0, self.game.width), random.uniform(0, self.game.height),
+                                          random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
+                                          random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
+                                          random.randint(0, 255), 100, 'square')
+        self.particle_system.draw(self.screen)
 
-    def events(self, event):
-        for obj in self.objects:
-            obj.events(event)
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                self.game.displays['level_selector'].reload_maps()
-                self.game.change_display('level_selector')
+    def update_placements(self):
+        for t in self.text_obj:
+            t.delete()
+        self.text_obj = []
 
+        self.text_obj.append(
+            custom_text.Custom_text(self, self.game.width / 3 - 76.5, self.game.height / 4,
+                                    f"   name   |",
+                                    text_color='white', font_height=40))
+        og_n = self.text_obj[-1].rect
+
+        self.text_obj.append(custom_text.Custom_text(self, og_n.x + og_n.width, og_n.y, '    time    |', text_color='white', center=False, font_height=40))
+
+        og_t = self.text_obj[-1].rect
+
+        self.text_obj.append((custom_text.Custom_text(self, og_t.x + og_t.w, og_t.y, '    fastest lap    ', text_color='white', center=False, font_height=40)))
+
+        og_f = self.text_obj[-1].rect
+
+
+
+        for _ in range(len(self.leaderboard_list)):
+
+            if _ == 0:
+                if self.leaderboard_list[_].isPlayer:
+                    p_placement = f"1st"
+                    p_color = (255, 223, 0)
+                color = (255, 223, 0)
+            elif _ == 1:
+                if self.leaderboard_list[_].isPlayer:
+                    p_placement = f"2nd"
+                    p_color = (192, 192, 192)
+                color = (192, 192, 192)
+            elif _ == 2:
+                if self.leaderboard_list[_].isPlayer:
+                    p_placement = f"3rd"
+                    p_color = (205, 127, 50)
+                color = (205, 127, 50)
+            else:
+                if self.leaderboard_list[_].isPlayer:
+                    p_color = (255, 255, 255)
+                    p_placement = f"{_ + 1}th"
+                color = (255, 255, 255)
+
+            if self.leaderboard_list[_].isPlayer:
+                color2= (0, 255, 255)
+            else:
+                color2 = (255, 255, 255)
+
+
+
+            self.text_obj.append(custom_text.Custom_text(self, og_n.x - 70, self.game.height / 4 + 100 + 75 * _, f"{_ + 1}.",
+                                        text_color=color, font_height=40))
+
+
+            if self.leaderboard_list[_].finished:
+                full_time = self.format(self.leaderboard_list[_].full_time)
+                fastest_lap = self.format(min(self.leaderboard_list[_].lap_times))
+            else:
+                full_time = 'N/A'
+                fastest_lap = "N/A"
+
+            if len(self.leaderboard_list[_].name) < 11:
+                self.text_obj.append(
+                    custom_text.Custom_text(self, og_n.center[0], self.game.height / 4 + 100 + 75 * _, f"{self.leaderboard_list[_].name}",
+                                            text_color=color2, font_height=40))
+            else:
+                self.text_obj.append(
+                    custom_text.Custom_text(self, og_n.center[0], self.game.height / 4 + 100 + 75 * _,
+                                            f"{self.leaderboard_list[_].name[:11]}",
+                                            text_color=color2, font_height=40))
+
+            self.text_obj.append(
+                custom_text.Custom_text(self, og_t.center[0], self.game.height / 4 + 100 + 75 * _,
+                                        f"{full_time}",
+                                        text_color=color2, font_height=40))
+
+            self.text_obj.append(
+                custom_text.Custom_text(self, og_f.center[0], self.game.height / 4 + 100 + 75 * _,
+                                        f"{fastest_lap}",
+                                        text_color=color2, font_height=40))
+
+
+
+
+        self.text_obj.append(custom_text.Custom_text(self, 614, 800, "You've placed", text_color='white', center=False))
+        r = self.text_obj[-1].rect
+        self.text_obj.append(
+            custom_text.Custom_text(self, r.x + r.width + 20, r.y , f"{p_placement}", text_color=p_color, center=False))
+    def format(self, t):
+        full_time = t
+        milliseconds = int((full_time % 1) * 1000)
+        total_seconds = int(full_time)
+        minutes, seconds = divmod(total_seconds, 60)
+
+        if total_seconds < 60:
+            formatted_time = f"{total_seconds}:{milliseconds:03d}"
+        else:
+            formatted_time = f"{minutes}:{seconds:02d}:{milliseconds:03d}"
+        return formatted_time
 
 class new_leaderboard(basic_display):
     def __init__(self, game):
