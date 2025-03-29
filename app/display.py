@@ -1889,8 +1889,8 @@ class leaderboard(basic_display):
                 full_time = self.format(self.leaderboard_list[_].full_time)
                 fastest_lap = self.format(min(self.leaderboard_list[_].lap_times))
             else:
-                full_time = 'N/A'
-                fastest_lap = "N/A"
+                full_time = 'Not Finished'
+                fastest_lap = "Not Finished"
 
             if len(self.leaderboard_list[_].name) < 11:
                 self.text_obj.append(

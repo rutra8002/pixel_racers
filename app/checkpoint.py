@@ -39,6 +39,7 @@ class checkpoint: # A checkpoint is a line with 2 points
                         self.display.wong_way = False
                         car.lap_times.append(time.time() - car.begining_lap_time)
                         car.begining_lap_time = time.time()
+                        self.display.hotbar.reset_lap_timer()
                         if car.lap <= self.display.laps:
                             self.display.hotbar.update_lap_text()
                             if self.display.hasCoin == 0:
@@ -67,7 +68,6 @@ class checkpoint: # A checkpoint is a line with 2 points
                         car.begining_lap_time = time.time()
                         if car.lap >= self.display.laps:
                             car.end_race()
-                            print('sad')
 
 
                 self.color = (0, 0, 255)
