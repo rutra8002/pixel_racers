@@ -376,7 +376,7 @@ class Car:
             self.image = images.car3d
             self.set_3d_parameters(self.model)
             self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
-                                                             self.car3d_height)
+                                                             self.car3d_height, isenemy=(not self.isPlayer))
             self.backDifference = 0.65
             self.mass = 1
             self.nitroPower = 0.4 * self.display.game.calibration
@@ -403,7 +403,7 @@ class Car:
         elif self.model == 2:
             self.image = images.newcar
             self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height, isenemy=not self.isPlayer)
             self.backDifference = 0.7
             self.mass = 1.5
             self.nitroPower = 0.35 * self.display.game.calibration
@@ -430,7 +430,7 @@ class Car:
             self.image = images.bike
             self.set_3d_parameters(self.model)
             self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites,
-                                                             self.img_size, self.car3d_height)
+                                                             self.img_size, self.car3d_height, isenemy=not self.isPlayer)
 
             self.backDifference = 0.65
             self.mass = 0.8
@@ -459,7 +459,7 @@ class Car:
             self.image = images.police
             self.set_3d_parameters(self.model)
             self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites,
-                                                             self.img_size, self.car3d_height)
+                                                             self.img_size, self.car3d_height, isenemy=not self.isPlayer)
 
             self.backDifference = 1.4
             self.mass = 1.1
@@ -488,7 +488,7 @@ class Car:
         elif self.model == 5:
             self.image = images.plane
             self.set_3d_parameters(self.model)
-            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height, collision=False)
+            self.car3d_sprite = stacked_sprite.StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size, self.car3d_height, collision=False, isenemy=(not self.isPlayer))
             self.backDifference = 0.65
             self.mass = 100
             self.nitroPower = 4 * self.display.game.calibration

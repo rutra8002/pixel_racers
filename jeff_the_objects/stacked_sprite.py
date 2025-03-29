@@ -1,9 +1,12 @@
 import pygame
 
 class StackedSprite:
-    def __init__(self, display, image, num_of_sprites, sprite_size, scale_factor, rotation=0, rotate=True, collision=True):
+    def __init__(self, display, image, num_of_sprites, sprite_size, scale_factor, rotation=0, rotate=True, collision=True, isenemy=None):
         self.display = display
-        self.image = image
+        self.image = image.copy()
+        self.isenemy = isenemy
+        if self.isenemy == True:
+            self.image.fill((0, 0, 255), special_flags=pygame.BLEND_RGBA_MIN)
         self.num_of_sprites = num_of_sprites
         self.sprite_size = sprite_size
         self.scale_factor = scale_factor
