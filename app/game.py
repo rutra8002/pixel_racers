@@ -32,6 +32,7 @@ class Game:
         config.set_config()
 
         self.db_manager = DatabaseManager()
+        self.player_name = self.db_manager.get_last_player_name()
 
         self.map_dir = 'maps'
         self.update_settings()
@@ -60,7 +61,7 @@ class Game:
         self.template_display = display.basic_display(self)
         self.upgrade_worlds()
 
-        self.displays = {'template_display': self.template_display, 'game_display': display.game_display, 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self), 'change_vehicle': display.change_vehicle(self), 'credits': display.credits(self), 'leaderboard': display.leaderboard(self), 'change_player_name': display.change_player_name(self)}
+        self.displays = {'template_display': self.template_display, 'game_display': display.game_display, 'level_selector': display.level_selector(self), 'map_display': display.map_display(self), 'main_menu_display': display.main_menu_display(self), 'settings_display': display.settings_display(self), 'pause_display': display.pause_display(self), 'map_maker_menu': display.map_maker_menu(self), 'change_vehicle': display.change_vehicle(self), 'credits': display.credits(self), 'leaderboard': display.leaderboard(self), 'change_player_name': display.change_player_name(self), 'new_leaderboard': display.new_leaderboard(self)}
         self.current_display = self.displays['main_menu_display']
 
         self.displays['level_selector'].load_maps()
