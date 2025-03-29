@@ -23,4 +23,5 @@ speedBump = pygame.image.load("images/spedbump.png").convert_alpha()
 coin = pygame.image.load("images/coin.png").convert_alpha()
 
 mapone = pygame.image.load("images/maps/testmapone.png").convert_alpha()
+maptwo = pygame.image.load("images/maps/testmapaverageofoneandthree.png").convert_alpha()
 mapthree = pygame.image.load("images/maps/testmapthree.png").convert_alpha()

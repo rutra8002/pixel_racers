@@ -186,6 +186,9 @@ class game_display(basic_display):
         if self.difficulty == "Finished_Level_1":
             self.map_surface.blit(images.mapone, (0, 0))
 
+        elif self.difficulty == "Finished_Level_2":
+            self.map_surface.blit(images.maptwo, (0, 0))
+
         elif self.difficulty == "Finished_Level_3":
             self.map_surface.blit(images.mapthree, (0, 0))
 
