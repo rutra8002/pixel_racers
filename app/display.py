@@ -1237,6 +1237,7 @@ class pause_display(basic_display):
 class level_selector(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
+        self.bg = (100, 30, 30)
         custom_text.Custom_text(self, self.game.width/2, self.game.height/9, 'SELECT A COURSE', text_color='white', font_height=int(self.game.height*(19/216)))
 
         self.button_width_modifier = 45.5 / 256
@@ -1331,6 +1332,14 @@ class level_selector(basic_display):
         else:
             self.pb_text.update_text(f'Personal Best: N/A')
     def render(self):
+        if self.currently_selected == 0:
+            self.bg = (25, 90, 25)
+        elif self.currently_selected == 1:
+            self.bg = (100, 100, 30)
+        if self.currently_selected == 2:
+            self.bg = (100, 30, 30)
+
+        self.screen.fill(self.bg)
         self.particle_system.add_particle(random.randint(0, self.game.width), random.uniform(0, self.game.height),
                                           random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
                                           random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
@@ -1355,6 +1364,7 @@ class level_selector(basic_display):
                 pygame.draw.rect(self.game.screen, self.bgColor, (self.game.width/2 - self.selected_surface_width/2 -5, self.game.height/2 - self.selected_surface_height/2-5, self.selected_surface_width + 10, self.selected_surface_height + 10))
                 pygame.draw.rect(self.game.screen, (0, 125, 0), (self.game.width/2 - self.selected_surface_width/2 -5, self.game.height/2 - self.selected_surface_height/2-5, self.selected_surface_width + 10, self.selected_surface_height + 10), width=10)
                 self.game.screen.blit(lvl, (self.game.width/2 - self.selected_surface_width/2, self.game.height/2 - self.selected_surface_height/2))
+
             else:
                 a = 0
                 if i - self.currently_selected < 0:
