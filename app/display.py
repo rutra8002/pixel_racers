@@ -1519,11 +1519,11 @@ class change_vehicle(basic_display):
 
         for i in range(5):
             # Position large car at center
-            large_car = car.Car(self, (self.game.width / 2, self.game.height / 2), 0, False, i + 1,
+            large_car = car.Car(self, (self.game.width / 2, self.game.height / 2), 0, True, i + 1,
                                 car3d_height_factor=2.8)
             # Position small cars based on selected car
             initial_x = self.game.width / 2 + (i - self.selected_car_model + 1) * 250
-            small_car = car.Car(self, (initial_x, self.game.height / 2), 0, False, i + 1)
+            small_car = car.Car(self, (initial_x, self.game.height / 2), 0, True, i + 1)
 
             self.large_cars.append(large_car)
             self.small_cars.append(small_car)
