@@ -35,8 +35,8 @@ def generate_default_config_data(version):
         'width': 1920,
         'height': 1080,
         'fps': 60,
-        'title': 'MSC',
-        'full-screen': 0,
+        'title': 'Jeff The Racist',
+        'full-screen': 1,
         'enable_debug': 1
     }
 
