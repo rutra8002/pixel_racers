@@ -136,6 +136,8 @@ class game_display(basic_display):
 
 
         self.map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))
+        self.img_map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))
+
         self.draw_map()
         self.map_surface.set_colorkey(self.bgColor)
         self.mapMask = pygame.mask.from_surface(self.map_surface)
@@ -184,15 +186,15 @@ class game_display(basic_display):
     def draw_map(self):
         #draw test_map_one img
         if self.difficulty == "Finished_Level_1":
-            self.map_surface.blit(images.mapone, (0, 0))
+            self.img_map_surface.blit(images.mapone, (0, 0))
 
         elif self.difficulty == "Finished_Level_2":
-            self.map_surface.blit(images.maptwo, (0, 0))
+            self.img_map_surface.blit(images.maptwo, (0, 0))
 
         elif self.difficulty == "Finished_Level_3":
-            self.map_surface.blit(images.mapthree, (0, 0))
+            self.img_map_surface.blit(images.mapthree, (0, 0))
 
-        else:
+        if True:
             self.map_surface.fill(self.bgColor)
             for y in range(len(self.map)):
                 for x in range(len(self.map[y])):
@@ -276,6 +278,7 @@ class game_display(basic_display):
     def render(self):
         self.screen.fill(self.bgColor)
         self.screen.blit(self.map_surface, (0, 0))
+        self.screen.blit(self.img_map_surface, (0, 0))
 
         for o in self.obstacles:
             o.render()
