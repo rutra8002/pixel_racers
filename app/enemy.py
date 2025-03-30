@@ -24,11 +24,15 @@ class Enemy(Car):
         self.distance_left = 10000
 
 
+        self.force_push_x = 1
+        self.force_push_y = 1
+
         self.starttime = pygame.time.get_ticks()
         self.cooldown = True
         self.homing = 0
         self.decide_to_wait = False
         self.type = SubClass
+        self.diff = [0.73,0.8,0.85]
         if self.type not in [0,1,2,3]:
             self.type = 0
     def loop(self):
@@ -37,26 +41,34 @@ class Enemy(Car):
         self.avoid_walls()
         self.dt = self.display.game.delta_time
 
+        if abs(self.velLeft) < 4 and 100 - pygame.time.get_ticks() > 0 :
+            self.force_push_x = 10
+        if abs(self.velUp) < 4 and 100 - pygame.time.get_ticks() > 0 :
+            self.force_push_y = 10
 
+        self.force_push_y = 1
+        self.force_push_x = 1
         if self.type == 3:
             self.brakecheck()
             if self.decide_to_wait:
-                self.velLeft += (-self.dx + 250/self.distance_right - 250/self.distance_left)*0.7
-                self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy)*0.7
+                self.velLeft += (-self.dx + 250/self.distance_right - 250/self.distance_left)*0.6
+                self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy)*0.6
 
                 if self.distance_player<200:
-                    self.velLeft += (-self.dx + 250/self.distance_right - 250/self.distance_left)*0.1 + (self.x-self.player.x)/(abs(self.x-self.player.x)+0.0001)*15
-                    self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy)*0.1 - (self.y-self.player.y)/(abs(self.y-self.player.y)+0.0001)*15
+                    self.velLeft += (-self.dx + 250/self.distance_right - 250/self.distance_left)*0.3 + (self.x-self.player.x)/(abs(self.x-self.player.x)+0.0001)*17
+                    self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy)*0.3 - (self.y-self.player.y)/(abs(self.y-self.player.y)+0.0001)*17
 
 
 
             else:
-                self.velLeft += (250/self.distance_right - 250/self.distance_left - self.dx)
-                self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy )
+                self.velLeft += (250/self.distance_right - 250/self.distance_left - self.dx*self.force_push_x)*0.75
+                self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy*self.force_push_y )*0.75
 
 
 
         if self.type == 2:
+
+
             if self.homing <= 0:
                 self.cooldown = True
             if self.homing>=5:
@@ -71,22 +83,25 @@ class Enemy(Car):
 
 
             else:
-                self.velLeft += (250/self.distance_right - 250/self.distance_left - self.dx)
-                self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy )
+                self.velLeft += (100/self.distance_right - 100/self.distance_left - self.dx*self.force_push_x)*0.73
+                self.velUp -= (-100/self.distance_down + 100/self.distance_up + self.dy *self.force_push_y)*0.73
 
 
         if self.type == 1:
-            self.target_velocity = 350
+            self.target_velocity = 320
             self.current_speed = lolekszcz.sqrt((self.velLeft)**2+(self.velUp)**2)
-            self.scale_left = self.tanh(self.target_velocity, abs(self.velLeft))
-            self.scale_up = self.tanh(self.target_velocity, abs(self.velUp))
+            self.scale_x = abs(self.velLeft/(self.current_speed+0.000001))
+            self.scale_y = abs(self.velUp/(self.current_speed+0.000001))
+            self.scale_left = self.tanh(self.target_velocity, abs(self.velLeft)) * (self.scale_x+0.01)
+            self.scale_up = self.tanh(self.target_velocity, abs(self.velUp)) * (self.scale_y+0.01)
             self.velLeft += (200/self.distance_right - 200/self.distance_left - self.dx * self.scale_left)
             self.velUp -= (-200/self.distance_down + 200/self.distance_up + self.dy* self.scale_up)
         if self.type == 0:
 
-            self.velLeft += (-self.dx) + 250/self.distance_right - 250/self.distance_left
-            self.velUp -= -250/self.distance_down + 250/self.distance_up + self.dy
 
+
+            self.velLeft +=(-self.dx* self.force_push_x + 150/self.distance_right - 150/self.distance_left)*0.8
+            self.velUp -=(-150/self.distance_down * self.force_push_y + 150/self.distance_up + self.dy)*0.8
 
     def avoid_walls(self):
         self.distance_right = 10000
@@ -99,7 +114,7 @@ class Enemy(Car):
         self.detected_down = False
         self.x_axis = self.map[int(self.y//self.display.block_height)]
         self.adj_x = self.x//self.display.block_width
-        for i in range(70): #MAŁO, BO PROBlEMY Z SKALOWALNOŚCIĄ (DLA 1,2 PRZECIWNIKÓW MOŻNA NA SPOKOJNIE 50/30 DAĆ)
+        for i in range(60): #MAŁO, BO PROBlEMY Z SKALOWALNOŚCIĄ (DLA 1,2 PRZECIWNIKÓW MOŻNA NA SPOKOJNIE 50/30 DAĆ)
 
 
 
@@ -119,7 +134,7 @@ class Enemy(Car):
             if self.wall_down == 1 and not self.detected_down:
                 self.detected_down = True
                 self.distance_down = i + 0.000001
-        for j in range(70):
+        for j in range(60):
 
             if int(self.x//self.display.block_width ) -j >= 0:
 
@@ -160,10 +175,12 @@ class Enemy(Car):
             if self.chk_index == self.max_chk_indx:
                 self.chk_index = 0
         
-        self.dx =7 *  (self.center_x - self.x)/(abs(self.center_x - self.x)+0.000001) * self.display.game.delta_time * self.display.game.calibration
-        self.dy = 7 *  (self.center_y - self.y)/(abs(self.center_y - self.y)+0.000001)* self.display.game.delta_time * self.display.game.calibration
+        self.dx = 7*(self.center_x - self.x)/(abs(self.center_x - self.x)+0.000001) * self.display.game.delta_time * self.display.game.calibration
+        self.dy = 7*(self.center_y - self.y)/(abs(self.center_y - self.y)+0.000001)* self.display.game.delta_time * self.display.game.calibration
         self.angle = lolekszcz.degrees(lolekszcz.atan2(-self.dy, self.dx))
-        self.rotation = self.angle #TEMP OFC
+
+
+        #self.rotation = self.angle #TEMP OFC
 
     def to_player_bump(self):
         self.player_vector_x = 0
@@ -176,12 +193,16 @@ class Enemy(Car):
 
         self.distance_player = lolekszcz.sqrt( (self.x-self.player.x)**2 + (self.y-self.player.y) ** 2)
         self.chk_dif = self.chk_index - self.player.current_checkpoint
-        if self.chk_dif==2:
-            self.decide_to_wait = True
-        elif self.chk_dif > 2:
-            if random.randint(0,20) == 7:
+        if self.player.lap != self.map_data['laps']:
+            if self.chk_dif==2:
                 self.decide_to_wait = True
+            elif self.chk_dif > 2:
+                if random.randint(0,10) == 7:
+                    self.decide_to_wait = True
 
 
+            else:
+                self.decide_to_wait = False
         else:
             self.decide_to_wait = False
+
