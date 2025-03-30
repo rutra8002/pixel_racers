@@ -894,7 +894,7 @@ class Car:
         self.barrier = False
         for obstacle in self.display.obstacles:
             if self.collision_detection(obstacle.obstacle_mask, obstacle.rect.topleft[0], obstacle.rect.topleft[1]):
-                if obstacle.type == 1:
+                if obstacle.type == 1 and self.isPlayer:
                     if self.prickWheels():
                         obstacle.destroy()
                 elif obstacle.type == 2:
@@ -904,7 +904,7 @@ class Car:
                     self.next_rotation, self.rotation = self.archiveBarrier[-1][2], self.archiveBarrier[-2][2]
                     self.velUp *= -0.5
                     self.velLeft *= -0.5
-                elif obstacle.type == 3 and not obstacle.falling:
+                elif obstacle.type == 3 and not obstacle.falling and self.isPlayer:
                     self.bananaTime = 0.91 * random.choice((1, -1))
                     obstacle.destroy()
                     self.display.hasBanana = 1
