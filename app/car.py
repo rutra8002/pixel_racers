@@ -31,7 +31,7 @@ class Car:
         self.model = model
         self.car3d_height_factor = car3d_height_factor
         self.wall_frames = 0
-        self.last_frames_len = 3
+        self.last_frames_len = 10
         self.name = name
         self.current_checkpoint = -1
         self.lap = 1
@@ -93,8 +93,8 @@ class Car:
 
 
         self.speedCorrection = 0.05 / self.display.game.calibration # when the car is going over the speed limit
-        self.bumpingCooldown = 10
-        self.wallCollisionCooldown = 10
+        self.bumpingCooldown = 20
+        self.wallCollisionCooldown = 30
         self.wallCollTime = 0
 
 
@@ -234,22 +234,22 @@ class Car:
 
         if self.collision_detection(self.display.mapMask, 0, 0):
             self.collision_render(self.display.mapMask, 0, 0)
-        # self.car = False
-        # for c in self.display.cars:
-        #     if not self == c and c in self.recentCollisions:
-        #         if self.collision_detection(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y):
-        #             self.car = True
-        #             self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
-        #             if self.recentCollisions[c] == 0:
-        #                 self.handle_bumping(c)
-        #                 self.push_away_from_closest_enemy(c)
-        #                 # back = 4
-        #                 # self.next_x, self.next_y, self.x, self.y = self.archiveCars[-back][0], self.archiveCars[-back][1], self.archiveCars[-back][0], self.archiveCars[-back][1]
-        #                 # self.next_rotation, self.rotation = self.archiveCars[-back][2], self.archiveCars[-back][2]
-        #                 # c.next_x, c.next_y, c.x, c.y = c.archiveCars[-back][0], c.archiveCars[-back][1], c.archiveCars[-back][0], c.archiveCars[-back][1]
-        #                 # c.next_rotation, c.rotation = c.archiveCars[-back][2], c.archiveCars[-back][2]
-        #                 self.recentCollisions[c] = pygame.time.get_ticks()
-        #                 c.recentCollisions[self] = pygame.time.get_ticks()
+        self.car = False
+        for c in self.display.cars:
+            if not self == c and c in self.recentCollisions:
+                if self.collision_detection(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y):
+                    self.car = True
+                    self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
+                    if self.recentCollisions[c] == 0:
+                        self.handle_bumping(c)
+                        self.push_away_from_closest_enemy(c)
+                        # back = 4
+                        # self.next_x, self.next_y, self.x, self.y = self.archiveCars[-back][0], self.archiveCars[-back][1], self.archiveCars[-back][0], self.archiveCars[-back][1]
+                        # self.next_rotation, self.rotation = self.archiveCars[-back][2], self.archiveCars[-back][2]
+                        # c.next_x, c.next_y, c.x, c.y = c.archiveCars[-back][0], c.archiveCars[-back][1], c.archiveCars[-back][0], c.archiveCars[-back][1]
+                        # c.next_rotation, c.rotation = c.archiveCars[-back][2], c.archiveCars[-back][2]
+                        self.recentCollisions[c] = pygame.time.get_ticks()
+                        c.recentCollisions[self] = pygame.time.get_ticks()
 
         for p in self.display.powerups:
             if self.collision_detection(p.mask, p.rect.topleft[0], p.rect.topleft[1]):
@@ -931,22 +931,6 @@ class Car:
 
                     obstacle.destroy()
 
-        self.car = False
-        for c in self.display.cars:
-            if not self == c and c in self.recentCollisions:
-                if self.collision_detection(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y):
-                    self.car = True
-                    self.collision_render(c.car_mask, c.rect.topleft[0] + c.delta_x, c.rect.topleft[1] + c.delta_y)
-                    if self.recentCollisions[c] == 0:
-                        self.handle_bumping(c)
-                        self.push_away_from_closest_enemy(c)
-                        # back = 4
-                        # self.next_x, self.next_y, self.x, self.y = self.archiveCars[-back][0], self.archiveCars[-back][1], self.archiveCars[-back][0], self.archiveCars[-back][1]
-                        # self.next_rotation, self.rotation = self.archiveCars[-back][2], self.archiveCars[-back][2]
-                        # c.next_x, c.next_y, c.x, c.y = c.archiveCars[-back][0], c.archiveCars[-back][1], c.archiveCars[-back][0], c.archiveCars[-back][1]
-                        # c.next_rotation, c.rotation = c.archiveCars[-back][2], c.archiveCars[-back][2]
-                        self.recentCollisions[c] = pygame.time.get_ticks()
-                        c.recentCollisions[self] = pygame.time.get_ticks()
 
         if not self.wall:
             self.wall_frames = 0
@@ -964,7 +948,7 @@ class Car:
 
         if not self.car:
             self.archiveCars.append([self.x, self.y, self.rotation])
-            if len(self.archiveCars) > self.last_frames_len:
+            if len(self.archiveCars) > 10:
                 self.archiveCars.pop(0)
 
         if not self.barrier:
@@ -1271,30 +1255,20 @@ class Car:
                     return x, y
         return None, None
 
-    # def push_away_from_closest_wall(self, power=0.1):
-    #     x, y = self.find_closest_wall()
-    #     if x is not None and y is not None:
-    #         self.next_x, self.next_y = self.x, self.y
-    #         self.next_rotation = self.rotation
-    #         self.next_x += (self.x - x) * 0.1
-    #         self.next_y += (self.y - y) * 0.1
-
-    def push_away_from_closest_wall(self, power=0.1):
+    def push_away_from_closest_wall(self):
         x, y = self.find_closest_wall()
         if x is not None and y is not None:
-            back = 1
-            self.next_x, self.next_y = self.archiveWall[-back][0], self.archiveWall[-back][1]
-            self.next_rotation = self.archiveWall[-back][2]
-            self.next_x += (self.x - x) * power
-            self.next_y += (self.y - y) * power
+            self.next_x, self.next_y = self.x, self.y
+            self.next_rotation = self.rotation
+            self.next_x += (self.x - x) * 0.1
+            self.next_y += (self.y - y) * 0.1
 
     def push_away_from_closest_enemy(self, enemy):
         if enemy is not None:
-            back = 1
-            self.next_x, self.next_y = self.archiveCars[-back][0], self.archiveCars[-back][1]
-            enemy.next_x, enemy.next_y = enemy.archiveCars[-back][0], enemy.archiveCars[-back][1]
-            self.next_rotation = self.archiveCars[-back][2]
-            enemy.next_rotation = enemy.archiveCars[-back][2]
+            self.next_x, self.next_y = self.x, self.y
+            enemy.next_x, enemy.next_y = enemy.x, enemy.y
+            self.next_rotation = self.rotation
+            enemy.next_rotation = enemy.rotation
             self.next_x += (self.x - enemy.x) * 0.1
             enemy.next_x += (enemy.x - self.x) * 0.1
             self.next_y += (self.y - enemy.y) * 0.1
