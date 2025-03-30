@@ -1476,9 +1476,9 @@ class level_selector(basic_display):
         for i, lvl in enumerate(levels):
             self.game.displays[lvl] = game_display(self.game, lvl )
             if i - self.currently_selected == 0:
-                sur = pygame.transform.scale(self.game.displays[lvl].map_surface, (self.selected_surface_width, self.selected_surface_height))
+                sur = pygame.transform.scale(self.game.displays[lvl].img_map_surface, (self.selected_surface_width, self.selected_surface_height))
             else:
-                sur = pygame.transform.scale(self.game.displays[lvl].map_surface,
+                sur = pygame.transform.scale(self.game.displays[lvl].img_map_surface,
                                              (self.not_selected_surface_width, self.not_selected_surface_height))
             self.levels[lvl] = sur
 
@@ -1492,10 +1492,10 @@ class level_selector(basic_display):
                 del self.game.displays[lvl]
                 self.game.displays[lvl] = game_display(self.game, difficulty)
                 if i - self.currently_selected == 0:
-                    sur = pygame.transform.scale(self.game.displays[lvl].map_surface,
+                    sur = pygame.transform.scale(self.game.displays[lvl].img_map_surface,
                                                  (self.selected_surface_width, self.selected_surface_height))
                 else:
-                    sur = pygame.transform.scale(self.game.displays[lvl].map_surface, (self.not_selected_surface_width, self.not_selected_surface_height))
+                    sur = pygame.transform.scale(self.game.displays[lvl].img_map_surface, (self.not_selected_surface_width, self.not_selected_surface_height))
                 self.levels[lvl] = sur
                 self.get_pb()
                 self.update_pb_text()
@@ -1507,11 +1507,11 @@ class level_selector(basic_display):
         for i, lvl in enumerate(list(self.levels.values())):
             if i - self.currently_selected == 0:
                 del lvl
-                sur = pygame.transform.scale(self.game.displays[list(self.levels.keys())[i]].map_surface,
+                sur = pygame.transform.scale(self.game.displays[list(self.levels.keys())[i]].img_map_surface,
                                              (self.selected_surface_width, self.selected_surface_height))
                 self.levels[list(self.levels.keys())[i]] = sur
 
-                sur = pygame.transform.scale(self.game.displays[list(self.levels.keys())[i - dir]].map_surface,
+                sur = pygame.transform.scale(self.game.displays[list(self.levels.keys())[i - dir]].img_map_surface,
                                              (self.not_selected_surface_width, self.not_selected_surface_height))
                 self.levels[list(self.levels.keys())[i - dir]] = sur
                 break
