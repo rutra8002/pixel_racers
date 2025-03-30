@@ -57,22 +57,22 @@ class checkpoint: # A checkpoint is a line with 2 points
                     car.last_passed_checkpoint = self.i
 
                 else:
+                    if not car.finished:
+                        if car.current_checkpoint == self.i or car.current_checkpoint == self.i - 1 or car.current_checkpoint == self.i - 2 or car.current_checkpoint == self.i - 3:
+                            car.current_checkpoint = self.i
 
-                    if car.current_checkpoint == self.i or car.current_checkpoint == self.i - 1 or car.current_checkpoint == self.i - 2 or car.current_checkpoint == self.i - 3:
-                        car.current_checkpoint = self.i
-
-                    elif self.i == 0 and car.current_checkpoint == self.display.amount_of_checkpoints-1:
-                        car.current_checkpoint = self.i
-                        car.lap += 1
-                        car.lap_times.append(time.time() - car.begining_lap_time)
-                        car.begining_lap_time = time.time()
-                        if car.lap >= self.display.laps:
-                            car.end_race()
+                        elif self.i == 0 and car.current_checkpoint == self.display.amount_of_checkpoints-1:
+                            car.current_checkpoint = self.i
+                            car.lap += 1
+                            car.lap_times.append(time.time() - car.begining_lap_time)
+                            car.begining_lap_time = time.time()
+                            if car.lap >= self.display.laps:
+                                car.end_race()
 
 
                 self.color = (0, 0, 255)
-                player_name = car.player_name
-                self.display.leaderboard[player_name] = self.i
+                # player_name = car.player_name
+                # self.display.leaderboard[player_name] = self.i
                 return True
         if self.i == 0:
             self.color = self.display.color_map['m']

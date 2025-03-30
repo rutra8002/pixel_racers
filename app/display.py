@@ -127,8 +127,9 @@ class game_display(basic_display):
 
         self.p = player.Player(self, self.player_position, self.player_rotation, self.game.player_model)
 
-        self.leaderboard = {}
+        # self.leaderboard = {}
         self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+        self.placements = []
         self.hotbar.after_player_setup()
         for i, e in enumerate(self.enemies):
             enemy.Enemy(self, e[0], e[1], 1, player = self.p, SubClass=i, name=f'Enemy {i+1}')
@@ -416,6 +417,9 @@ class game_display(basic_display):
 
     def update_standings(self):
         self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+        # print('________________________')
+        # for c in self.leaderboard_list:
+        #     print(c.lap, c.current_checkpoint, c.get_distance_to_nearest_checkpoint())
 
     def end_race(self):
         self.game.db_manager.add_time(self.p.player_name, self.difficulty, sum(self.p.lap_times), min(self.p.lap_times))
@@ -423,7 +427,7 @@ class game_display(basic_display):
         for car in self.cars:
             car.end_race(after_player=True)
         self.game.change_display('leaderboard')
-        self.game.current_display.leaderboard_list = self.leaderboard_list
+        self.game.current_display.leaderboard_list = self.placements
         self.game.current_display.update_placements()
 
 
@@ -1298,15 +1302,15 @@ class level_selector(basic_display):
             if event.key == pygame.K_ESCAPE:
                 self.game.change_display('main_menu_display')
 
-    def fetch_top_scores(self):
-        conn = sqlite3.connect('scores.sqlite')
-        cursor = conn.cursor()
-        course_to_play = self.currently_selected
-        level = list(self.levels.keys())[course_to_play]
-        cursor.execute('''SELECT name, score, full_time, fastest_lap FROM scores WHERE level = ? ORDER BY score DESC, full_time ASC LIMIT ?''', (level, self.top,))
-        top_scores = cursor.fetchall()
-        conn.close()
-        return top_scores
+    # def fetch_top_scores(self):
+    #     conn = sqlite3.connect('scores.sqlite')
+    #     cursor = conn.cursor()
+    #     course_to_play = self.currently_selected
+    #     level = list(self.levels.keys())[course_to_play]
+    #     cursor.execute('''SELECT name, score, full_time, fastest_lap FROM scores WHERE level = ? ORDER BY score DESC, full_time ASC LIMIT ?''', (level, self.top,))
+    #     top_scores = cursor.fetchall()
+    #     conn.close()
+    #     return top_scores
 
     def get_pb(self):
         levels_list = list(self.levels.keys())
@@ -1349,7 +1353,7 @@ class level_selector(basic_display):
                                           random.randint(0, 255), 100, 'square')
         self.particle_system.draw(self.screen)
 
-        top_scores = self.fetch_top_scores()
+        # top_scores = self.fetch_top_scores()
 
         # for j in range(self.top):
         #     self.texts[f'text_{j}'].update_text('')

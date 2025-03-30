@@ -700,8 +700,8 @@ class Car:
 
 
             return lolino.dist((closest_x, closest_y), (self.x, self.y))
-        except:
-            pass
+        except Exception as e:
+            print(f"Error in function: {e}")
 
 
 
@@ -1285,3 +1285,5 @@ class Car:
                 self.finished = True
             self.full_time = sum(self.lap_times)
             self.points = self.countPoints()
+            self.display.leaderboard_list.remove(self)
+            self.display.placements.append(self)

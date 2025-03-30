@@ -90,18 +90,18 @@ class Hotbar:
     def update_player_standing(self):
         for i, car in enumerate(self.display.leaderboard_list):
             if car.isPlayer:
-
-                if i == 0:
+                true_i = i + len(self.display.placements)
+                if true_i == 0:
                     text = f"1st"
                     color = (255, 223, 0)
-                elif i == 1:
+                elif true_i == 1:
                     text = f"2nd"
                     color = (192, 192, 192)
-                elif i == 2:
+                elif true_i == 2:
                     text = f"3rd"
                     color = (205, 127, 50)
                 else:
-                    text = f"{i + 1}th"
+                    text = f"{true_i + 1}th"
                     color = (255, 255, 255)
 
 
