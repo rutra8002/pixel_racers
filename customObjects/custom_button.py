@@ -58,6 +58,7 @@ class Button:  # A button class
                 self.display.game.run = False
             elif self.action == 'settings':
                 self.display.game.change_display('settings_display')
+                self.display.game.current_display.update_button()
             elif self.action == 'credits':
                 self.display.game.change_display('credits')
                 self.display.game.sound_manager.play_sound('Credits', -1)
@@ -147,6 +148,18 @@ class Button:  # A button class
                 self.display.game.change_display('new_leaderboard')
                 self.display.game.current_display.level = list(self.display.levels.keys())[self.display.currently_selected]
                 self.display.game.current_display.loaded = 0
+
+            elif self.action == 'back_to_race':
+                self.display.game.current_display = self.display.game.displays[list(self.display.game.displays['level_selector'].levels.keys())[
+                    self.display.game.displays['level_selector'].currently_selected]]
+
+            elif self.action == 'to_in_game_settings_display':
+                self.display.game.change_display('settings_display')
+                self.display.game.current_display.update_button(to_main_menu=False)
+
+            elif self.action == 'to_pause_display':
+                self.display.game.change_display("pause_display")
+
 
             elif 'edit_map_titled_' in self.action:
                 with open(f"{self.display.game.map_dir}/{self.action.removeprefix('edit_map_titled_')}.json", 'r') as f:

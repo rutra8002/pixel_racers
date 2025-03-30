@@ -327,7 +327,7 @@ class game_display(basic_display):
         if self.paused == True:
             self.paused = 3
             self.pause_start_time = time.time()
-            self.game.change_display('pause_display')
+            self.game.current_display = self.game.displays['pause_display']
 
         elif self.paused == 3:
             time_offset_caused_by_pause = time.time() - self.pause_start_time
@@ -335,6 +335,7 @@ class game_display(basic_display):
                 car.begining_lap_time += time_offset_caused_by_pause
 
             self.hotbar.stopwatch.start_time += time_offset_caused_by_pause
+            self.hotbar.stopwatch2.start_time += time_offset_caused_by_pause
             self.paused = 0
 
 
@@ -1103,7 +1104,7 @@ class settings_display(basic_display):
 
         custom_text.Custom_text(self, self.game.width/2, self.game.height/8, 'SETTINGS', text_color='white', font_height=int(self.game.height*(19/216)))
         custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
-        custom_button.Button(self, 'to_main_menu', self.game.width/2, self.game.height/2, self.button_width, self.button_height, text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
+        self.back_button = custom_button.Button(self, 'to_main_menu', self.game.width/2, self.game.height/2, self.button_width, self.button_height, text='Back to menu', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
         cfg = read_config()
         current_fps = int(cfg['fps'])
@@ -1113,8 +1114,7 @@ class settings_display(basic_display):
         self.fps_slider = Slider(self, 'fps_slider', self.game.width/4 - 100, self.game.height/2, 200, 20, 30, 144, current_fps)
 
         # Get current volume from first sound (if exists) or use default
-        current_volume = int(self.game.sound_manager.sounds[
-                                 "engine"].get_volume() * 100 if "engine" in self.game.sound_manager.sounds else 50)
+        current_volume = int(self.game.sound_manager.sounds["engine"].get_volume() * 100 if "engine" in self.game.sound_manager.sounds else 50)
 
         # Add volume slider and text (positioned below FPS controls)
         self.volume_text = custom_text.Custom_text(
@@ -1180,6 +1180,16 @@ class settings_display(basic_display):
             if event.key == pygame.K_ESCAPE:
                 self.game.change_display('main_menu_display')
 
+    def update_button(self, to_main_menu=1):
+        if to_main_menu:
+            self.back_button.action = 'to_main_menu'
+            self.back_button.update_text('Back to menu')
+
+        else:
+            self.back_button.action = 'to_pause_display'
+            self.back_button.update_text('Back')
+
+
     # def set_resolution(self, resolution):
     #     self.current_resolution = resolution
     #     self.game.width, self.game.height = resolution
@@ -1220,14 +1230,37 @@ class settings_display(basic_display):
     #         button.update_position(button.x, self.game.height/2 + 100 + i*40 + self.scroll_offset)
 
 
+class in_game_settings_display(settings_display):
+    def __init__(self, game):
+        settings_display.__init__(self, game)
+        self.back_button.action = 'to_pause_display'
+        self.back_button.update_text('Back')
+
+
 class pause_display(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
+        custom_text.Custom_text(self, self.game.width/2, self.game.height/6.5, 'paused', text_color='white')
         custom_text.Custom_text(self, self.game.width/2, self.game.height - 22.5, self.game.version, text_color='white', font_height=25)
         width = 460
-        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - width // 2, self.game.height / 2, width, 80,
+
+        custom_button.Button(self, 'back_to_race', self.game.width / 2 - width // 2, self.game.height / 2 - 90,
+                             width, 80,
+                             text='Resume', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
+                             outline_color=(50, 50, 50), outline_width=2)
+
+        custom_button.Button(self, 'to_in_game_settings_display', self.game.width / 2 - width // 2, self.game.height / 2,
+                             width, 80,
+                             text='Settings', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
+                             outline_color=(50, 50, 50), outline_width=2)
+
+
+        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - width // 2, self.game.height / 2 + 90, width, 80,
                              text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                              outline_color=(50, 50, 50), outline_width=2)
+
+        self.overlay = pygame.Surface((self.game.width, self.game.height), pygame.SRCALPHA)
+        self.overlay.fill((0, 0, 0, 200))
 
 
     def mainloop(self):
@@ -1238,7 +1271,12 @@ class pause_display(basic_display):
             obj.events(event)
 
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self.game.change_display(list(self.game.displays['level_selector'].levels.keys())[self.game.displays['level_selector'].currently_selected])
+            self.game.current_display = self.game.displays[list(self.game.displays['level_selector'].levels.keys())[self.game.displays['level_selector'].currently_selected]]
+
+    def render(self):
+        self.game.displays[list(self.game.displays['level_selector'].levels.keys())[self.game.displays['level_selector'].currently_selected]].render()
+        self.game.screen.blit(self.overlay, (0, 0))
+        super().render()
 
 
 class level_selector(basic_display):
@@ -1301,6 +1339,46 @@ class level_selector(basic_display):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.game.change_display('main_menu_display')
+            elif event.key == pygame.K_LEFT:
+                if self.currently_selected > 0:
+                    self.currently_selected -= 1
+                    self.update_surfaces(-1)
+                self.update_pb_text()
+            elif event.key == pygame.K_RIGHT:
+                if self.currently_selected < len(list(self.levels.values())) - 1:
+                    self.currently_selected += 1
+                    self.update_surfaces(1)
+                self.update_pb_text()
+
+            elif event.key == pygame.K_RETURN:
+                course_to_play = self.currently_selected
+                self.game.change_display(
+                    list(self.levels.keys())[course_to_play])
+                if course_to_play == 0:
+                    self.game.sound_manager.unload_music()
+                    self.game.sound_manager.set_music_volume(0.5)
+                    self.game.sound_manager.load_music('sounds/music/Neon Rush.wav')
+                    self.game.sound_manager.play_music()
+
+                if course_to_play == 1:
+                    self.game.sound_manager.unload_music()
+                    self.game.sound_manager.set_music_volume(0.15)
+                    self.game.sound_manager.load_music('sounds/music/Volcanic Rush.wav')
+                    self.game.sound_manager.play_music()
+
+
+                elif course_to_play == 2:
+                    self.game.sound_manager.unload_music()
+                    self.game.sound_manager.set_music_volume(0.2)
+                    self.game.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
+
+                    self.game.sound_manager.play_music()
+
+            elif event.key == pygame.K_l:
+                self.game.change_display('new_leaderboard')
+                self.game.current_display.level = list(self.levels.keys())[
+                    self.currently_selected]
+                self.game.current_display.loaded = 0
 
     # def fetch_top_scores(self):
     #     conn = sqlite3.connect('scores.sqlite')
