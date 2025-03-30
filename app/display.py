@@ -427,9 +427,11 @@ class game_display(basic_display):
 
         for car in self.cars:
             car.end_race(after_player=True)
+
+        self.game.displays['leaderboard'].leaderboard_list = self.placements
+        self.game.displays['leaderboard'].update_placements()
         self.game.change_display('leaderboard')
-        self.game.current_display.leaderboard_list = self.placements
-        self.game.current_display.update_placements()
+
 
 
 class map_display(basic_display):

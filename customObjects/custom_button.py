@@ -47,9 +47,9 @@ class Button:  # A button class
     def events(self, event):  # Checks events
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.rect.collidepoint(event.pos):  # Checks if the button has been pressed
             if self.action == 'to_level_selector':
+                self.display.game.displays['level_selector'].get_pb()
+                self.display.game.displays['level_selector'].update_pb_text()
                 self.display.game.change_display('level_selector')
-                self.display.game.current_display.get_pb()
-                self.display.game.current_display.update_pb_text()
             elif self.action == 'to_map_maker_display':
                 self.display.game.change_display('map_display')
             elif self.action == "export_map":
@@ -57,8 +57,8 @@ class Button:  # A button class
             elif self.action == 'quit':
                 self.display.game.run = False
             elif self.action == 'settings':
+                self.display.game.displays['settings_display'].update_button()
                 self.display.game.change_display('settings_display')
-                self.display.game.current_display.update_button()
             elif self.action == 'credits':
                 self.display.game.change_display('credits')
                 self.display.game.sound_manager.play_sound('Credits', -1)
@@ -74,7 +74,6 @@ class Button:  # A button class
                 self.display.game.change_display('main_menu_display')
             elif self.action == 'play_course':
                 course_to_play = self.display.game.displays['level_selector'].currently_selected
-                self.display.game.change_display(list(self.display.game.displays['level_selector'].levels.keys())[course_to_play])
                 if course_to_play == 0:
                     self.display.game.sound_manager.unload_music()
                     self.display.game.sound_manager.set_music_volume(0.5)
@@ -94,6 +93,8 @@ class Button:  # A button class
                     self.display.game.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
 
                     self.display.game.sound_manager.play_music()
+                self.display.game.change_display(
+                    list(self.display.game.displays['level_selector'].levels.keys())[course_to_play])
 
             elif self.action == 'back_to_level_selector':
                 self.display.game.displays['level_selector'].reload_maps()
@@ -145,17 +146,20 @@ class Button:  # A button class
                 self.display.save_player_name()
 
             elif self.action == 'to_new_leaderboard':
+                self.display.game.displays['new_leaderboard'].level = list(self.display.levels.keys())[
+                    self.display.currently_selected]
+                self.display.game.displays['new_leaderboard'].loaded = 0
                 self.display.game.change_display('new_leaderboard')
-                self.display.game.current_display.level = list(self.display.levels.keys())[self.display.currently_selected]
-                self.display.game.current_display.loaded = 0
+
 
             elif self.action == 'back_to_race':
                 self.display.game.current_display = self.display.game.displays[list(self.display.game.displays['level_selector'].levels.keys())[
                     self.display.game.displays['level_selector'].currently_selected]]
 
             elif self.action == 'to_in_game_settings_display':
+                self.display.game.displays['settings_display'].update_button(to_main_menu=False)
                 self.display.game.change_display('settings_display')
-                self.display.game.current_display.update_button(to_main_menu=False)
+
 
             elif self.action == 'to_pause_display':
                 self.display.game.change_display("pause_display")
