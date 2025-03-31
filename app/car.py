@@ -927,12 +927,12 @@ class Car:
                 elif obstacle.type == 5:
                     self.currentMaxSpeed = self.gravelMaxSpeed
                 elif obstacle.type == 7:
-                    self.display.game.sound_manager.play_sound('coin')
+
 
                     if self.isPlayer:
+                        self.display.game.sound_manager.play_sound('coin')
                         self.display.coiny +=1
-
-                    obstacle.destroy()
+                        obstacle.destroy()
 
         self.car = False
         for c in self.display.cars:
