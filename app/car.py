@@ -1221,7 +1221,6 @@ class Car:
                         wall_count += 1
                         self.hits += 1
                         self.perfectLap = False
-                        self.particle_color = self.wall_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
 
