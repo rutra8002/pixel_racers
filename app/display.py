@@ -131,13 +131,14 @@ class game_display(basic_display):
         self.p = player.Player(self, self.player_position, self.player_rotation, self.game.player_model)
 
         # self.leaderboard = {}
-        self.leaderboard_list = list(sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint())))
+
         self.placements = []
         self.hotbar.after_player_setup()
         for i, e in enumerate(self.enemies):
             enemy.Enemy(self, e[0], e[1], 1, player = self.p, SubClass=i, name=f'Enemy {i+1}')
 
-
+        self.leaderboard_list = list(sorted(self.cars, key=lambda car: (
+        -car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint())))
 
         self.map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))
         self.img_map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))
@@ -453,7 +454,7 @@ class game_display(basic_display):
 
 
     def update_standings(self):
-        self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+        self.leaderboard_list = sorted(self.leaderboard_list, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
         # print('________________________')
         # for c in self.leaderboard_list:
         #     print(c.lap, c.current_checkpoint, c.get_distance_to_nearest_checkpoint())
@@ -479,6 +480,7 @@ class game_display(basic_display):
 
 
         self.game.displays['leaderboard'].leaderboard_list = self.placements
+        self.game.displays['leaderboard'].coins = self.coin
         self.game.displays['leaderboard'].update_placements()
         self.game.change_display('leaderboard')
 
@@ -1971,8 +1973,9 @@ class leaderboard(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
         self.leaderboard_list = []
+        self.coin = 0
         custom_text.Custom_text(self, self.game.width/2, self.game.height/7, 'Placements', text_color=(255, 223, 0), font_height=60)
-        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - 460 // 2, 902,
+        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - 460 // 2, 952,
                              460, 80,
                              text='continue', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                              outline_color=(50, 50, 50), outline_width=2)
@@ -1995,6 +1998,7 @@ class leaderboard(basic_display):
         for t in self.text_obj:
             t.delete()
         self.text_obj = []
+
 
         self.text_obj.append(
             custom_text.Custom_text(self, self.game.width / 3 - 76.5, self.game.height / 4,
@@ -2075,8 +2079,10 @@ class leaderboard(basic_display):
 
 
 
+        self.text_obj.append(custom_text.Custom_text(self, 0, 0, f'Collected coins: {self.coin}', text_color=(255, 223, 0), font_height=25))
+        self.text_obj[-1].update_position(960, 800)
 
-        self.text_obj.append(custom_text.Custom_text(self, 614, 800, "You've placed", text_color='white', center=False))
+        self.text_obj.append(custom_text.Custom_text(self, 614, 850, "You've placed", text_color='white', center=False))
         r = self.text_obj[-1].rect
         self.text_obj.append(
             custom_text.Custom_text(self, r.x + r.width + 20, r.y , f"{p_placement}", text_color=p_color, center=False))
