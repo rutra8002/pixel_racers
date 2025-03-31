@@ -131,7 +131,7 @@ class game_display(basic_display):
         self.p = player.Player(self, self.player_position, self.player_rotation, self.game.player_model)
 
         # self.leaderboard = {}
-        self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+        self.leaderboard_list = list(sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint())))
         self.placements = []
         self.hotbar.after_player_setup()
         for i, e in enumerate(self.enemies):

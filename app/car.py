@@ -9,6 +9,7 @@ from particle_system import ParticleGenerator
 from unicodedata import normalize
 
 import app.display
+import customObjects.custom_text
 from app.images import police
 from customObjects.custom_text import Custom_text
 from app import images, obstacle
@@ -65,12 +66,14 @@ class Car:
         self.pupscollected = 0
 
 
-
         self.velUp, self.velLeft, self.velAng = 0, 0, 0
         self.rotation = rotation
         self.x, self.y = coordinates[0], coordinates[1]
         self.next_x, self.next_y = coordinates[0], coordinates[1]
         self.particle_system = self.display.particle_system
+
+        if self.display.game.enable_debug:
+            self.placement = customObjects.custom_text.Custom_text(self.display, self.x, self.y, '0', text_color='white', append=False)
 
         back_wheel_offset = self.playerHeight / 2
         angle_rad = lolino.radians(-self.rotation)
@@ -194,6 +197,14 @@ class Car:
 
 
     def render(self):
+        if self.display.game.enable_debug:
+            for i, car in enumerate(self.display.leaderboard_list):
+                if car == self:
+                    self.placement.update_text(f"{i+1} {self.lap} {int(self.get_distance_to_nearest_checkpoint())}")
+                    self.placement.update_position(self.x, self.y)
+
+
+
         self.center = self.rect.center
         if self.inviFlicker:
             pygame.draw.circle(self.display.screen, (102, 100, 100), self.center, 25)
@@ -357,6 +368,8 @@ class Car:
             if hasattr(self, 'debug_texts'):
                 for text_obj in self.debug_texts:
                     text_obj.hidden = True
+        if self.display.game.enable_debug:
+            self.placement.render()
     def render_model(self):
         self.center = self.rect.center
         if self.inviFlicker:
