@@ -8,6 +8,7 @@ import math as lolino
 from particle_system import ParticleGenerator
 from unicodedata import normalize
 
+import app.display
 from app.images import police
 from customObjects.custom_text import Custom_text
 from app import images, obstacle
@@ -83,12 +84,13 @@ class Car:
         nitro_x = self.x - back_wheel_x_offset
         nitro_y = self.y - back_wheel_y_offset
 
-        self.backwheel1_pgen = ParticleGenerator(self.particle_system, back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp, -0.01 * self.velLeft,
-                                          -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
-        self.backwheel2_pgen = ParticleGenerator(self.particle_system, back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp, -0.01 * self.velLeft,
-                                          -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
-        self.nitrogen = ParticleGenerator(self.particle_system, nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, self.nitrogen_color[0], self.nitrogen_color[1],
-                                          self.nitrogen_color[2], 150, 'circle', True, 100)
+        if isinstance(self.display, app.display.game_display):
+            self.backwheel1_pgen = ParticleGenerator(self.particle_system, back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp, -0.01 * self.velLeft,
+                                              -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
+            self.backwheel2_pgen = ParticleGenerator(self.particle_system, back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp, -0.01 * self.velLeft,
+                                              -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
+            self.nitrogen = ParticleGenerator(self.particle_system, nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, self.nitrogen_color[0], self.nitrogen_color[1],
+                                              self.nitrogen_color[2], 150, 'circle', True, 100)
         self.change_model(model)
 
 
@@ -142,13 +144,13 @@ class Car:
 
         self.bounce_sound_timer = 0
 
+        if isinstance(self.display, app.display.game_display):
+            self.particle_system.add_generator(self.backwheel1_pgen)
+            self.particle_system.add_generator(self.backwheel2_pgen)
+            self.particle_system.add_generator(self.nitrogen)
 
-        self.particle_system.add_generator(self.backwheel1_pgen)
-        self.particle_system.add_generator(self.backwheel2_pgen)
-        self.particle_system.add_generator(self.nitrogen)
-
-        self.backwheel1_pgen.start()
-        self.backwheel2_pgen.start()
+            self.backwheel1_pgen.start()
+            self.backwheel2_pgen.start()
 
         self.display.objects.append(self)
         self.display.cars.append(self)
@@ -189,13 +191,6 @@ class Car:
                 self.car3d_height = 2
             else:
                 self.car3d_height = 2 *self.car3d_height_factor
-        # elif model == 6:
-        #     self.num_of_sprites = 5
-        #     self.img_size=(10, 20)
-        #     if self.car3d_height_factor == None:
-        #         self.car3d_height = 2.5
-        #     else:
-        #         self.car3d_height = 2.5 * self.car3d_height_factor
 
 
     def render(self):
@@ -549,9 +544,9 @@ class Car:
         back_wheel1_y = self.y - back_wheel_y_offset + lolino.cos(angle_rad) * (self.playerWidth / 2)
         back_wheel2_x = self.x - back_wheel_x_offset + lolino.sin(angle_rad) * (self.playerWidth / 2)
         back_wheel2_y = self.y - back_wheel_y_offset - lolino.cos(angle_rad) * (self.playerWidth / 2)
-
-        self.backwheel1_pgen.edit(back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp)
-        self.backwheel2_pgen.edit(back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp)
+        if isinstance(self.display, app.display.game_display):
+            self.backwheel1_pgen.edit(back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp)
+            self.backwheel2_pgen.edit(back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp)
     def events(self, event):
         pass
 
@@ -726,8 +721,9 @@ class Car:
             self.display.obstacles.append(obstacle.Obstacle(self.display, spawn_x, spawn_y, 'spikes', self.rotation - 90))
         elif self.inventory[0] == 4:
             if self.deadTires > 0:
-                 self.deadTires -= 1
-                 self.display.game.sound_manager.play_sound('Heal')
+                self.deadTires -= 1
+                self.tireHealth += self.tireDamage
+                self.display.game.sound_manager.play_sound('Heal')
         self.inventory.pop(0)
 
 
@@ -844,6 +840,8 @@ class Car:
 
     def loop(self):
         self.movement()
+        if self.isPlayer:
+            print(self.tireHealth)
         self.invincibility -= 5 * self.display.game.delta_time
         if self.isPlayer:
             self.name = self.display.p.player_name
@@ -866,6 +864,11 @@ class Car:
             # if self.recentCollisions[car] != 0:
                 if pygame.time.get_ticks() - self.recentCollisions[car] > self.bumpingCooldown:
                     self.recentCollisions[car] = 0
+
+        if self.strength and self.isPlayer:
+            self.particle_system.add_particle(self.x, self.y, random.randint(-10, 10), random.randint(-10, 10), 0, 0, 0,
+                                              0, 10, 50, 2, (150), (150),
+                                              (100), (255), 'square')
 
         if self.wallCollTime != 0 and not self.wall:
             if pygame.time.get_ticks() - self.wallCollTime > self.wallCollisionCooldown:
@@ -924,12 +927,12 @@ class Car:
                 elif obstacle.type == 5:
                     self.currentMaxSpeed = self.gravelMaxSpeed
                 elif obstacle.type == 7:
-                    self.display.game.sound_manager.play_sound('coin')
+
 
                     if self.isPlayer:
-                        self.display.db_manager.add_coin()
-
-                    obstacle.destroy()
+                        self.display.game.sound_manager.play_sound('coin')
+                        self.display.coiny +=1
+                        obstacle.destroy()
 
         self.car = False
         for c in self.display.cars:
@@ -1092,7 +1095,7 @@ class Car:
 
 
     def teleport(self, coords):
-        if self.isPlayer:
+        if self.isPlayer and self.display.game.debug:
             self.next_x = coords[0]
             self.next_y = coords[1]
 

@@ -1,3 +1,5 @@
+import random
+
 import pygame
 
 class StackedSprite:
@@ -5,8 +7,6 @@ class StackedSprite:
         self.display = display
         self.image = image.copy()
         self.isenemy = isenemy
-        if self.isenemy == True:
-            self.image.fill((0, 0, 255), special_flags=pygame.BLEND_RGBA_MIN)
         self.num_of_sprites = num_of_sprites
         self.sprite_size = sprite_size
         self.scale_factor = scale_factor

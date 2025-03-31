@@ -7,6 +7,7 @@ from app import display as dsp
 from app import obstacle as obs
 import random
 import pygame
+from jeff_the_objects.stacked_sprite import StackedSprite
 class Enemy(Car):
     def __init__(self, display, coordinates, rotation,model,player, SubClass=2, name="None"):
         super().__init__(display, coordinates, rotation,isPlayer=False,model=model, name=name)
@@ -35,21 +36,60 @@ class Enemy(Car):
         self.hasControl = True
         self.prickedWheels = 0
         self.type = SubClass
-        self.diff = [0.73,0.8,0.85]
+        self.diff = [[0.73,200],[0.8,150],[0.85,200]]
+        self.diff_indx = 1
+        self.reset_counter = 6.5
+        
         if self.type not in [0,1,2,3]:
             self.type = 0
+        self.image = self.image.copy()
+
+        if self.type == 0:
+            self.image.fill((100, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((150, 0, 150, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
+                                                             self.car3d_height, isenemy=(not self.isPlayer))
+        elif self.type == 1:
+            self.image.fill((100, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((170, 170, 0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
+                                              self.car3d_height, isenemy=(not self.isPlayer))
+        elif self.type == 2:
+            self.image.fill((100, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((0, 0, 150, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
+                                              self.car3d_height, isenemy=(not self.isPlayer))
+        elif self.type == 3:
+            self.image.fill((100, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((0, 80, 0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
+                                              self.car3d_height, isenemy=(not self.isPlayer))
     def loop(self):
         super().loop()
         self.new_to_chk()
         self.avoid_walls()
+        
+        
+        if self.display.diff == "Finished_Level_1":
+            self.diff_indx = 0
+        elif self.display.diff == "Finished_Level_2":
+            self.diff_indx = 1
+        elif self.diff_indx == "Finished_Level_3":
+            self.diff_indx = 2
+        else:
+            self.diff_indx = 1
+
+        self.current_speed = lolekszcz.sqrt((self.velLeft)**2+(self.velUp)**2)
         self.distance_player = lolekszcz.sqrt( (self.x-self.player.x)**2 + (self.y-self.player.y) ** 2)
         self.dt = self.display.game.delta_time
+        
         for obstacle in self.display.obstacles:
             if self.get_obstacle_colision(obstacle):
                 if obstacle.type == 3 and not obstacle.falling:
                     obstacle.destroy() 
                     self.hasControl = False
                     self.regain_control_time = 2.5
+                    #self.next_rotation += 10???
 
 
                 elif obstacle.type == 1:
@@ -84,32 +124,50 @@ class Enemy(Car):
         if self.hasControl:
 
 
-            if abs(self.velLeft) < 4 and 100 - pygame.time.get_ticks() > 0 :
-                self.force_push_x = 10
-            if abs(self.velUp) < 4 and 100 - pygame.time.get_ticks() > 0 :
-                self.force_push_y = 10
 
+            if abs(self.velLeft) < 4 and 100 - pygame.time.get_ticks() < 0 :
+                self.force_push_x = 10
+            if abs(self.velUp) < 4 and 100 - pygame.time.get_ticks() < 0 :
+                self.force_push_y = 10
+            if self.current_speed<12:
+                self.reset_counter -= self.dt
+            else:
+                self.reset_counter = 6.5
+            if self.reset_counter <= 0:
+                i_prev = self.list_of_checkpoints[self.chk_index-1]
+                self.center_x_prev = (i_prev[0][0] + i_prev[1][0])/2 * self.display.block_width
+                self.center_y_prev = (i_prev[0][1] + i_prev[1][1])/2 * self.display.block_height
+                self.next_x = self.center_x_prev
+                self.next_y = self.center_y_prev
+                self.reset_counter = 6.5
             self.force_push_y = 1
             self.force_push_x = 1
             if self.type == 3:
                 self.brakecheck()
+                self.target_velocity = 350
+                
+                self.scale_x = abs(self.velLeft/(self.current_speed+0.000001))
+                self.scale_y = abs(self.velUp/(self.current_speed+0.000001))
+                self.scale_left = self.tanh(self.target_velocity, abs(self.velLeft)) * (self.scale_x+0.01)
+                self.scale_up = self.tanh(self.target_velocity, abs(self.velUp)) * (self.scale_y+0.01)
+
                 if self.decide_to_wait:
-                    self.velLeft += (-self.dx + 250/self.distance_right - 250/self.distance_left)*0.6 * 0.97**(self.prickedWheels)
-                    self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy)*0.6* 0.97**(self.prickedWheels)
+                    self.velLeft += (self.diff[self.diff_indx][1]/self.distance_right - self.diff[self.diff_indx][1]/self.distance_left - self.dx )*0.6 *0.97**(self.prickedWheels)
+                    self.velUp -= (-self.diff[self.diff_indx][1]/self.distance_down + self.diff[self.diff_indx][1]/self.distance_up + self.dy)*0.6* 0.97**(self.prickedWheels)
 
                     if self.distance_player<200:
-                        self.velLeft += ((-self.dx + 250/self.distance_right - 250/self.distance_left)*0.3 + (self.x-self.player.x)/(abs(self.x-self.player.x)+0.0001)*17)* 0.97**(self.prickedWheels)
-                        self.velUp -= ((-250/self.distance_down + 250/self.distance_up + self.dy)*0.3 - (self.y-self.player.y)/(abs(self.y-self.player.y)+0.0001)*17)* 0.97**(self.prickedWheels)
+                        self.velLeft += ((-self.dx + self.diff[self.diff_indx][1]/self.distance_right - self.diff[self.diff_indx][1]/self.distance_left)*0.3 + (self.x-self.player.x)/(abs(self.x-self.player.x)+0.0001)*15)* 0.97**(self.prickedWheels)
+                        self.velUp -= ((-self.diff[self.diff_indx][1]/self.distance_down + self.diff[self.diff_indx][1]/self.distance_up + self.dy)*0.3 - (self.y-self.player.y)/(abs(self.y-self.player.y)+0.0001)*15)* 0.97**(self.prickedWheels)
 
 
 
                 else:
-                    self.velLeft += (250/self.distance_right - 250/self.distance_left - self.dx*self.force_push_x)*0.75* 0.97**(self.prickedWheels)
-                    self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy*self.force_push_y )*0.75* 0.97**(self.prickedWheels)
+                    self.velLeft += (250/self.distance_right - 250/self.distance_left - self.dx*self.force_push_x* self.scale_left)*self.diff[self.diff_indx][0]* 0.97**(self.prickedWheels)
+                    self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy*self.force_push_y * self.scale_up)*self.diff[self.diff_indx][0]* 0.97**(self.prickedWheels)
 
 
 
-            if self.type == 2:
+            elif self.type == 2:
 
 
                 if self.homing <= 0:
@@ -126,20 +184,20 @@ class Enemy(Car):
 
 
                 else:
-                    self.velLeft += (100/self.distance_right - 100/self.distance_left - self.dx*self.force_push_x)*0.73* 0.97**(self.prickedWheels)
-                    self.velUp -= (-100/self.distance_down + 100/self.distance_up + self.dy *self.force_push_y)*0.73* 0.97**(self.prickedWheels)
+                    self.velLeft += (self.diff[self.diff_indx][1]/self.distance_right - self.diff[self.diff_indx][1]/self.distance_left - self.dx*self.force_push_x)*self.diff[self.diff_indx][0]* 0.97**(self.prickedWheels)
+                    self.velUp -= (-self.diff[self.diff_indx][1]/self.distance_down + self.diff[self.diff_indx][1]/self.distance_up + self.dy *self.force_push_y)*self.diff[self.diff_indx][0]* 0.97**(self.prickedWheels)
 
 
-            if self.type == 1:
+            elif self.type == 1:
                 self.target_velocity = 320
-                self.current_speed = lolekszcz.sqrt((self.velLeft)**2+(self.velUp)**2)
+                
                 self.scale_x = abs(self.velLeft/(self.current_speed+0.000001))
                 self.scale_y = abs(self.velUp/(self.current_speed+0.000001))
                 self.scale_left = self.tanh(self.target_velocity, abs(self.velLeft)) * (self.scale_x+0.01)
                 self.scale_up = self.tanh(self.target_velocity, abs(self.velUp)) * (self.scale_y+0.01)
-                self.velLeft += (200/self.distance_right - 200/self.distance_left - self.dx * self.scale_left)* 0.97**(self.prickedWheels)
-                self.velUp -= (-200/self.distance_down + 200/self.distance_up + self.dy* self.scale_up)* 0.97**(self.prickedWheels)
-            if self.type == 0:
+                self.velLeft += (self.diff[self.diff_indx][1]/self.distance_right - self.diff[self.diff_indx][1]/self.distance_left - self.dx * self.scale_left)* 0.97**(self.prickedWheels)
+                self.velUp -= (-self.diff[self.diff_indx][1]/self.distance_down + self.diff[self.diff_indx][1]/self.distance_up + self.dy* self.scale_up)* 0.97**(self.prickedWheels)
+            elif self.type == 0:
                #print("SELF UP: ",self.distance_up)
                #print("SELF DOWN: ",self.distance_down)
                #print("SELF LEFT: ",self.distance_left)
@@ -149,8 +207,8 @@ class Enemy(Car):
                #print("SELF ROTATION: ",self.rotation)
 
 
-                self.velLeft +=(-self.dx* self.force_push_x + 150/self.distance_right - 150/self.distance_left)*0.8* 0.97**(self.prickedWheels)
-                self.velUp -=(-150/self.distance_down * self.force_push_y + 150/self.distance_up + self.dy)*0.8* 0.97**(self.prickedWheels)
+                self.velLeft +=(-self.dx* self.force_push_x + self.diff[self.diff_indx][1]/self.distance_right - self.diff[self.diff_indx][1]/self.distance_left)*self.diff[self.diff_indx][0]* 0.97**(self.prickedWheels)
+                self.velUp -=(-self.diff[self.diff_indx][1]/self.distance_down + self.diff[self.diff_indx][1]/self.distance_up + self.dy* self.force_push_y )*self.diff[self.diff_indx][0]* 0.97**(self.prickedWheels)
 
         else:
             if self.regain_control_time <= 0:
@@ -168,45 +226,53 @@ class Enemy(Car):
         self.detected_left = False
         self.detected_up = False
         self.detected_down = False
-        self.x_axis = self.map[int(self.y//self.display.block_height)]
+        self.adj_y = self.y//self.display.block_height
         self.adj_x = self.x//self.display.block_width
-        for i in range(60): 
+        try:
+            self.x_axis = self.map[int(self.adj_y)]
+
+
+            for i in range(60): 
 
 
 
-            if int(self.y//self.display.block_height)+i < len(self.map):
-                self.x_axis_down = self.map[int(self.y//self.display.block_height)+i]
-                self.wall_down = self.x_axis_down[int(self.adj_x)]
-            if int(self.y//self.display.block_height)-i>=0:
+                if int(self.adj_y)+i < len(self.map):
+                    self.x_axis_down = self.map[int(self.adj_y)+i]
+                    self.wall_down = self.x_axis_down[int(self.adj_x)]
+                if int(self.adj_y)-i>=0:
 
-                self.x_axis_up = self.map[int(self.y//self.display.block_height)-i]
+                    self.x_axis_up = self.map[int(self.adj_y)-i]
 
-                self.wall_up = self.x_axis_up[int(self.adj_x)]
-
-
-            if self.wall_up == 1 and not self.detected_up:
-                self.detected_up = True
-                self.distance_up = i + 0.000001
-            if self.wall_down == 1 and not self.detected_down:
-                self.detected_down = True
-                self.distance_down = i + 0.000001
-        for j in range(60):
-
-            if int(self.x//self.display.block_width ) -j >= 0:
-
-                self.wall_left = self.x_axis[int(self.x//self.display.block_width -j)]
-
-            if int(self.x//self.display.block_width)+j < len(self.x_axis):
-                self.wall_right = self.x_axis[int(self.x//self.display.block_width)+j]
+                    self.wall_up = self.x_axis_up[int(self.adj_x)]
 
 
+                if self.wall_up == 1 and not self.detected_up:
+                    self.detected_up = True
+                    self.distance_up = i + 0.000001
+                if self.wall_down == 1 and not self.detected_down:
+                    self.detected_down = True
+                    self.distance_down = i + 0.000001
+            for j in range(60):
 
-            if self.wall_right == 1 and not self.detected_right:
-                self.detected_right = True
-                self.distance_right = j + 0.000001
-            if self.wall_left == 1 and not self.detected_left:
-                self.detected_left = True
-                self.distance_left = j + 0.000001
+                if int(self.adj_x ) -j >= 0:
+
+                    self.wall_left = self.x_axis[int(self.adj_x)-j]
+
+                if int(self.adj_x)+j < len(self.x_axis):
+                    self.wall_right = self.x_axis[int(self.adj_x)+j]
+
+
+
+                if self.wall_right == 1 and not self.detected_right:
+                    self.detected_right = True
+                    self.distance_right = j + 0.000001
+                if self.wall_left == 1 and not self.detected_left:
+                    self.detected_left = True
+                    self.distance_left = j + 0.000001
+
+        except:
+                self.next_x = (self.list_of_checkpoints[self.chk_index-1][0][0] + self.list_of_checkpoints[self.chk_index-1][1][0])/2 * self.display.block_width
+                self.next_y = (self.list_of_checkpoints[self.chk_index-1][0][1] + self.list_of_checkpoints[self.chk_index-1][1][1])/2 * self.display.block_height
 
 
 
@@ -256,10 +322,15 @@ class Enemy(Car):
                     self.decide_to_wait = True
 
 
+
             else:
                 self.decide_to_wait = False
         else:
             self.decide_to_wait = False
 
+        if self.decide_to_wait:
+            if random.randint(0,10) == 7:
+                self.decide_to_wait = False
     def get_obstacle_colision(self, obstacle):
         return pygame.Rect.colliderect(self.rect, obstacle.rect)
+    

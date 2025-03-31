@@ -141,6 +141,17 @@ class DatabaseManager:
         session.commit()
         session.close()
 
+    def add_coins(self, amount):
+        """Increment the global coin count and ensure player exists."""
+        session = self.Session()
+
+        # Increment global coin count
+        coins = session.query(Coins).first()
+        coins.total_count += amount
+
+        session.commit()
+        session.close()
+
     def get_coins(self):
         """Get the global coin count and ensure player exists."""
         session = self.Session()

@@ -111,6 +111,9 @@ class game_display(basic_display):
         self.hasBanana = 1
         self.banana = None
 
+        self.mnoznikcoinow = 1.0
+
+        self.coiny = 0
 
         self.paused = False
         self.pause_start_time = 0
@@ -427,6 +430,20 @@ class game_display(basic_display):
 
         for car in self.cars:
             car.end_race(after_player=True)
+
+        self.player_placement = self.placements.index(self.p)
+
+        if self.player_placement == 0:
+            self.mnoznikcoinow = 5.0
+        elif self.player_placement == 1:
+            self.mnoznikcoinow = 3.0
+        elif self.player_placement ==2:
+            self.mnoznikcoinow = 2.0
+        else:
+            self.mnoznikcoinow = 1.0
+
+        self.game.db_manager.add_coins(int(self.mnoznikcoinow * self.coiny))
+
 
         self.game.displays['leaderboard'].leaderboard_list = self.placements
         self.game.displays['leaderboard'].update_placements()
@@ -1423,7 +1440,7 @@ class level_selector(basic_display):
             self.bg = (25, 90, 25)
         elif self.currently_selected == 1:
             self.bg = (100, 100, 30)
-        if self.currently_selected == 2:
+        elif self.currently_selected == 2:
             self.bg = (100, 30, 30)
 
         self.screen.fill(self.bg)
