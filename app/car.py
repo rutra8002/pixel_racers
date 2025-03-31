@@ -1108,7 +1108,7 @@ class Car:
 
 
     def teleport(self, coords):
-        if self.isPlayer and self.display.game.debug:
+        if self.isPlayer and self.display.game.enable_debug:
             self.next_x = coords[0]
             self.next_y = coords[1]
 
