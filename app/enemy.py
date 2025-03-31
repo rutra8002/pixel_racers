@@ -1,5 +1,5 @@
 import random
-import math as lolekszcz
+import math as m
 from app.car import Car
 from app import player
 from app import checkpoint as chk
@@ -91,8 +91,8 @@ class Enemy(Car):
         else:
             self.diff_indx = 1
 
-        self.current_speed = lolekszcz.sqrt((self.velLeft)**2+(self.velUp)**2)
-        self.distance_player = lolekszcz.sqrt( (self.x-self.player.x)**2 + (self.y-self.player.y) ** 2)
+        self.current_speed = m.sqrt((self.velLeft) ** 2 + (self.velUp) ** 2)
+        self.distance_player = m.sqrt((self.x - self.player.x) ** 2 + (self.y - self.player.y) ** 2)
         self.dt = self.display.game.delta_time
         
         for obstacle in self.display.obstacles:
@@ -127,16 +127,16 @@ class Enemy(Car):
                         self.inventory.pop(0)
                 elif self.inventory[0] == 2:
                     if self.distance_player < 150:
-                        angle = lolekszcz.radians(self.rotation)
-                        spawn_x = self.x - (50 * lolekszcz.cos(angle))
-                        spawn_y = self.y + (50 * lolekszcz.sin(angle))
+                        angle = m.radians(self.rotation)
+                        spawn_x = self.x - (50 * m.cos(angle))
+                        spawn_y = self.y + (50 * m.sin(angle))
                         self.display.obstacles.append(obs.Obstacle(self.display, spawn_x, spawn_y, 'barrier', self.rotation - 90))
                         self.inventory.pop(0)
                 elif self.inventory[0] == 3:
                     if self.distance_player < 150:
-                        angle = lolekszcz.radians(self.rotation)
-                        spawn_x = self.x - (50 * lolekszcz.cos(angle))
-                        spawn_y = self.y + (50 * lolekszcz.sin(angle))
+                        angle = m.radians(self.rotation)
+                        spawn_x = self.x - (50 * m.cos(angle))
+                        spawn_y = self.y + (50 * m.sin(angle))
                         self.display.obstacles.append(obs.Obstacle(self.display, spawn_x, spawn_y, 'spikes', self.rotation - 90))
                         self.inventory.pop(0)
 
@@ -197,7 +197,7 @@ class Enemy(Car):
                     self.velLeft += self.player_vector_x*16* 0.97**(self.prickedWheels)
                     self.velUp -= - self.player_vector_y*16* 0.97**(self.prickedWheels)
                     if self.distance_player<100:
-                        self.homing -= 1.5*self.dt #additional punish to prevent constant ramming   
+                        self.homing -= 1.5*self.dt
 
 
                 else:
@@ -293,9 +293,9 @@ class Enemy(Car):
 
 
     def sigmoid(self,center,x):
-        return -(1/1+(lolekszcz.exp(-((x/5)-center)))) + 1.5
+        return -(1 / 1 + (m.exp(-((x / 5) - center)))) + 1.5
     def tanh(self,center, x):
-        return -lolekszcz.tanh(x - center) + 1
+        return -m.tanh(x - center) + 1
     def new_to_chk(self):
         self.max_chk_indx = len(self.list_of_checkpoints)
         i = self.list_of_checkpoints[self.chk_index]
@@ -311,7 +311,7 @@ class Enemy(Car):
         
         self.dx = 7*(self.center_x - self.x)/(abs(self.center_x - self.x)+0.000001) * self.display.game.delta_time * self.display.game.calibration
         self.dy = 7*(self.center_y - self.y)/(abs(self.center_y - self.y)+0.000001)* self.display.game.delta_time * self.display.game.calibration
-        self.angle = lolekszcz.degrees(lolekszcz.atan2(-self.dy, self.dx))
+        self.angle = m.degrees(m.atan2(-self.dy, self.dx))
 
 
     def to_player_bump(self):

@@ -1,7 +1,6 @@
 from random import random
 
 import pygame
-import math as jeszcze_nie_wiem_jak
 import time
 from app import images
 import random
