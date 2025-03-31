@@ -1,1 +1,1 @@
-https://github.com/StanislavPetrovV/SpriteStacking/blob/main/LICENSE
+https://github.com/rutra8002/pixel_racers/wiki
