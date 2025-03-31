@@ -100,8 +100,11 @@ class Hotbar:
                 elif true_i == 2:
                     text = f"3rd"
                     color = (205, 127, 50)
+                elif true_i == 3:
+                    text = f"4th"
+                    color = (255, 255, 255)
                 else:
-                    text = f"{true_i + 1}th"
+                    text = f"4th"
                     color = (255, 255, 255)
 
 
