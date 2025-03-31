@@ -72,7 +72,8 @@ class Car:
         self.next_x, self.next_y = coordinates[0], coordinates[1]
         self.particle_system = self.display.particle_system
 
-        self.placement = customObjects.custom_text.Custom_text(self.display, self.x, self.y, '0', text_color='white', append=False)
+        if self.display.game.enable_debug:
+            self.placement = customObjects.custom_text.Custom_text(self.display, self.x, self.y, '0', text_color='white', append=False)
 
         back_wheel_offset = self.playerHeight / 2
         angle_rad = lolino.radians(-self.rotation)
@@ -196,10 +197,11 @@ class Car:
 
 
     def render(self):
-        for i, car in enumerate(self.display.leaderboard_list):
-            if car == self:
-                self.placement.update_text(f"{i+1} {self.lap} {int(self.get_distance_to_nearest_checkpoint())}")
-                self.placement.update_position(self.x, self.y)
+        if self.display.game.enable_debug:
+            for i, car in enumerate(self.display.leaderboard_list):
+                if car == self:
+                    self.placement.update_text(f"{i+1} {self.lap} {int(self.get_distance_to_nearest_checkpoint())}")
+                    self.placement.update_position(self.x, self.y)
 
 
 
@@ -366,8 +368,8 @@ class Car:
             if hasattr(self, 'debug_texts'):
                 for text_obj in self.debug_texts:
                     text_obj.hidden = True
-
-        self.placement.render()
+        if self.display.game.enable_debug:
+            self.placement.render()
     def render_model(self):
         self.center = self.rect.center
         if self.inviFlicker:
