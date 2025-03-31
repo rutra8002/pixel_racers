@@ -480,7 +480,7 @@ class game_display(basic_display):
 
 
         self.game.displays['leaderboard'].leaderboard_list = self.placements
-        self.game.displays['leaderboard'].coins = self.coin
+        self.game.displays['leaderboard'].coin = self.coiny
         self.game.displays['leaderboard'].update_placements()
         self.game.change_display('leaderboard')
 
@@ -1284,11 +1284,7 @@ class settings_display(basic_display):
     #         button.update_position(button.x, self.game.height/2 + 100 + i*40 + self.scroll_offset)
 
 
-class in_game_settings_display(settings_display):
-    def __init__(self, game):
-        settings_display.__init__(self, game)
-        self.back_button.action = 'to_pause_display'
-        self.back_button.update_text('Back')
+
 
 
 class pause_display(basic_display):
