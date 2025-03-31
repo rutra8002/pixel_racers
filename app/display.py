@@ -1102,9 +1102,9 @@ class main_menu_display(basic_display):
                                              self.amount_of_buttons - 4), self.button_width, self.button_height,
                                  text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                                  outline_color=(50, 50, 50), outline_width=2)
-            custom_button.Button(self, 'change_player_name',self.game.width / 2,
+            custom_button.Button(self, 'change_player_name', self.game.width - (self.button_width + 75) - self.button_padding,
                                  self.game.height + (- self.button_padding - self.button_height) * (
-                                         self.amount_of_buttons - 5), self.button_width + 75, self.button_height,
+                                         self.amount_of_buttons - 4), self.button_width + 75, self.button_height,
                                 text = "CHANGE PLAYER NAME", border_radius = 0, color = (26, 26, 26),
                                 text_color = (150, 150, 150), outline_color = (50, 50, 50),
                                 outline_width = 2)
@@ -1486,6 +1486,9 @@ class level_selector(basic_display):
         # top_scores = self.fetch_top_scores()
 
         # for j in range(self.top):
+
+
+
         #     self.texts[f'text_{j}'].update_text('')
         # for i, (name, score, full_time, fastest_lap) in enumerate(top_scores):
         #     milliseconds_full = int((full_time % 1) * 1000)
