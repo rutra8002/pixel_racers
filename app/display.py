@@ -1430,16 +1430,6 @@ class level_selector(basic_display):
                     self.currently_selected]
                 self.game.current_display.loaded = 0
 
-    # def fetch_top_scores(self):
-    #     conn = sqlite3.connect('scores.sqlite')
-    #     cursor = conn.cursor()
-    #     course_to_play = self.currently_selected
-    #     level = list(self.levels.keys())[course_to_play]
-    #     cursor.execute('''SELECT name, score, full_time, fastest_lap FROM scores WHERE level = ? ORDER BY score DESC, full_time ASC LIMIT ?''', (level, self.top,))
-    #     top_scores = cursor.fetchall()
-    #     conn.close()
-    #     return top_scores
-
     def get_pb(self):
         levels_list = list(self.levels.keys())
         self.pb_times = {}
@@ -1887,83 +1877,6 @@ class credits(basic_display):
                 self.game.displays['credits'].video.release()
                 self.game.sound_manager.stop_sound('Credits')
                 self.game.change_display('main_menu_display')
-
-# class leaderboard(basic_display):
-#     def __init__(self, game):
-#         basic_display.__init__(self, game)
-        # self.players = self.load()
-        # self.texts = {}
-        # self.number_of_players = 5
-        # self.db_path = 'scores.sqlite'
-        # self.saved = False
-
-        # score = "No score"
-        # for i, car in enumerate(self.game.displays['game_display'].leaderboard_list):
-        #     self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 60 * i,
-        #                                                      f'{i + 1}. {car.name}: {score}', font_height=40, text_color=(255, 255, 255),
-        #                                                      background_color=(0, 0, 0), center=True,
-        #                                                      append=True)
-        # for i in range(5):
-        #     self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 45 * i,
-        #                                                      f'', font_height=25, text_color=(255, 255, 255),
-        #                                                      background_color=(0, 0, 0), center=True,
-        #                                                      append=True)
-        # self.title = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 7,
-        #                                     "Leaderboard", font_height=60, text_color=(255, 255, 255),
-        #                                     background_color=(0, 0, 0), center=True,
-        #                                     append=True)
-        # width = 500
-        # custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - width // 2, self.game.height / 10 * 7, width, 80,
-        #                      text='Back to level selector', border_radius=0, color=(26, 26, 26),
-        #                      text_color=(150, 150, 150),
-        #                      outline_color=(50, 50, 50), outline_width=2)
-
-    # def mainloop(self):
-        # if not self.saved:
-        #     self.save()
-        #     self.saved = True
-
-
-
-    # def save(self):
-    #     conn = sqlite3.connect(self.db_path)
-    #     cursor = conn.cursor()
-    #
-    #     for i, car in enumerate(self.game.currentLeaderboard):
-    #         if car.finished:
-    #             name = car.name if not car.isPlayer else 'Player'
-    #             full_time = car.full_time
-    #             fastest_lap = min(car.lap_times) if car.lap_times else 0
-    #             score = 0
-    #             course_to_play = self.game.displays['level_selector'].currently_selected
-    #             level = list(self.game.displays['level_selector'].levels.keys())[course_to_play]
-    #             cursor.execute('''INSERT INTO scores (name, level, full_time, fastest_lap, score)VALUES (?, ?, ?, ?, ?)''',
-    #                            (name, level, full_time, fastest_lap, score))
-    #
-    #
-    #     conn.commit()
-    #     conn.close()
-
-
-    # def render(self):
-    #     score = "No score"
-    #     for i, car in enumerate(self.game.currentLeaderboard):
-    #         # {car.full_time}
-    #         milliseconds_full = int((car.full_time % 1) * 1000)
-    #         seconds_full = round(car.full_time % 60)
-    #         milliseconds_lap = int((min(car.lap_times) % 1) * 1000) if car.lap_times else 0
-    #         seconds_lap = round(min(car.lap_times) % 60) if car.lap_times else 0
-    #         self.texts[f'text_{i}'].update_text(f'{i + 1}. {car.name}: {score}, Full time: {int(car.full_time // 60)}:{seconds_full:02}:{milliseconds_full:03}, Fastest lap time: {int(min(car.lap_times) // 60) if car.lap_times else 0}:{seconds_lap:02}:{milliseconds_lap:03}, Finished? {"Yes" if car.finished else "No"}')
-    #     for obj in self.objects:
-    #         obj.render()
-    #
-    # def events(self, event):
-    #     for obj in self.objects:
-    #         obj.events(event)
-    #     if event.type == pygame.KEYDOWN:
-    #         if event.key == pygame.K_ESCAPE:
-    #             self.game.displays['level_selector'].reload_maps()
-    #             self.game.change_display('level_selector')
 
 class leaderboard(basic_display):
     def __init__(self, game):
