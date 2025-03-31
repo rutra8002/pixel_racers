@@ -198,8 +198,40 @@ class game_display(basic_display):
         elif self.difficulty == "Finished_Level_3":
             self.img_map_surface.blit(images.mapthree, (0, 0))
 
-        if True:
-            self.map_surface.fill(self.bgColor)
+        else:
+            self.img_map_surface = None
+        self.map_surface.fill(self.bgColor)
+        for y in range(len(self.map)):
+            for x in range(len(self.map[y])):
+                if self.map[y][x] == 0:
+                    continue
+                elif self.map[y][x] == 1:
+                    color = self.wall_color
+                elif self.map[y][x] == 2:
+                    color = self.oil_color
+                elif self.map[y][x] == 3:
+                    color = self.gravel_color
+                elif self.map[y][x] == 4:
+                    color = self.ice_color
+                elif self.map[y][x] == 5:
+                    color = self.spike_color
+                elif self.map[y][x] == 6:
+                    color = self.pitstop_color
+                else:
+                    color = self.asphalt_color
+                # Add randomness to the color
+                if self.map[y][x] in (0, 1, 3, 4, 5):
+                    color = (
+                        min(max(color[0] + random.randint(-10, 10), 0), 255),
+                        min(max(color[1] + random.randint(-10, 10), 0), 255),
+                        min(max(color[2] + random.randint(-10, 10), 0), 255)
+                    )
+
+                pygame.draw.rect(self.map_surface, color,
+                                 (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
+        if not self.img_map_surface:
+            self.img_map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))
+            self.img_map_surface.fill(self.bgColor)
             for y in range(len(self.map)):
                 for x in range(len(self.map[y])):
                     if self.map[y][x] == 0:
@@ -226,8 +258,9 @@ class game_display(basic_display):
                             min(max(color[2] + random.randint(-10, 10), 0), 255)
                         )
 
-                    pygame.draw.rect(self.map_surface, color,
+                    pygame.draw.rect(self.img_map_surface, color,
                                      (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
+
     def import_map(self):
         with open(f"{self.game.map_dir}/{self.difficulty}.json", 'r') as f:
             map_data = json.load(f)
