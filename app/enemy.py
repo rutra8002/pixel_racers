@@ -116,7 +116,6 @@ class Enemy(Car):
                 self.next_x = self.center_x_prev
                 self.next_y = self.center_y_prev
                 self.reset_counter = 6.5
-            print(self.reset_counter)
             self.force_push_y = 1
             self.force_push_x = 1
             if self.type == 3:
@@ -203,45 +202,53 @@ class Enemy(Car):
         self.detected_left = False
         self.detected_up = False
         self.detected_down = False
-        self.x_axis = self.map[int(self.y//self.display.block_height)]
+        self.adj_y = self.y//self.display.block_height
         self.adj_x = self.x//self.display.block_width
-        for i in range(60): 
+        try:
+            self.x_axis = self.map[int(self.adj_y)]
+
+
+            for i in range(60): 
 
 
 
-            if int(self.y//self.display.block_height)+i < len(self.map):
-                self.x_axis_down = self.map[int(self.y//self.display.block_height)+i]
-                self.wall_down = self.x_axis_down[int(self.adj_x)]
-            if int(self.y//self.display.block_height)-i>=0:
+                if int(self.adj_y)+i < len(self.map):
+                    self.x_axis_down = self.map[int(self.adj_y)+i]
+                    self.wall_down = self.x_axis_down[int(self.adj_x)]
+                if int(self.adj_y)-i>=0:
 
-                self.x_axis_up = self.map[int(self.y//self.display.block_height)-i]
+                    self.x_axis_up = self.map[int(self.adj_y)-i]
 
-                self.wall_up = self.x_axis_up[int(self.adj_x)]
-
-
-            if self.wall_up == 1 and not self.detected_up:
-                self.detected_up = True
-                self.distance_up = i + 0.000001
-            if self.wall_down == 1 and not self.detected_down:
-                self.detected_down = True
-                self.distance_down = i + 0.000001
-        for j in range(60):
-
-            if int(self.x//self.display.block_width ) -j >= 0:
-
-                self.wall_left = self.x_axis[int(self.x//self.display.block_width -j)]
-
-            if int(self.x//self.display.block_width)+j < len(self.x_axis):
-                self.wall_right = self.x_axis[int(self.x//self.display.block_width)+j]
+                    self.wall_up = self.x_axis_up[int(self.adj_x)]
 
 
+                if self.wall_up == 1 and not self.detected_up:
+                    self.detected_up = True
+                    self.distance_up = i + 0.000001
+                if self.wall_down == 1 and not self.detected_down:
+                    self.detected_down = True
+                    self.distance_down = i + 0.000001
+            for j in range(60):
 
-            if self.wall_right == 1 and not self.detected_right:
-                self.detected_right = True
-                self.distance_right = j + 0.000001
-            if self.wall_left == 1 and not self.detected_left:
-                self.detected_left = True
-                self.distance_left = j + 0.000001
+                if int(self.adj_x ) -j >= 0:
+
+                    self.wall_left = self.x_axis[int(self.adj_x)-j]
+
+                if int(self.adj_x)+j < len(self.x_axis):
+                    self.wall_right = self.x_axis[int(self.adj_x)+j]
+
+
+
+                if self.wall_right == 1 and not self.detected_right:
+                    self.detected_right = True
+                    self.distance_right = j + 0.000001
+                if self.wall_left == 1 and not self.detected_left:
+                    self.detected_left = True
+                    self.distance_left = j + 0.000001
+
+        except:
+                self.next_x = (self.list_of_checkpoints[self.chk_index-1][0][0] + self.list_of_checkpoints[self.chk_index-1][1][0])/2 * self.display.block_width
+                self.next_y = (self.list_of_checkpoints[self.chk_index-1][0][1] + self.list_of_checkpoints[self.chk_index-1][1][1])/2 * self.display.block_height
 
 
 
