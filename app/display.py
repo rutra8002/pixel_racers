@@ -2075,7 +2075,7 @@ class leaderboard(basic_display):
 
 
 
-        self.text_obj.append(custom_text.Custom_text(self, 0, 0, f'Collected coins: {self.coin}', text_color=(255, 223, 0), font_height=25))
+        self.text_obj.append(custom_text.Custom_text(self, 0, 0, f'Collected coins: {int(self.coin)}', text_color=(255, 223, 0), font_height=25))
         self.text_obj[-1].update_position(960, 800)
 
         self.text_obj.append(custom_text.Custom_text(self, 614, 850, "You've placed", text_color='white', center=False))
