@@ -1,9 +1,6 @@
 import random
 import math as m
 from app.car import Car
-from app import player
-from app import checkpoint as chk
-from app import display as dsp
 from app import obstacle as obs
 import random
 import pygame
@@ -91,8 +88,8 @@ class Enemy(Car):
         else:
             self.diff_indx = 1
 
-        self.current_speed = m.sqrt((self.velLeft) ** 2 + (self.velUp) ** 2)
-        self.distance_player = m.sqrt((self.x - self.player.x) ** 2 + (self.y - self.player.y) ** 2)
+        self.current_speed = m.sqrt((self.velLeft)**2+(self.velUp)**2)
+        self.distance_player = m.sqrt( (self.x-self.player.x)**2 + (self.y-self.player.y) ** 2)
         self.dt = self.display.game.delta_time
         
         for obstacle in self.display.obstacles:
@@ -197,7 +194,7 @@ class Enemy(Car):
                     self.velLeft += self.player_vector_x*16* 0.97**(self.prickedWheels)
                     self.velUp -= - self.player_vector_y*16* 0.97**(self.prickedWheels)
                     if self.distance_player<100:
-                        self.homing -= 1.5*self.dt
+                        self.homing -= 1.5*self.dt #additional punish to prevent constant ramming   
 
 
                 else:
@@ -293,7 +290,7 @@ class Enemy(Car):
 
 
     def sigmoid(self,center,x):
-        return -(1 / 1 + (m.exp(-((x / 5) - center)))) + 1.5
+        return -(1/1+(m.exp(-((x/5)-center)))) + 1.5
     def tanh(self,center, x):
         return -m.tanh(x - center) + 1
     def new_to_chk(self):

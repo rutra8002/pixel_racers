@@ -401,9 +401,6 @@ class game_display(basic_display):
                 else:
                     self.obstacles.append(obstacle.Obstacle(self, p[0], p[1], "brama", p[3]))
                     self.deadBramas.remove(p)
-        if self.wong_way and time.time() - self.p.wong_way_timer >= 3:
-            self.p.return_to_last_checkpoint()
-            self.wong_way = False
 
         if self.p.stunned and time.time() - self.p.stunned_timer >= 1:
             self.p.stunned = False
@@ -770,8 +767,8 @@ class map_display(basic_display):
             pw = self.player_width_blocks * self.block_width
             ph = self.player_height_blocks * self.block_height
 
-            px = m.floor((mouse_pos[0] - self.cx) / self.block_width)
-            py = m.floor((mouse_pos[1] - self.cy) / self.block_height)
+            px = lolekszcz.floor((mouse_pos[0] - self.cx) / self.block_width)
+            py = lolekszcz.floor((mouse_pos[1] - self.cy) / self.block_height)
 
             pygame.draw.rect(self.screen, color, (
                 px * self.block_width + self.cx,
@@ -1856,7 +1853,7 @@ class leaderboard(basic_display):
 
 
 
-        self.text_obj.append(custom_text.Custom_text(self, 0, 0, f'Collected coins: {self.coin}', text_color=(255, 223, 0), font_height=25))
+        self.text_obj.append(custom_text.Custom_text(self, 0, 0, f'Collected coins: {int(self.coin)}', text_color=(255, 223, 0), font_height=25))
         self.text_obj[-1].update_position(960, 800)
 
         self.text_obj.append(custom_text.Custom_text(self, 614, 850, "You've placed", text_color='white', center=False))
@@ -1933,13 +1930,11 @@ class change_player_name(basic_display):
                   self.name_input + '|', text_color='white', font_height=40
         )
 
-        # Instruction
         custom_text.Custom_text(
             self, self.game.width / 2, self.game.height / 2 + 60,
             'Type your name and press Enter', text_color=(150, 150, 150), font_height=25
         )
 
-        # Buttons
         custom_button.Button(
             self, 'save_player_name', self.game.width / 2 + 7.5,
                                       self.game.height - 150, self.button_width, self.button_height,
@@ -1956,8 +1951,6 @@ class change_player_name(basic_display):
 
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
-
-        # Update cursor blink
         self.cursor_timer += self.game.delta_time
         if self.cursor_timer >= 0.5:
             self.cursor_timer = 0
@@ -1969,7 +1962,6 @@ class change_player_name(basic_display):
                 self.name_display.update_text(self.name_input)
 
     def render(self):
-        # Background particles
         self.particle_system.add_particle(
             random.randint(0, self.game.width), random.uniform(0, self.game.height),
             random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
@@ -1977,8 +1969,6 @@ class change_player_name(basic_display):
             random.randint(0, 255), 100, 'square'
         )
         self.particle_system.draw(self.game.screen)
-
-        # Render all UI elements
         for obj in self.objects:
             obj.render()
 
@@ -2003,16 +1993,10 @@ class change_player_name(basic_display):
 
     def save_player_name(self):
         if not self.name_input:
-            return  # Don't save empty names
-
-        # Update name in all relevant places
+            return
         try:
-            # Store the name for future game instances
             stored_name = self.name_input.capitalize()
-
-            # Update name in any active game display instances
             for display_name, display_instance in self.game.displays.items():
-                # Check if this is an actual game display instance
                 if hasattr(display_instance, 'p') and hasattr(display_instance.p, 'player_name'):
                     display_instance.p.player_name = stored_name
 
