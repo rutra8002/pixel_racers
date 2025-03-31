@@ -7,6 +7,7 @@ from app import display as dsp
 from app import obstacle as obs
 import random
 import pygame
+from jeff_the_objects.stacked_sprite import StackedSprite
 class Enemy(Car):
     def __init__(self, display, coordinates, rotation,model,player, SubClass=2, name="None"):
         super().__init__(display, coordinates, rotation,isPlayer=False,model=model, name=name)
@@ -41,6 +42,28 @@ class Enemy(Car):
         
         if self.type not in [0,1,2,3]:
             self.type = 0
+        self.image = self.image.copy()
+
+        if self.type == 0:
+            self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((150, 0, 150, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
+                                                             self.car3d_height, isenemy=(not self.isPlayer))
+        elif self.type == 1:
+            self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((170, 170, 0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
+                                              self.car3d_height, isenemy=(not self.isPlayer))
+        elif self.type == 2:
+            self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((0, 0, 150, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
+                                              self.car3d_height, isenemy=(not self.isPlayer))
+        elif self.type == 3:
+            self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((0, 80, 0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
+                                              self.car3d_height, isenemy=(not self.isPlayer))
     def loop(self):
         super().loop()
         self.new_to_chk()
