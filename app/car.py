@@ -129,6 +129,10 @@ class Car:
         self.w, self.a, self.s, self.d, self.boost, self.q, self.e = False, False, False, False, False, False, False
         self.in_oil = False
         self.bananaTime = 0
+
+        self.enemy_on_banana = False
+        self.enemy_spike_wheel = False
+
         self.invincibility = 0
         self.inviFlicker = False
 
@@ -629,7 +633,7 @@ class Car:
 
             magnitude = lolino.sqrt(self.velLeft ** 2 + self.velUp ** 2)
             dire = self.get_direction_with_trigonometry((self.x - self.archiveCords[0]), (self.y - self.archiveCords[1]))
-            if not self.isPlayer and magnitude > 0:
+            if not self.isPlayer and magnitude > 0 and not self.enemy_on_banana:
                 self.rotation = dire
             if magnitude > self.currentFriction:
                 modifier = magnitude / 200
@@ -1269,7 +1273,10 @@ class Car:
                         self.particle_color = self.spike_color
                         self.backwheel1_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
                         self.backwheel2_pgen.edit(red=self.particle_color[0], green=self.particle_color[1], blue=self.particle_color[2])
-                        self.prickWheels()
+                        if not self.isPlayer:
+                            self.enemy_spike_wheel = True
+                        else:
+                            self.prickWheels()
                     elif tile == 6:
                         while self.deadTires > 0:
                             self.display.game.sound_manager.play_sound('Pitstop')
