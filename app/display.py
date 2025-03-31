@@ -480,7 +480,7 @@ class game_display(basic_display):
 
 
         self.game.displays['leaderboard'].leaderboard_list = self.placements
-        self.game.displays['leaderboard'].coin = self.coiny
+        self.game.displays['leaderboard'].coin = self.coiny * self.mnoznikcoinow
         self.game.displays['leaderboard'].update_placements()
         self.game.change_display('leaderboard')
 
