@@ -1042,7 +1042,7 @@ class main_menu_display(basic_display):
         self.button_width = self.game.width*self.button_width_modifier
         self.button_height = self.game.height*self.button_heigh_modifier
 
-        custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5, 'VROOM!\n    VROOM!',
+        custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5, 'Pixel!\n    Racers!',
                                 text_color='white', font_height=int(self.game.height * (19 / 216)))
 
         if self.game.enable_debug == False:
