@@ -35,15 +35,31 @@ class Enemy(Car):
         self.hasControl = True
         self.prickedWheels = 0
         self.type = SubClass
-        self.diff = [0.73,0.8,0.85]
+        self.diff = [[0.73,200],[0.8,150],[0.85,200]]
+        self.diff_indx = 1
+        self.reset_counter = 6.5
+        
         if self.type not in [0,1,2,3]:
             self.type = 0
     def loop(self):
         super().loop()
         self.new_to_chk()
         self.avoid_walls()
+        
+        
+        if self.display.diff == "Finished_Level_1":
+            self.diff_indx = 0
+        elif self.display.diff == "Finished_Level_2":
+            self.diff_indx = 1
+        elif self.diff_indx == "Finished_Level_3":
+            self.diff_indx = 2
+        else:
+            self.diff_indx = 1
+
+        self.current_speed = lolekszcz.sqrt((self.velLeft)**2+(self.velUp)**2)
         self.distance_player = lolekszcz.sqrt( (self.x-self.player.x)**2 + (self.y-self.player.y) ** 2)
         self.dt = self.display.game.delta_time
+        
         for obstacle in self.display.obstacles:
             if self.get_obstacle_colision(obstacle):
                 if obstacle.type == 3 and not obstacle.falling:
@@ -84,18 +100,37 @@ class Enemy(Car):
         if self.hasControl:
 
 
-            if abs(self.velLeft) < 4 and 100 - pygame.time.get_ticks() > 0 :
-                self.force_push_x = 10
-            if abs(self.velUp) < 4 and 100 - pygame.time.get_ticks() > 0 :
-                self.force_push_y = 10
 
+            if abs(self.velLeft) < 4 and 100 - pygame.time.get_ticks() < 0 :
+                self.force_push_x = 10
+            if abs(self.velUp) < 4 and 100 - pygame.time.get_ticks() < 0 :
+                self.force_push_y = 10
+            if self.current_speed<12:
+                self.reset_counter -= self.dt
+            else:
+                self.reset_counter = 6.5
+            if self.reset_counter <= 0:
+                i_prev = self.list_of_checkpoints[self.chk_index-1]
+                self.center_x_prev = (i_prev[0][0] + i_prev[1][0])/2 * self.display.block_width
+                self.center_y_prev = (i_prev[0][1] + i_prev[1][1])/2 * self.display.block_height
+                self.next_x = self.center_x_prev
+                self.next_y = self.center_y_prev
+                self.reset_counter = 6.5
+            print(self.reset_counter)
             self.force_push_y = 1
             self.force_push_x = 1
             if self.type == 3:
                 self.brakecheck()
+                self.target_velocity = 350
+                
+                self.scale_x = abs(self.velLeft/(self.current_speed+0.000001))
+                self.scale_y = abs(self.velUp/(self.current_speed+0.000001))
+                self.scale_left = self.tanh(self.target_velocity, abs(self.velLeft)) * (self.scale_x+0.01)
+                self.scale_up = self.tanh(self.target_velocity, abs(self.velUp)) * (self.scale_y+0.01)
+
                 if self.decide_to_wait:
-                    self.velLeft += (-self.dx + 250/self.distance_right - 250/self.distance_left)*0.6 * 0.97**(self.prickedWheels)
-                    self.velUp -= (-250/self.distance_down + 250/self.distance_up + self.dy)*0.6* 0.97**(self.prickedWheels)
+                    self.velLeft += (self.diff[self.diff_indx][1]/self.distance_right - self.diff[self.diff_indx][1]/self.distance_left - self.dx * self.scale_left)* 0.97**(self.prickedWheels)
+                    self.velUp -= (-self.diff[self.diff_indx][1]/self.distance_down + self.diff[self.diff_indx][1]/self.distance_up + self.dy* self.scale_up)* 0.97**(self.prickedWheels)
 
                     if self.distance_player<200:
                         self.velLeft += ((-self.dx + 250/self.distance_right - 250/self.distance_left)*0.3 + (self.x-self.player.x)/(abs(self.x-self.player.x)+0.0001)*17)* 0.97**(self.prickedWheels)
@@ -109,7 +144,7 @@ class Enemy(Car):
 
 
 
-            if self.type == 2:
+            elif self.type == 2:
 
 
                 if self.homing <= 0:
@@ -126,20 +161,20 @@ class Enemy(Car):
 
 
                 else:
-                    self.velLeft += (100/self.distance_right - 100/self.distance_left - self.dx*self.force_push_x)*0.73* 0.97**(self.prickedWheels)
-                    self.velUp -= (-100/self.distance_down + 100/self.distance_up + self.dy *self.force_push_y)*0.73* 0.97**(self.prickedWheels)
+                    self.velLeft += (self.diff[self.diff_indx][1]/self.distance_right - self.diff[self.diff_indx][1]/self.distance_left - self.dx*self.force_push_x)*self.diff[self.diff_indx][0]* 0.97**(self.prickedWheels)
+                    self.velUp -= (-self.diff[self.diff_indx][1]/self.distance_down + self.diff[self.diff_indx][1]/self.distance_up + self.dy *self.force_push_y)*self.diff[self.diff_indx][0]* 0.97**(self.prickedWheels)
 
 
-            if self.type == 1:
+            elif self.type == 1:
                 self.target_velocity = 320
-                self.current_speed = lolekszcz.sqrt((self.velLeft)**2+(self.velUp)**2)
+                
                 self.scale_x = abs(self.velLeft/(self.current_speed+0.000001))
                 self.scale_y = abs(self.velUp/(self.current_speed+0.000001))
                 self.scale_left = self.tanh(self.target_velocity, abs(self.velLeft)) * (self.scale_x+0.01)
                 self.scale_up = self.tanh(self.target_velocity, abs(self.velUp)) * (self.scale_y+0.01)
-                self.velLeft += (200/self.distance_right - 200/self.distance_left - self.dx * self.scale_left)* 0.97**(self.prickedWheels)
-                self.velUp -= (-200/self.distance_down + 200/self.distance_up + self.dy* self.scale_up)* 0.97**(self.prickedWheels)
-            if self.type == 0:
+                self.velLeft += (self.diff[self.diff_indx][1]/self.distance_right - self.diff[self.diff_indx][1]/self.distance_left - self.dx * self.scale_left)* 0.97**(self.prickedWheels)
+                self.velUp -= (-self.diff[self.diff_indx][1]/self.distance_down + self.diff[self.diff_indx][1]/self.distance_up + self.dy* self.scale_up)* 0.97**(self.prickedWheels)
+            elif self.type == 0:
                #print("SELF UP: ",self.distance_up)
                #print("SELF DOWN: ",self.distance_down)
                #print("SELF LEFT: ",self.distance_left)
@@ -149,8 +184,8 @@ class Enemy(Car):
                #print("SELF ROTATION: ",self.rotation)
 
 
-                self.velLeft +=(-self.dx* self.force_push_x + 150/self.distance_right - 150/self.distance_left)*0.8* 0.97**(self.prickedWheels)
-                self.velUp -=(-150/self.distance_down * self.force_push_y + 150/self.distance_up + self.dy)*0.8* 0.97**(self.prickedWheels)
+                self.velLeft +=(-self.dx* self.force_push_x + self.diff[self.diff_indx][1]/self.distance_right - self.diff[self.diff_indx][1]/self.distance_left)*self.diff[self.diff_indx][0]* 0.97**(self.prickedWheels)
+                self.velUp -=(-self.diff[self.diff_indx][1]/self.distance_down + self.diff[self.diff_indx][1]/self.distance_up + self.dy* self.force_push_y )*self.diff[self.diff_indx][0]* 0.97**(self.prickedWheels)
 
         else:
             if self.regain_control_time <= 0:
@@ -263,3 +298,4 @@ class Enemy(Car):
 
     def get_obstacle_colision(self, obstacle):
         return pygame.Rect.colliderect(self.rect, obstacle.rect)
+    
