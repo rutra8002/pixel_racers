@@ -726,8 +726,9 @@ class Car:
             self.display.obstacles.append(obstacle.Obstacle(self.display, spawn_x, spawn_y, 'spikes', self.rotation - 90))
         elif self.inventory[0] == 4:
             if self.deadTires > 0:
-                 self.deadTires -= 1
-                 self.display.game.sound_manager.play_sound('Heal')
+                self.deadTires -= 1
+                self.tireHealth += self.tireDamage
+                self.display.game.sound_manager.play_sound('Heal')
         self.inventory.pop(0)
 
 
@@ -844,6 +845,8 @@ class Car:
 
     def loop(self):
         self.movement()
+        if self.isPlayer:
+            print(self.tireHealth)
         self.invincibility -= 5 * self.display.game.delta_time
         if self.isPlayer:
             self.name = self.display.p.player_name
