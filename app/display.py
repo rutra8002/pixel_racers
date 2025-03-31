@@ -416,7 +416,7 @@ class game_display(basic_display):
                     self.deadBramas.remove(p)
         #
         # if self.wong_way and time.time() - self.p.wong_way_timer >= 3:
-        #     # self.p.return_to_last_checkpoint()
+        #     self.p.return_to_last_checkpoint()
         #     self.wong_way = False
 
         if self.p.stunned and time.time() - self.p.stunned_timer >= 1:

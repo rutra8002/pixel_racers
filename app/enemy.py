@@ -196,7 +196,7 @@ class Enemy(Car):
                     self.homing-=self.dt
                     self.velLeft += self.player_vector_x*16* 0.97**(self.prickedWheels)
                     self.velUp -= - self.player_vector_y*16* 0.97**(self.prickedWheels)
-                    if lolekszcz.sqrt( (self.x-self.player.x)**2 + (self.y-self.player.y) ** 2)<100:
+                    if self.distance_player<100:
                         self.homing -= 1.5*self.dt #additional punish to prevent constant ramming   
 
 
@@ -215,13 +215,7 @@ class Enemy(Car):
                 self.velLeft += (self.diff[self.diff_indx][1]/self.distance_right - self.diff[self.diff_indx][1]/self.distance_left - self.dx * self.scale_left)* 0.97**(self.prickedWheels)
                 self.velUp -= (-self.diff[self.diff_indx][1]/self.distance_down + self.diff[self.diff_indx][1]/self.distance_up + self.dy* self.scale_up)* 0.97**(self.prickedWheels)
             elif self.type == 0:
-               #print("SELF UP: ",self.distance_up)
-               #print("SELF DOWN: ",self.distance_down)
-               #print("SELF LEFT: ",self.distance_left)
-               #print("SELF RIGHT: ",self.distance_right)
-               #print("SELF VEL-LEFT: ", self.velLeft)
-               #print("SELF VEL-UP: ", self.velUp)
-               #print("SELF ROTATION: ",self.rotation)
+
 
 
                 self.velLeft +=(-self.dx* self.force_push_x + self.diff[self.diff_indx][1]/self.distance_right - self.diff[self.diff_indx][1]/self.distance_left)*self.diff[self.diff_indx][0]* 0.97**(self.prickedWheels)
@@ -320,18 +314,15 @@ class Enemy(Car):
         self.angle = lolekszcz.degrees(lolekszcz.atan2(-self.dy, self.dx))
 
 
-        #self.rotation = self.angle #TEMP OFC
-
     def to_player_bump(self):
         self.player_vector_x = 0
         self.player_vector_y = 0
-        if lolekszcz.sqrt( (self.x-self.player.x)**2 + (self.y-self.player.y) ** 2)<200 :
+        if self.distance_player<200 :
             self.player_vector_x = (self.x-self.player.x)/(abs(self.x-self.player.x)+0.0001)
             self.player_vector_y = (self.y-self.player.y)/(abs(self.y-self.player.y)+0.0001)
 
     def brakecheck(self):
 
-        #self.distance_player = lolekszcz.sqrt( (self.x-self.player.x)**2 + (self.y-self.player.y) ** 2)
         self.chk_dif = self.chk_index - self.player.current_checkpoint
         if self.player.lap != self.map_data['laps']:
             if self.chk_dif==2:
