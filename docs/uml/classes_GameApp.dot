@@ -1,7 +1,8 @@
 digraph "classes_GameApp" {
   splines=ortho;
-  edge [dir="forward"];
+  edge [dir="forward", labelfloat=false, label=""];
   node [shape=record, fontname=Arial, fontsize=10];
+  graph [label=""];
 
 rankdir=BT
 charset="utf-8"
@@ -22,7 +23,6 @@ charset="utf-8"
 "app.display.change_vehicle" [color="#77AADD", fontcolor="black", label=<app.display.change_vehicle>, shape="record", style="filled"];
 "app.display.credits" [color="#77AADD", fontcolor="black", label=<app.display.credits>, shape="record", style="filled"];
 "app.display.game_display" [color="#77AADD", fontcolor="black", label=<app.display.game_display>, shape="record", style="filled"];
-"app.display.in_game_settings_display" [color="#77AADD", fontcolor="black", label=<app.display.in_game_settings_display>, shape="record", style="filled"];
 "app.display.leaderboard" [color="#77AADD", fontcolor="black", label=<app.display.leaderboard>, shape="record", style="filled"];
 "app.display.level_selector" [color="#77AADD", fontcolor="black", label=<app.display.level_selector>, shape="record", style="filled"];
 "app.display.main_menu_display" [color="#77AADD", fontcolor="black", label=<app.display.main_menu_display>, shape="record", style="filled"];
@@ -87,7 +87,6 @@ charset="utf-8"
 "app.display.change_vehicle" -> "app.display.basic_display" [arrowhead="empty", arrowtail="none"];
 "app.display.credits" -> "app.display.basic_display" [arrowhead="empty", arrowtail="none"];
 "app.display.game_display" -> "app.display.basic_display" [arrowhead="empty", arrowtail="none"];
-"app.display.in_game_settings_display" -> "app.display.settings_display" [arrowhead="empty", arrowtail="none"];
 "app.display.leaderboard" -> "app.display.basic_display" [arrowhead="empty", arrowtail="none"];
 "app.display.level_selector" -> "app.display.basic_display" [arrowhead="empty", arrowtail="none"];
 "app.display.main_menu_display" -> "app.display.basic_display" [arrowhead="empty", arrowtail="none"];
@@ -174,6 +173,10 @@ charset="utf-8"
 "jeff_the_objects.stacked_sprite.StackedSprite" -> "app.car.Car" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="car3d_sprite", style="solid"];
 "jeff_the_objects.stacked_sprite.StackedSprite" -> "app.car.Car" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="car3d_sprite", style="solid"];
 "jeff_the_objects.stacked_sprite.StackedSprite" -> "app.car.Car" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="car3d_sprite", style="solid"];
+"jeff_the_objects.stacked_sprite.StackedSprite" -> "app.enemy.Enemy" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="car3d_sprite", style="solid"];
+"jeff_the_objects.stacked_sprite.StackedSprite" -> "app.enemy.Enemy" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="car3d_sprite", style="solid"];
+"jeff_the_objects.stacked_sprite.StackedSprite" -> "app.enemy.Enemy" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="car3d_sprite", style="solid"];
+"jeff_the_objects.stacked_sprite.StackedSprite" -> "app.enemy.Enemy" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="car3d_sprite", style="solid"];
 "jeff_the_objects.stacked_sprite.StackedSprite" -> "app.obstacle.Obstacle" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="sprite", style="solid"];
 "jeff_the_objects.stacked_sprite.StackedSprite" -> "app.powerup.Powerup" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="sprite", style="solid"];
 "particle_system.particle_generator.ParticleGenerator" -> "app.car.Car" [arrowhead="diamond", arrowtail="none", fontcolor="green", label="backwheel1_pgen", style="solid"];

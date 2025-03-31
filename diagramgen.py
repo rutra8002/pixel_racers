@@ -41,12 +41,8 @@ def generate_dot_files(config: Dict) -> None:
         "pyreverse",
         "-ASmy",           # Show all classes
         "-k",              # Keep consistency between modules
-        "-fma",            # Show all methods, including ancestors'
-        "-fa",             # Show attributes
         "--colorized",     # Use colors
         ignore_param,
-        "--all-ancestors", # Show all ancestors
-        "--all-associated",# Show all associations
         "-o", "dot",       # Generate dot files
         "-p", config["project_name"],
         "--output-directory", config["output_dir"],
@@ -82,25 +78,30 @@ def modify_dot_files(config: Dict) -> None:
             with open(dot_file, 'r') as f:
                 content = f.read()
 
-            # Add graph styling for better readability
+            # Add graph styling for better readability and hide text outside nodes
             styling = (
                 f'\\1\n'
                 f'  splines=ortho;\n'
-                f'  edge [dir="forward"];\n'
+                f'  edge [dir="forward", labelfloat=false, label=""];\n'  # Hide edge labels
                 f'  node [shape=record, fontname={config["font"]}, fontsize={config["font_size"]}];\n'
+                f'  graph [label=""];\n'  # Remove graph label
             )
             modified = re.sub(r'(digraph ".*?" {)', styling, content)
 
             # Enhance method display with parameter information
             modified = re.sub(r'\\l', r'\\l\n', modified)
 
+            # Remove edge labels specifically
+            modified = re.sub(r'\[arrowhead="[^"]*", arrowtail="[^"]*", label="[^"]*"\]',
+                              r'[arrowhead="open", arrowtail="none"]', modified)
+
             # Filter out direct imports from app.__init__.py in packages diagram
             if "packages" in dot_file and config.get("filter_init_imports", True):
                 # Remove edges from modules to the base app package (likely from __init__.py)
                 modified = re.sub(r'"([^"]+)" -> "app" \[arrowhead="open", arrowtail="none"\];(\r?\n)', '', modified)
 
-                # Clean up any double newlines resulting from removals
-                modified = re.sub(r'\n\s*\n', '\n\n', modified)
+            # Clean up any double newlines resulting from removals
+            modified = re.sub(r'\n\s*\n', '\n\n', modified)
 
             with open(dot_file, 'w') as f:
                 f.write(modified)

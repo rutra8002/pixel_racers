@@ -1,7 +1,8 @@
 digraph "packages_GameApp" {
   splines=ortho;
-  edge [dir="forward"];
+  edge [dir="forward", labelfloat=false, label=""];
   node [shape=record, fontname=Arial, fontsize=10];
+  graph [label=""];
 
 rankdir=BT
 charset="utf-8"
@@ -21,6 +22,7 @@ charset="utf-8"
 "app.powerup" [color="#77AADD", label=<app.powerup>, shape="box", style="filled"];
 "app.scoreboard" [color="#77AADD", label=<app.scoreboard>, shape="box", style="filled"];
 "app.sounds" [color="#77AADD", label=<app.sounds>, shape="box", style="filled"];
+"app.car" -> "app.display" [arrowhead="open", arrowtail="none"];
 "app.car" -> "app.images" [arrowhead="open", arrowtail="none"];
 "app.car" -> "app.obstacle" [arrowhead="open", arrowtail="none"];
 "app.cheats" -> "app.database" [arrowhead="open", arrowtail="none"];
@@ -38,10 +40,7 @@ charset="utf-8"
 "app.display" -> "app.powerup" [arrowhead="open", arrowtail="none"];
 "app.display" -> "app.scoreboard" [arrowhead="open", arrowtail="none"];
 "app.enemy" -> "app.car" [arrowhead="open", arrowtail="none"];
-"app.enemy" -> "app.checkpoint" [arrowhead="open", arrowtail="none"];
-"app.enemy" -> "app.display" [arrowhead="open", arrowtail="none"];
 "app.enemy" -> "app.obstacle" [arrowhead="open", arrowtail="none"];
-"app.enemy" -> "app.player" [arrowhead="open", arrowtail="none"];
 "app.game" -> "app.cheats" [arrowhead="open", arrowtail="none"];
 "app.game" -> "app.config" [arrowhead="open", arrowtail="none"];
 "app.game" -> "app.database" [arrowhead="open", arrowtail="none"];
