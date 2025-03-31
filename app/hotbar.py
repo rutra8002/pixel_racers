@@ -104,7 +104,7 @@ class Hotbar:
                     text = f"4th"
                     color = (255, 255, 255)
                 else:
-                    text = f"4th"
+                    text = f"5th"
                     color = (255, 255, 255)
 
 
