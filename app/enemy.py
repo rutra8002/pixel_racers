@@ -45,22 +45,22 @@ class Enemy(Car):
         self.image = self.image.copy()
 
         if self.type == 0:
-            self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((100, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
             self.image.fill((150, 0, 150, 0), special_flags=pygame.BLEND_RGBA_ADD)
             self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
                                                              self.car3d_height, isenemy=(not self.isPlayer))
         elif self.type == 1:
-            self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((100, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
             self.image.fill((170, 170, 0, 0), special_flags=pygame.BLEND_RGBA_ADD)
             self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
                                               self.car3d_height, isenemy=(not self.isPlayer))
         elif self.type == 2:
-            self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((100, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
             self.image.fill((0, 0, 150, 0), special_flags=pygame.BLEND_RGBA_ADD)
             self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
                                               self.car3d_height, isenemy=(not self.isPlayer))
         elif self.type == 3:
-            self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+            self.image.fill((100, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
             self.image.fill((0, 80, 0, 0), special_flags=pygame.BLEND_RGBA_ADD)
             self.car3d_sprite = StackedSprite(self.display, self.image, self.num_of_sprites, self.img_size,
                                               self.car3d_height, isenemy=(not self.isPlayer))
