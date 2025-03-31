@@ -189,13 +189,6 @@ class Car:
                 self.car3d_height = 2
             else:
                 self.car3d_height = 2 *self.car3d_height_factor
-        # elif model == 6:
-        #     self.num_of_sprites = 5
-        #     self.img_size=(10, 20)
-        #     if self.car3d_height_factor == None:
-        #         self.car3d_height = 2.5
-        #     else:
-        #         self.car3d_height = 2.5 * self.car3d_height_factor
 
 
     def render(self):
@@ -869,6 +862,11 @@ class Car:
             # if self.recentCollisions[car] != 0:
                 if pygame.time.get_ticks() - self.recentCollisions[car] > self.bumpingCooldown:
                     self.recentCollisions[car] = 0
+
+        if self.strength and self.isPlayer:
+            self.particle_system.add_particle(self.x, self.y, random.randint(-10, 10), random.randint(-10, 10), 0, 0, 0,
+                                              0, 10, 50, 2, (150), (150),
+                                              (100), (255), 'square')
 
         if self.wallCollTime != 0 and not self.wall:
             if pygame.time.get_ticks() - self.wallCollTime > self.wallCollisionCooldown:
