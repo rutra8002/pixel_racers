@@ -14,6 +14,10 @@ class Game:
     def __init__(self):
         pygame.init()
 
+        icon = self.get_scaled_icon("images/cars/jeffcar.png")
+        pygame.display.set_icon(icon)
+
+
         self.sound_manager = sounds.SoundManager()
         self.sound_manager.load_music('sounds/music/Neon Rush.wav')
         self.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
@@ -108,6 +112,29 @@ class Game:
             self.console_font = pygame.font.Font(None, 24)
 
         self.console_history_index = 0
+
+    def get_scaled_icon(self, path, target_size=(32, 32)):
+        original = pygame.image.load(path)
+        orig_width, orig_height = original.get_size()
+
+        aspect_ratio = orig_width / orig_height
+
+        if aspect_ratio > 1:
+            new_width = target_size[0]
+            new_height = int(new_width / aspect_ratio)
+        else:
+            new_height = target_size[1]
+            new_width = int(new_height * aspect_ratio)
+
+        icon = pygame.Surface(target_size, pygame.SRCALPHA)
+
+        scaled = pygame.transform.smoothscale(original, (new_width, new_height))
+
+        x_offset = (target_size[0] - new_width) // 2
+        y_offset = (target_size[1] - new_height) // 2
+        icon.blit(scaled, (x_offset, y_offset))
+
+        return icon
 
     def music(self):
         if isinstance(self.current_display, self.displays["game_display"]) and not self.sound_manager.is_playing_music():
