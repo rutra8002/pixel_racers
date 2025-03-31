@@ -767,8 +767,8 @@ class map_display(basic_display):
             pw = self.player_width_blocks * self.block_width
             ph = self.player_height_blocks * self.block_height
 
-            px = lolekszcz.floor((mouse_pos[0] - self.cx) / self.block_width)
-            py = lolekszcz.floor((mouse_pos[1] - self.cy) / self.block_height)
+            px = m.floor((mouse_pos[0] - self.cx) / self.block_width)
+            py = m.floor((mouse_pos[1] - self.cy) / self.block_height)
 
             pygame.draw.rect(self.screen, color, (
                 px * self.block_width + self.cx,
