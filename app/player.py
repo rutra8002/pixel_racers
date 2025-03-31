@@ -70,5 +70,5 @@ class Player(Car):
     def rotate_toward(self, pos):
         rel_x, rel_y = pos[0] - self.x, pos[1] - self.y
 
-        angle = lolino.degrees(lolino.atan2(-rel_y, rel_x)) - 90
+        angle = lolino.degrees(lolino.atan2(-rel_y, rel_x))
         return angle
