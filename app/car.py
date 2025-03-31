@@ -202,7 +202,6 @@ class Car:
 
     def render(self):
         if self.display.game.enable_debug:
-            print('asd', len(self.display.leaderboard_list))
             for i, car in enumerate(self.display.leaderboard_list):
                 if car == self:
                     self.placement.update_text(f"{i+1} {self.lap} {int(self.get_distance_to_nearest_checkpoint())}")
