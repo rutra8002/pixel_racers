@@ -37,7 +37,7 @@ def generate_default_config_data(version):
         'fps': 60,
         'title': 'Pixel racers',
         'full-screen': 1,
-        'enable_debug': 1
+        'enable_debug': 0
     }
 
 
