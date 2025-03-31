@@ -1,3 +1,5 @@
+import random
+
 import pygame
 
 class StackedSprite:
@@ -6,7 +8,20 @@ class StackedSprite:
         self.image = image.copy()
         self.isenemy = isenemy
         if self.isenemy == True:
-            self.image.fill((0, 0, 255), special_flags=pygame.BLEND_RGBA_MIN)
+            x = random.randint(1, 2)
+            if x == 1:
+                self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+                self.image.fill((150, 0, 150, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            elif x == 2:
+                self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+                self.image.fill((170, 170, 0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            elif x ==3:
+                self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+                self.image.fill((0, 0, 150, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            elif x ==4:
+                self.image.fill((255, 0, 0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+                self.image.fill((0, 80, 0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+
         self.num_of_sprites = num_of_sprites
         self.sprite_size = sprite_size
         self.scale_factor = scale_factor
