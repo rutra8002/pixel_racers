@@ -960,11 +960,6 @@ class Car:
                     if self.recentCollisions[c] == 0:
                         self.handle_bumping(c)
                         self.push_away_from_closest_enemy(c)
-                        # back = 4
-                        # self.next_x, self.next_y, self.x, self.y = self.archiveCars[-back][0], self.archiveCars[-back][1], self.archiveCars[-back][0], self.archiveCars[-back][1]
-                        # self.next_rotation, self.rotation = self.archiveCars[-back][2], self.archiveCars[-back][2]
-                        # c.next_x, c.next_y, c.x, c.y = c.archiveCars[-back][0], c.archiveCars[-back][1], c.archiveCars[-back][0], c.archiveCars[-back][1]
-                        # c.next_rotation, c.rotation = c.archiveCars[-back][2], c.archiveCars[-back][2]
                         self.recentCollisions[c] = pygame.time.get_ticks()
                         c.recentCollisions[self] = pygame.time.get_ticks()
 
@@ -976,10 +971,6 @@ class Car:
         else:
             self.wall_frames += 1
             if self.wall_frames > 10:
-                # back = 2
-                # self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], \
-                # self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
-                # self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back - 1][2]
                 self.push_away_from_closest_wall()
 
         if not self.car:
@@ -1250,9 +1241,6 @@ class Car:
                                 self.display.game.sound_manager.play_sound('bounce')
                                 self.strength = False
                             self.push_away_from_closest_wall()
-                            # back = 1
-                            # self.next_x, self.next_y, self.x, self.y = self.archiveWall[-back][0], self.archiveWall[-back][1], self.archiveWall[-back - 1][0], self.archiveWall[-back - 1][1]
-                            # self.next_rotation, self.rotation = self.archiveWall[-back][2], self.archiveWall[-back - 1][2]
                             self.wallCollTime = pygame.time.get_ticks()
 
 
@@ -1292,14 +1280,6 @@ class Car:
                 if self.display.map[yy][xx] == 1:
                     return x, y
         return None, None
-
-    # def push_away_from_closest_wall(self, power=0.1):
-    #     x, y = self.find_closest_wall()
-    #     if x is not None and y is not None:
-    #         self.next_x, self.next_y = self.x, self.y
-    #         self.next_rotation = self.rotation
-    #         self.next_x += (self.x - x) * 0.1
-    #         self.next_y += (self.y - y) * 0.1
 
     def push_away_from_closest_wall(self, power=0.1):
         x, y = self.find_closest_wall()
