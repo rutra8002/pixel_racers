@@ -926,8 +926,7 @@ class Car:
                 elif obstacle.type == 7:
                     self.display.game.sound_manager.play_sound('coin')
 
-                    if self.isPlayer:
-                        self.display.db_manager.add_coin()
+                    self.display.coiny +=1
 
                     obstacle.destroy()
 
