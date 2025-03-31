@@ -129,6 +129,7 @@ class Cheats:
         try:
             player = self.game.current_display.p
             player.infiNitro = False
+            player.nitroAmount = 0
             player.tireHealth = 1
             player.deadTires = 0
             player.invincibility = 0
