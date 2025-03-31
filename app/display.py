@@ -1440,7 +1440,7 @@ class level_selector(basic_display):
             self.bg = (25, 90, 25)
         elif self.currently_selected == 1:
             self.bg = (100, 100, 30)
-        if self.currently_selected == 2:
+        elif self.currently_selected == 2:
             self.bg = (100, 30, 30)
 
         self.screen.fill(self.bg)

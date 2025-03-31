@@ -8,6 +8,7 @@ import math as lolino
 from particle_system import ParticleGenerator
 from unicodedata import normalize
 
+import app.display
 from app.images import police
 from customObjects.custom_text import Custom_text
 from app import images, obstacle
@@ -83,12 +84,13 @@ class Car:
         nitro_x = self.x - back_wheel_x_offset
         nitro_y = self.y - back_wheel_y_offset
 
-        self.backwheel1_pgen = ParticleGenerator(self.particle_system, back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp, -0.01 * self.velLeft,
-                                          -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
-        self.backwheel2_pgen = ParticleGenerator(self.particle_system, back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp, -0.01 * self.velLeft,
-                                          -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
-        self.nitrogen = ParticleGenerator(self.particle_system, nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, self.nitrogen_color[0], self.nitrogen_color[1],
-                                          self.nitrogen_color[2], 150, 'circle', True, 100)
+        if isinstance(self.display, app.display.game_display):
+            self.backwheel1_pgen = ParticleGenerator(self.particle_system, back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp, -0.01 * self.velLeft,
+                                              -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
+            self.backwheel2_pgen = ParticleGenerator(self.particle_system, back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp, -0.01 * self.velLeft,
+                                              -0.01 * self.velUp, 0, 0, 1, 100, 3, self.particle_color[0], self.particle_color[1], self.particle_color[2], 150, 'square', False, 20)
+            self.nitrogen = ParticleGenerator(self.particle_system, nitro_x, nitro_y, self.velLeft, self.velUp, 0, 0, 0, 0, 1, 200, 10, self.nitrogen_color[0], self.nitrogen_color[1],
+                                              self.nitrogen_color[2], 150, 'circle', True, 100)
         self.change_model(model)
 
 
@@ -142,13 +144,13 @@ class Car:
 
         self.bounce_sound_timer = 0
 
+        if isinstance(self.display, app.display.game_display):
+            self.particle_system.add_generator(self.backwheel1_pgen)
+            self.particle_system.add_generator(self.backwheel2_pgen)
+            self.particle_system.add_generator(self.nitrogen)
 
-        self.particle_system.add_generator(self.backwheel1_pgen)
-        self.particle_system.add_generator(self.backwheel2_pgen)
-        self.particle_system.add_generator(self.nitrogen)
-
-        self.backwheel1_pgen.start()
-        self.backwheel2_pgen.start()
+            self.backwheel1_pgen.start()
+            self.backwheel2_pgen.start()
 
         self.display.objects.append(self)
         self.display.cars.append(self)
@@ -542,9 +544,9 @@ class Car:
         back_wheel1_y = self.y - back_wheel_y_offset + lolino.cos(angle_rad) * (self.playerWidth / 2)
         back_wheel2_x = self.x - back_wheel_x_offset + lolino.sin(angle_rad) * (self.playerWidth / 2)
         back_wheel2_y = self.y - back_wheel_y_offset - lolino.cos(angle_rad) * (self.playerWidth / 2)
-
-        self.backwheel1_pgen.edit(back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp)
-        self.backwheel2_pgen.edit(back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp)
+        if isinstance(self.display, app.display.game_display):
+            self.backwheel1_pgen.edit(back_wheel1_x, back_wheel1_y, self.velLeft, self.velUp)
+            self.backwheel2_pgen.edit(back_wheel2_x, back_wheel2_y, self.velLeft, self.velUp)
     def events(self, event):
         pass
 
@@ -1092,7 +1094,7 @@ class Car:
 
 
     def teleport(self, coords):
-        if self.isPlayer:
+        if self.isPlayer and self.display.game.debug:
             self.next_x = coords[0]
             self.next_y = coords[1]
 
