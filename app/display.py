@@ -1308,20 +1308,17 @@ class level_selector(basic_display):
                     list(self.levels.keys())[course_to_play])
                 if course_to_play == 0:
                     self.game.sound_manager.unload_music()
-                    self.game.sound_manager.set_music_volume(0.5)
                     self.game.sound_manager.load_music('sounds/music/Neon Rush.wav')
                     self.game.sound_manager.play_music()
 
                 if course_to_play == 1:
                     self.game.sound_manager.unload_music()
-                    self.game.sound_manager.set_music_volume(0.15)
                     self.game.sound_manager.load_music('sounds/music/Volcanic Rush.wav')
                     self.game.sound_manager.play_music()
 
 
                 elif course_to_play == 2:
                     self.game.sound_manager.unload_music()
-                    self.game.sound_manager.set_music_volume(0.2)
                     self.game.sound_manager.load_music('sounds/music/Chasing Snowflakes.wav')
 
                     self.game.sound_manager.play_music()
