@@ -845,8 +845,6 @@ class Car:
 
     def loop(self):
         self.movement()
-        if self.isPlayer:
-            print(self.tireHealth)
         self.invincibility -= 5 * self.display.game.delta_time
         if self.isPlayer:
             self.name = self.display.p.player_name

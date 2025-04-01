@@ -421,9 +421,6 @@ class game_display(basic_display):
 
     def update_standings(self):
         self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
-        # print('________________________')
-        # for c in self.leaderboard_list:
-        #     print(c.lap, c.current_checkpoint, c.get_distance_to_nearest_checkpoint())
 
     def end_race(self):
         self.game.db_manager.add_time(self.p.player_name, self.difficulty, sum(self.p.lap_times), min(self.p.lap_times))
@@ -665,8 +662,7 @@ class map_display(basic_display):
                 try:
                     color = self.color_map.get(self.map[y][x], self.asphalt_color)
                 except:
-                    print(self.map)
-                    print('ok', self.map[y])
+                    pass
                 pygame.draw.rect(self.screen, color, (
                     x * self.block_width + self.cx,
                     y * self.block_height + self.cy,
