@@ -27,7 +27,7 @@ class Cheats:
         """Toggle infinite nitro for player"""
         try:
             player = self.game.current_display.p
-            player.nitroAmount = 9999 if enable else 0
+            player.nitroAmount = 1 if enable else 0
             player.infiNitro = enable
             return f"Infinite nitro {'enabled' if enable else 'disabled'}"
         except:

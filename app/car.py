@@ -57,7 +57,7 @@ class Car:
         self.lap_times = []
 
         self.strength = False # następne zderzenie z autem nie daje tobie knockbacku. Przy zderzeniu ze ścianą znika i nic nie robi
-        self.infiNitro = True
+        self.infiNitro = False
         self.player_name = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
         self.hits = 0
@@ -147,7 +147,7 @@ class Car:
 
         self.steering_speed = 9 * self.display.game.calibration
 
-        self.nitroAmount = 1
+        self.nitroAmount = 0
 
         self.bounce_sound_timer = 0
 
