@@ -447,14 +447,16 @@ class game_display(basic_display):
 
         self.player_placement = self.placements.index(self.p)
 
+        kolejnymnoznik = int(self.difficulty[-1])
+
         if self.player_placement == 0:
-            self.mnoznikcoinow = 5.0
+            self.mnoznikcoinow = 5.0*kolejnymnoznik
         elif self.player_placement == 1:
-            self.mnoznikcoinow = 3.0
+            self.mnoznikcoinow = 3.0*kolejnymnoznik
         elif self.player_placement ==2:
-            self.mnoznikcoinow = 2.0
+            self.mnoznikcoinow = 2.0*kolejnymnoznik
         else:
-            self.mnoznikcoinow = 1.0
+            self.mnoznikcoinow = 1.0*kolejnymnoznik
 
         self.game.db_manager.add_coins(int(self.mnoznikcoinow * self.coiny))
 
@@ -1529,7 +1531,7 @@ class change_vehicle(basic_display):
             2: 100,
             3: 250,
             4: 500,
-            5: 1000,
+            5: 100000,
             6: 2000
         }
 
