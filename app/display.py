@@ -678,13 +678,12 @@ class map_display(basic_display):
                 try:
                     color = self.color_map.get(self.map[y][x], self.asphalt_color)
                 except:
-                    print(self.map)
-                    print('ok', self.map[y])
+                    pass
                 pygame.draw.rect(self.screen, color, (
-                    x * self.block_width + self.cx,
-                    y * self.block_height + self.cy,
-                    self.block_width+1,
-                    self.block_height+1
+                x * self.block_width + self.cx,
+                y * self.block_height + self.cy,
+                self.block_width+1,
+                self.block_height+1
                 ))
 
         if self.player_position:
