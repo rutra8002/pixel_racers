@@ -1,0 +1,52 @@
+digraph "packages_GameApp" {
+  splines=ortho;
+  edge [dir="forward", labelfloat=false, label=""];
+  node [shape=record, fontname=Arial, fontsize=10];
+  graph [label=""];
+
+rankdir=BT
+charset="utf-8"
+"app" [color="#77AADD", label=<app>, shape="box", style="filled"];
+"app.car" [color="#77AADD", label=<app.car>, shape="box", style="filled"];
+"app.cheats" [color="#77AADD", label=<app.cheats>, shape="box", style="filled"];
+"app.checkpoint" [color="#77AADD", label=<app.checkpoint>, shape="box", style="filled"];
+"app.config" [color="#77AADD", label=<app.config>, shape="box", style="filled"];
+"app.database" [color="#77AADD", label=<app.database>, shape="box", style="filled"];
+"app.display" [color="#77AADD", label=<app.display>, shape="box", style="filled"];
+"app.enemy" [color="#77AADD", label=<app.enemy>, shape="box", style="filled"];
+"app.game" [color="#77AADD", label=<app.game>, shape="box", style="filled"];
+"app.hotbar" [color="#77AADD", label=<app.hotbar>, shape="box", style="filled"];
+"app.images" [color="#77AADD", label=<app.images>, shape="box", style="filled"];
+"app.obstacle" [color="#77AADD", label=<app.obstacle>, shape="box", style="filled"];
+"app.player" [color="#77AADD", label=<app.player>, shape="box", style="filled"];
+"app.powerup" [color="#77AADD", label=<app.powerup>, shape="box", style="filled"];
+"app.scoreboard" [color="#77AADD", label=<app.scoreboard>, shape="box", style="filled"];
+"app.sounds" [color="#77AADD", label=<app.sounds>, shape="box", style="filled"];
+"app.car" -> "app.display" [arrowhead="open", arrowtail="none"];
+"app.car" -> "app.images" [arrowhead="open", arrowtail="none"];
+"app.car" -> "app.obstacle" [arrowhead="open", arrowtail="none"];
+"app.cheats" -> "app.database" [arrowhead="open", arrowtail="none"];
+"app.checkpoint" -> "app.obstacle" [arrowhead="open", arrowtail="none"];
+"app.checkpoint" -> "app.player" [arrowhead="open", arrowtail="none"];
+"app.display" -> "app.car" [arrowhead="open", arrowtail="none"];
+"app.display" -> "app.checkpoint" [arrowhead="open", arrowtail="none"];
+"app.display" -> "app.config" [arrowhead="open", arrowtail="none"];
+"app.display" -> "app.database" [arrowhead="open", arrowtail="none"];
+"app.display" -> "app.enemy" [arrowhead="open", arrowtail="none"];
+"app.display" -> "app.hotbar" [arrowhead="open", arrowtail="none"];
+"app.display" -> "app.images" [arrowhead="open", arrowtail="none"];
+"app.display" -> "app.obstacle" [arrowhead="open", arrowtail="none"];
+"app.display" -> "app.player" [arrowhead="open", arrowtail="none"];
+"app.display" -> "app.powerup" [arrowhead="open", arrowtail="none"];
+"app.display" -> "app.scoreboard" [arrowhead="open", arrowtail="none"];
+"app.enemy" -> "app.car" [arrowhead="open", arrowtail="none"];
+"app.enemy" -> "app.obstacle" [arrowhead="open", arrowtail="none"];
+"app.game" -> "app.cheats" [arrowhead="open", arrowtail="none"];
+"app.game" -> "app.config" [arrowhead="open", arrowtail="none"];
+"app.game" -> "app.database" [arrowhead="open", arrowtail="none"];
+"app.game" -> "app.display" [arrowhead="open", arrowtail="none"];
+"app.game" -> "app.sounds" [arrowhead="open", arrowtail="none"];
+"app.obstacle" -> "app.images" [arrowhead="open", arrowtail="none"];
+"app.player" -> "app.car" [arrowhead="open", arrowtail="none"];
+"app.powerup" -> "app.images" [arrowhead="open", arrowtail="none"];
+}

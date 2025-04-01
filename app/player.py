@@ -1,5 +1,5 @@
 import pygame
-import math as lolino
+import math as m
 import time
 from app.car import Car
 import math
@@ -70,5 +70,5 @@ class Player(Car):
     def rotate_toward(self, pos):
         rel_x, rel_y = pos[0] - self.x, pos[1] - self.y
 
-        angle = lolino.degrees(lolino.atan2(-rel_y, rel_x)) - 90
+        angle = m.degrees(m.atan2(-rel_y, rel_x))
         return angle

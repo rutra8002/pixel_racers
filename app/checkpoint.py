@@ -66,13 +66,13 @@ class checkpoint: # A checkpoint is a line with 2 points
                             car.lap += 1
                             car.lap_times.append(time.time() - car.begining_lap_time)
                             car.begining_lap_time = time.time()
-                            if car.lap >= self.display.laps:
+                            if car.lap <= self.display.laps:
+                                pass
+                            else:
                                 car.end_race()
 
 
                 self.color = (0, 0, 255)
-                # player_name = car.player_name
-                # self.display.leaderboard[player_name] = self.i
                 return True
         if self.i == 0:
             self.color = self.display.color_map['m']

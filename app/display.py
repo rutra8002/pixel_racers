@@ -11,7 +11,7 @@ from jeff_the_objects.slider import Slider
 from jeff_the_objects.stacked_sprite import StackedSprite
 from app.config import read_config, write_config_to_file
 import random
-import math as lolekszcz
+import math as m
 import pygame
 import json
 from app import car, enemy, obstacle, images, player, enemy, checkpoint, hotbar, powerup, scoreboard
@@ -101,7 +101,7 @@ class game_display(basic_display):
         self.wong_way = False
         self.wong_way_image = custom_images.Custom_image(self, 'images/wong_way.png', self.game.width/2, self.game.height/8, 100, 96, append=False)
 
-        self.cars = [] #the physical cars of enemies and of the player
+        self.cars = []
 
 
         self.particle_system = ParticleSystem()
@@ -120,24 +120,20 @@ class game_display(basic_display):
 
         self.started_race = False
 
-        self.environment_objects = [
-        #     {"type": "tree", "sprite": StackedSprite(self, images.tree, 16, (16, 16), 10, random.randint(0, 359), rotate=True), "coords": (200, 300)},
-        #     {"type": "tree", "sprite": StackedSprite(self, images.castle, 21, (21, 21), 3, random.randint(0, 359), rotate=True), "coords": (400, 500)},
-        ]
 
         self.snow_timer = 0
         self.snowing = False
 
         self.p = player.Player(self, self.player_position, self.player_rotation, self.game.player_model)
 
-        # self.leaderboard = {}
-        self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+
         self.placements = []
         self.hotbar.after_player_setup()
         for i, e in enumerate(self.enemies):
             enemy.Enemy(self, e[0], e[1], 1, player = self.p, SubClass=i, name=f'Enemy {i+1}')
 
-
+        self.leaderboard_list = list(sorted(self.cars, key=lambda car: (
+        -car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint())))
 
         self.map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))
         self.img_map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))
@@ -176,7 +172,6 @@ class game_display(basic_display):
                                               ang_vel, ang_acc, speed, lifetime, size,
                                               r, g, b, alpha, shape)
 
-    #check collision between particles and map
     def check_particle_collision(self, particle):
         if particle.x < 0 or particle.x > self.game.width or particle.y < 0 or particle.y > self.screenHeight_without_hotbar:
             return True
@@ -188,7 +183,6 @@ class game_display(basic_display):
         return False
 
     def draw_map(self):
-        #draw test_map_one img
         if self.difficulty == "Finished_Level_1":
             self.img_map_surface.blit(images.mapone, (0, 0))
 
@@ -198,8 +192,39 @@ class game_display(basic_display):
         elif self.difficulty == "Finished_Level_3":
             self.img_map_surface.blit(images.mapthree, (0, 0))
 
-        if True:
-            self.map_surface.fill(self.bgColor)
+        else:
+            self.img_map_surface = None
+        self.map_surface.fill(self.bgColor)
+        for y in range(len(self.map)):
+            for x in range(len(self.map[y])):
+                if self.map[y][x] == 0:
+                    continue
+                elif self.map[y][x] == 1:
+                    color = self.wall_color
+                elif self.map[y][x] == 2:
+                    color = self.oil_color
+                elif self.map[y][x] == 3:
+                    color = self.gravel_color
+                elif self.map[y][x] == 4:
+                    color = self.ice_color
+                elif self.map[y][x] == 5:
+                    color = self.spike_color
+                elif self.map[y][x] == 6:
+                    color = self.pitstop_color
+                else:
+                    color = self.asphalt_color
+                if self.map[y][x] in (0, 1, 3, 4, 5):
+                    color = (
+                        min(max(color[0] + random.randint(-10, 10), 0), 255),
+                        min(max(color[1] + random.randint(-10, 10), 0), 255),
+                        min(max(color[2] + random.randint(-10, 10), 0), 255)
+                    )
+
+                pygame.draw.rect(self.map_surface, color,
+                                 (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
+        if not self.img_map_surface:
+            self.img_map_surface = pygame.Surface((self.game.width, self.screenHeight_without_hotbar))
+            self.img_map_surface.fill(self.bgColor)
             for y in range(len(self.map)):
                 for x in range(len(self.map[y])):
                     if self.map[y][x] == 0:
@@ -218,7 +243,6 @@ class game_display(basic_display):
                         color = self.pitstop_color
                     else:
                         color = self.asphalt_color
-                    # Add randomness to the color
                     if self.map[y][x] in (0, 1, 3, 4, 5):
                         color = (
                             min(max(color[0] + random.randint(-10, 10), 0), 255),
@@ -226,8 +250,9 @@ class game_display(basic_display):
                             min(max(color[2] + random.randint(-10, 10), 0), 255)
                         )
 
-                    pygame.draw.rect(self.map_surface, color,
+                    pygame.draw.rect(self.img_map_surface, color,
                                      (x * self.block_width, y * self.block_height, self.block_width, self.block_height))
+
     def import_map(self):
         with open(f"{self.game.map_dir}/{self.difficulty}.json", 'r') as f:
             map_data = json.load(f)
@@ -291,9 +316,6 @@ class game_display(basic_display):
 
 
 
-        for obj in self.environment_objects:
-            if obj["type"] == "tree":
-                obj["sprite"].render(self.screen, obj["coords"])
         for pupo in self.powerups:
             pupo.render()
         if self.game.debug:
@@ -304,7 +326,6 @@ class game_display(basic_display):
 
             if hasattr(self, 'overlap_point') and self.overlap_point:
                 pygame.draw.circle(self.screen, (255, 0, 0), self.overlap_point, 5)
-        # self.render_leaderboard()
 
         if self.wong_way:
             self.wong_way_image.render()
@@ -380,10 +401,6 @@ class game_display(basic_display):
                 else:
                     self.obstacles.append(obstacle.Obstacle(self, p[0], p[1], "brama", p[3]))
                     self.deadBramas.remove(p)
-        #
-        # if self.wong_way and time.time() - self.p.wong_way_timer >= 3:
-        #     # self.p.return_to_last_checkpoint()
-        #     self.wong_way = False
 
         if self.p.stunned and time.time() - self.p.stunned_timer >= 1:
             self.p.stunned = False
@@ -412,7 +429,7 @@ class game_display(basic_display):
             self.banana = obstacle.Obstacle(self, a[0], a[1], 'banana')
             self.obstacles.append(self.banana)
 
-        # pygame.draw.rect(self.screen, (255, 255, 255), (600, 200, 50, 700))
+
 
     def update_player_model(self, model):
         self.p.change_model(model)
@@ -420,7 +437,7 @@ class game_display(basic_display):
 
 
     def update_standings(self):
-        self.leaderboard_list = sorted(self.cars, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
+        self.leaderboard_list = sorted(self.leaderboard_list, key=lambda car: (-car.lap, -car.current_checkpoint, car.get_distance_to_nearest_checkpoint()))
 
     def end_race(self):
         self.game.db_manager.add_time(self.p.player_name, self.difficulty, sum(self.p.lap_times), min(self.p.lap_times))
@@ -443,6 +460,7 @@ class game_display(basic_display):
 
 
         self.game.displays['leaderboard'].leaderboard_list = self.placements
+        self.game.displays['leaderboard'].coin = self.coiny * self.mnoznikcoinow
         self.game.displays['leaderboard'].update_placements()
         self.game.change_display('leaderboard')
 
@@ -512,8 +530,6 @@ class map_display(basic_display):
                                                        text_color='white', font_height=30, center=False)
         self.cursor_pos_text = custom_text.Custom_text(self, 10, 250, f'Cursor position: (0, 0)',
                                                        text_color='white', font_height=30, center=False)
-        # self.block_width = self.game.width // len(self.map[0])
-        # self.block_height = self.game.height // len(self.map)
 
         self.export_button = custom_button.Button(self, "export_map", 10, 10, 100, 50, text="Export map", text_color=(0, 255, 0), color=(255, 0, 0), border_radius=0)
         self.export_png_button = custom_button.Button(self, "export_png", 120, 10, 100, 50, text="Export PNG",
@@ -652,17 +668,18 @@ class map_display(basic_display):
         self.coin = [x,y]
 
     def render(self):
-        vis_x_start = max(0, lolekszcz.floor((-self.cx) / self.block_width))
-        vis_x_end = min(self.temp_width, lolekszcz.ceil((-self.cx + self.game.width) / self.block_width))
-        vis_y_start = max(0, lolekszcz.floor((-self.cy) / self.block_height))
-        vis_y_end = min(self.temp_height, lolekszcz.ceil((-self.cy + self.game.height) / self.block_height))
+        vis_x_start = max(0, m.floor((-self.cx) / self.block_width))
+        vis_x_end = min(self.temp_width, m.ceil((-self.cx + self.game.width) / self.block_width))
+        vis_y_start = max(0, m.floor((-self.cy) / self.block_height))
+        vis_y_end = min(self.temp_height, m.ceil((-self.cy + self.game.height) / self.block_height))
 
         for y in range(vis_y_start, vis_y_end):
             for x in range(vis_x_start, vis_x_end):
                 try:
                     color = self.color_map.get(self.map[y][x], self.asphalt_color)
                 except:
-                    pass
+                    print(self.map)
+                    print('ok', self.map[y])
                 pygame.draw.rect(self.screen, color, (
                     x * self.block_width + self.cx,
                     y * self.block_height + self.cy,
@@ -750,8 +767,8 @@ class map_display(basic_display):
             pw = self.player_width_blocks * self.block_width
             ph = self.player_height_blocks * self.block_height
 
-            px = lolekszcz.floor((mouse_pos[0] - self.cx) / self.block_width)
-            py = lolekszcz.floor((mouse_pos[1] - self.cy) / self.block_height)
+            px = m.floor((mouse_pos[0] - self.cx) / self.block_width)
+            py = m.floor((mouse_pos[1] - self.cy) / self.block_height)
 
             pygame.draw.rect(self.screen, color, (
                 px * self.block_width + self.cx,
@@ -780,9 +797,9 @@ class map_display(basic_display):
                 self.tool = 'p'
             elif event.key == pygame.K_0:
                 self.map = [[0] * self.temp_width for _ in range(self.temp_height)]
-            elif event.key == pygame.K_PLUS or event.key == pygame.K_EQUALS:  # Increase brush size
+            elif event.key == pygame.K_PLUS or event.key == pygame.K_EQUALS:
                 self.brush_size = min(self.brush_size + 1, max(self.temp_width, self.temp_height))
-            elif event.key == pygame.K_MINUS:  # Decrease brush size
+            elif event.key == pygame.K_MINUS:
                 self.brush_size = max(self.brush_size - 1, 1)
             elif event.key == pygame.K_u:
                 self.tool = 'u'
@@ -834,10 +851,9 @@ class map_display(basic_display):
 
     def handle_mouse_events(self, event):
         mouse_pos = pygame.mouse.get_pos()
-        grid_x = lolekszcz.floor((mouse_pos[0] - self.cx) / self.block_width)
-        grid_y = lolekszcz.floor((mouse_pos[1] - self.cy) / self.block_height)
+        grid_x = m.floor((mouse_pos[0] - self.cx) / self.block_width)
+        grid_y = m.floor((mouse_pos[1] - self.cy) / self.block_height)
 
-        # Handle painting tools
         if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION]:
             if self.valid_grid_pos(grid_x, grid_y):
                 if self.is_painting(event) and self.tool != 'c' and self.tool != 'm' and self.tool != 'p' and self.tool != 'e' and self.tool != 'u':
@@ -903,8 +919,8 @@ class map_display(basic_display):
     def handle_zoom(self, event):
         if event.type == pygame.MOUSEWHEEL:
             old_zoom = self.zoom_level
-            self.zoom_level *= 1.1 ** event.y  # Zoom in/out by 10% per step
-            self.zoom_level = max(0.1, min(self.zoom_level, 5.0))  # Clamp zoom
+            self.zoom_level *= 1.1 ** event.y
+            self.zoom_level = max(0.1, min(self.zoom_level, 5.0))
             self.update_block_dimensions()
 
             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -912,19 +928,16 @@ class map_display(basic_display):
             self.cy = mouse_y - (mouse_y - self.cy) * (self.zoom_level / old_zoom)
 
     def export_png(self):
-        # Create a new surface for the map
         map_surface = pygame.Surface((self.temp_width * self.block_width,
                                       self.temp_height * self.block_height))
         map_surface.fill(self.bgColor)
 
-        # Draw map tiles
         for y in range(self.temp_height):
             for x in range(self.temp_width):
                 tile = self.map[y][x]
                 if tile == 0:
                     continue
                 color = self.color_map.get(tile, self.asphalt_color)
-                # Add slight randomness to non-special tiles
                 if tile in (0, 1, 3, 4, 5):
                     color = (
                         min(max(color[0] + random.randint(-10, 10), 0), 255),
@@ -935,26 +948,23 @@ class map_display(basic_display):
                                  (x * self.block_width, y * self.block_height,
                                   self.block_width+1, self.block_height+1))
 
-        # Draw checkpoints
+
         for chp in self.checkpoints:
             if chp == self.checkpoints[0]:
-                color = self.color_map['m']  # Start/finish line
+                color = self.color_map['m']
                 pygame.draw.line(map_surface, color,
                                  (chp[0][0] * self.block_width, chp[0][1] * self.block_height),
                                  (chp[1][0] * self.block_width, chp[1][1] * self.block_height),
                                  width=int(self.block_width))
             else:
-                color = self.color_map['c']  # Regular checkpoint
+                color = self.color_map['c']
 
-        # Generate filename with timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         filename = f'images/maps/map_{timestamp}.png'
 
-        # Create maps directory if it doesn't exist
         if not os.path.exists('images/maps'):
             os.makedirs('images/maps')
 
-        # Save the surface as PNG
         pygame.image.save(map_surface, filename)
 
     def export_map(self):
@@ -986,7 +996,6 @@ class map_display(basic_display):
 
         self.temp_map_data.update(map_data)
 
-        # map_data = self.map
         with open(filename, 'w') as f:
             json.dump(self.temp_map_data, f)
             f.close()
@@ -1033,7 +1042,7 @@ class main_menu_display(basic_display):
         self.button_width = self.game.width*self.button_width_modifier
         self.button_height = self.game.height*self.button_heigh_modifier
 
-        custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5, 'VROOM!\n    VROOM!',
+        custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5, 'Pixel!\n    Racers!',
                                 text_color='white', font_height=int(self.game.height * (19 / 216)))
 
         if self.game.enable_debug == False:
@@ -1065,9 +1074,9 @@ class main_menu_display(basic_display):
                                              self.amount_of_buttons - 4), self.button_width, self.button_height,
                                  text='Quit', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                                  outline_color=(50, 50, 50), outline_width=2)
-            custom_button.Button(self, 'change_player_name',self.game.width / 2,
+            custom_button.Button(self, 'change_player_name', self.game.width - (self.button_width + 75) - self.button_padding,
                                  self.game.height + (- self.button_padding - self.button_height) * (
-                                         self.amount_of_buttons - 5), self.button_width + 75, self.button_height,
+                                         self.amount_of_buttons - 4), self.button_width + 75, self.button_height,
                                 text = "CHANGE PLAYER NAME", border_radius = 0, color = (26, 26, 26),
                                 text_color = (150, 150, 150), outline_color = (50, 50, 50),
                                 outline_width = 2)
@@ -1124,14 +1133,11 @@ class settings_display(basic_display):
         cfg = read_config()
         current_fps = int(cfg['fps'])
 
-        # Add FPS slider and text
         self.fps_text = custom_text.Custom_text(self, self.game.width/4, self.game.height/2 - 50, f'FPS: {current_fps}', text_color='white', font_height=30)
         self.fps_slider = Slider(self, 'fps_slider', self.game.width/4 - 100, self.game.height/2, 200, 20, 30, 144, current_fps)
 
-        # Get current volume from first sound (if exists) or use default
         current_volume = int(self.game.sound_manager.sounds["engine"].get_volume() * 100 if "engine" in self.game.sound_manager.sounds else 50)
 
-        # Add volume slider and text (positioned below FPS controls)
         self.volume_text = custom_text.Custom_text(
             self,
             self.game.width / 4,
@@ -1154,16 +1160,6 @@ class settings_display(basic_display):
             slider_type="volume"
         )
 
-        # # Add resolution options
-        # self.resolutions = pygame.display.list_modes()
-        # self.current_resolution = (self.game.width, self.game.height)
-        # self.resolution_text = custom_text.Custom_text(self, self.game.width/4, self.game.height/2 + 50, f'Resolution: {self.current_resolution[0]}x{self.current_resolution[1]}', text_color='white', font_height=32)
-        # self.resolution_buttons = []
-        # self.scroll_offset = 0
-        # for i, res in enumerate(self.resolutions):
-        #     button = custom_button.Button(self, f'set_resolution_{i}', self.game.width/4 - 100, self.game.height/2 + 100 + i*40, 200, 30, text=f'{res[0]}x{res[1]}', text_color='white', color=(26, 26, 26), outline_color=(50, 50, 50), outline_width=2)
-        #     self.resolution_buttons.append(button)
-
         self.particle_system = self.game.menu_particle_system
 
     def render(self):
@@ -1174,7 +1170,6 @@ class settings_display(basic_display):
         self.particle_system.draw(self.screen)
 
         self.fps_text.update_text(f'FPS: {self.game.fps}')
-        # self.resolution_text.update_text(f'Resolution: {self.current_resolution[0]}x{self.current_resolution[1]}')
         self.volume_text.update_text(f'Volume: {int(self.volume_slider.current_value)}%')
 
         for obj in self.objects:
@@ -1187,10 +1182,6 @@ class settings_display(basic_display):
     def events(self, event):
         for obj in self.objects:
             obj.events(event)
-        # for i, res in enumerate(self.resolutions):
-        #     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.resolution_buttons[i].rect.collidepoint(event.pos):
-        #         self.set_resolution(res)
-        # self.handle_scroll(event)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self.game.change_display('main_menu_display')
@@ -1203,54 +1194,6 @@ class settings_display(basic_display):
         else:
             self.back_button.action = 'to_pause_display'
             self.back_button.update_text('Back')
-
-
-    # def set_resolution(self, resolution):
-    #     self.current_resolution = resolution
-    #     self.game.width, self.game.height = resolution
-    #     self.game.screen = pygame.display.set_mode(resolution)
-    #     cfg = read_config()
-    #     cfg['width'] = str(resolution[0])
-    #     cfg['height'] = str(resolution[1])
-    #
-    #     config = ConfigParser()
-    #     config['CONFIG'] = cfg
-    #     write_config_to_file(config, 'config.ini')
-    #
-    #     self.game.hotbar_dimentions = (self.game.width, self.game.height / 6)
-    #
-    #     for display in self.game.displays.values():
-    #         if isinstance(display, game_display):
-    #             game_display.__init__(display, self.game, display.difficulty)
-    #         elif isinstance(display, map_display):
-    #             map_display.__init__(display, self.game)
-    #         elif isinstance(display, level_selector):
-    #             level_selector.__init__(display, self.game)
-    #             level_selector.reload_maps(display)
-    #         elif isinstance(display, main_menu_display):
-    #             main_menu_display.__init__(display, self.game)
-    #         elif isinstance(display, settings_display):
-    #             settings_display.__init__(display, self.game)
-    #         elif isinstance(display, pause_display):
-    #             pause_display.__init__(display, self.game)
-    #         elif isinstance(display, map_maker_menu):
-    #             map_maker_menu.__init__(display, self.game)
-    #
-    # def handle_scroll(self, event):
-    #     if event.type == pygame.MOUSEWHEEL:
-    #         self.scroll_offset += event.y * 20
-    #
-    #     for i, button in enumerate(self.resolution_buttons):
-    #         button.update_rect()
-    #         button.update_position(button.x, self.game.height/2 + 100 + i*40 + self.scroll_offset)
-
-
-class in_game_settings_display(settings_display):
-    def __init__(self, game):
-        settings_display.__init__(self, game)
-        self.back_button.action = 'to_pause_display'
-        self.back_button.update_text('Back')
-
 
 class pause_display(basic_display):
     def __init__(self, game):
@@ -1337,12 +1280,6 @@ class level_selector(basic_display):
                              (self.game.height - 150  - self.button_height - 15),
                              self.button_width, self.button_height, text='->', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
-        # self.texts = {}
-        # for i in range(3):
-        #     self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 5 + 40 * i,
-        #                                                      f'', font_height=35, text_color=(255, 255, 255),
-        #                                                      background_color=(0, 0, 0), center=True,
-        #                                                      append=True)
 
         self.pb_text = custom_text.Custom_text(self, self.game.width//2, self.game.height//5 + 80, 'Personal Best: N/A', text_color=(255, 223, 0))
     def mainloop(self):
@@ -1395,16 +1332,6 @@ class level_selector(basic_display):
                     self.currently_selected]
                 self.game.current_display.loaded = 0
 
-    # def fetch_top_scores(self):
-    #     conn = sqlite3.connect('scores.sqlite')
-    #     cursor = conn.cursor()
-    #     course_to_play = self.currently_selected
-    #     level = list(self.levels.keys())[course_to_play]
-    #     cursor.execute('''SELECT name, score, full_time, fastest_lap FROM scores WHERE level = ? ORDER BY score DESC, full_time ASC LIMIT ?''', (level, self.top,))
-    #     top_scores = cursor.fetchall()
-    #     conn.close()
-    #     return top_scores
-
     def get_pb(self):
         levels_list = list(self.levels.keys())
         self.pb_times = {}
@@ -1436,7 +1363,7 @@ class level_selector(basic_display):
             self.bg = (25, 90, 25)
         elif self.currently_selected == 1:
             self.bg = (100, 100, 30)
-        if self.currently_selected == 2:
+        elif self.currently_selected == 2:
             self.bg = (100, 30, 30)
 
         self.screen.fill(self.bg)
@@ -1445,20 +1372,6 @@ class level_selector(basic_display):
                                           random.randint(1, 2), random.randint(0, 255), random.randint(0, 255),
                                           random.randint(0, 255), 100, 'square')
         self.particle_system.draw(self.screen)
-
-        # top_scores = self.fetch_top_scores()
-
-        # for j in range(self.top):
-        #     self.texts[f'text_{j}'].update_text('')
-        # for i, (name, score, full_time, fastest_lap) in enumerate(top_scores):
-        #     milliseconds_full = int((full_time % 1) * 1000)
-        #     seconds_full = round(full_time % 60)
-        #     milliseconds_lap = int((fastest_lap % 1) * 1000)
-        #     seconds_lap = round(fastest_lap % 60)
-        #     self.texts[f'text_{i}'].update_text(
-        #         f'{i + 1}. {name if name != "Player" else self.game.player_name}: {score}, Full time: {int(full_time // 60)}:{seconds_full:02}:{milliseconds_full:03}, Fastest lap time: {int(fastest_lap // 60)}:{seconds_lap:02}:{milliseconds_lap:03}')
-
-
         for i, lvl in enumerate(list(self.levels.values())):
             if i - self.currently_selected == 0:
                 pygame.draw.rect(self.game.screen, self.bgColor, (self.game.width/2 - self.selected_surface_width/2 -5, self.game.height/2 - self.selected_surface_height/2-5, self.selected_surface_width + 10, self.selected_surface_height + 10))
@@ -1516,7 +1429,7 @@ class level_selector(basic_display):
             self.load_maps()
 
 
-    def update_surfaces(self, dir): # if changing to the left dir = -1, if changing to the right dir = 1
+    def update_surfaces(self, dir):
         for i, lvl in enumerate(list(self.levels.values())):
             if i - self.currently_selected == 0:
                 del lvl
@@ -1628,10 +1541,8 @@ class change_vehicle(basic_display):
             self.db_manager.unlock_car(1)
 
         for i in range(5):
-            # Position large car at center
             large_car = car.Car(self, (self.game.width / 2, self.game.height / 2), 0, True, i + 1,
                                 car3d_height_factor=2.8)
-            # Position small cars based on selected car
             initial_x = self.game.width / 2 + (i - self.selected_car_model + 1) * 250
             small_car = car.Car(self, (initial_x, self.game.height / 2), 0, True, i + 1)
 
@@ -1685,11 +1596,11 @@ class change_vehicle(basic_display):
                              self.button_width, self.button_height, text='BACK', border_radius=0, color=(26, 26, 26),
                              text_color=(150, 150, 150), outline_color=(50, 50, 50), outline_width=2)
 
-        self.animation_progress = 0  # Track animation from 0 to 1
-        self.target_positions = []  # Store target x positions for cars
-        self.start_positions = []  # Store starting x positions for cars
+        self.animation_progress = 0
+        self.target_positions = []
+        self.start_positions = []
         self.is_animating = False
-        self.animation_speed = 5.0  # Animation speed multiplier
+        self.animation_speed = 5.0
 
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
@@ -1721,7 +1632,6 @@ class change_vehicle(basic_display):
         elif self.selected_car_model > self.amount_of_car:
             self.selected_car_model = self.amount_of_car
 
-        # Update animation progress
         if self.is_animating:
             self.animation_progress = min(1.0, self.animation_progress + self.game.delta_time * self.animation_speed)
             if self.animation_progress >= 1.0:
@@ -1730,26 +1640,21 @@ class change_vehicle(basic_display):
                 for i, car in enumerate(self.small_cars):
                     car.x = self.target_positions[i]
 
-        # Render cars with animation
         for i, car in enumerate(self.small_cars):
             if i == self.selected_car_model - 1:
-                # Render large car with rotation
                 self.large_cars[i].rotation -= 80 * self.game.delta_time
                 self.large_cars[i].car_mask = self.large_cars[i].car3d_sprite.update_mask_rotation(
                     int(self.large_cars[i].rotation))
                 self.large_cars[i].render_model()
             else:
                 if self.is_animating:
-                    # Interpolate position during animation
                     start_pos = self.start_positions[i]
                     target_pos = self.target_positions[i]
                     car.x = start_pos + (target_pos - start_pos) * self.animation_progress
                 else:
-                    # Set target position directly when not animating
                     car.x = self.game.width / 2 + (i - self.selected_car_model + 1) * 250
                 car.render_model()
 
-        # Render other objects
         for obj in self.objects:
             obj.render()
 
@@ -1805,16 +1710,12 @@ class credits(basic_display):
         custom_text.Custom_text(self, self.game.width/2, self.game.height/11, 'Credits', font_height=int(self.game.height*(19/216)),text_color=(255, 255, 255),
                                 background_color=(0, 0, 0), center=True)
 
-        # self.texts = ['papapapapa papapapapa', 'credits', 'RYBA', 'óąśćęłńżź']
         self.texts = {}
         names = ("rutra8002", "MalyszekTobias", "Hohenzoler", "Saniccxx", "O5Romano")
         for i in range(5):
             self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 60 * i,
                                                          f'{names[i]}', font_height=45, text_color=(255, 255, 255),
                                                          background_color=(0, 0, 0), center=True)
-        # self.text = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 2, self.texts[self.currentText], font_height=40, text_color=(255, 255, 255),
-        #                         background_color=(0, 0, 0), center=True,
-        #                         append=False)
     def mainloop(self):
         pass
     def render(self):
@@ -1829,14 +1730,6 @@ class credits(basic_display):
         frame = pygame.surfarray.make_surface(frame)
         self.game.screen.blit(frame, (0, 0))
 
-        # current_time = pygame.time.get_ticks()
-        # if current_time - self.last_update_time > 500:
-        #     self.currentText += 1
-        #     if self.currentText >= len(self.texts):
-        #         self.currentText = 0
-        #     self.text.update_text(self.texts[self.currentText])
-        #     self.last_update_time = current_time
-        #     self.text.update_position(random.randint(250, self.game.width - 250), random.randint(100, self.game.height - 100))
         for obj in self.objects:
             obj.render()
 
@@ -1850,89 +1743,13 @@ class credits(basic_display):
                 self.game.sound_manager.stop_sound('Credits')
                 self.game.change_display('main_menu_display')
 
-# class leaderboard(basic_display):
-#     def __init__(self, game):
-#         basic_display.__init__(self, game)
-        # self.players = self.load()
-        # self.texts = {}
-        # self.number_of_players = 5
-        # self.db_path = 'scores.sqlite'
-        # self.saved = False
-
-        # score = "No score"
-        # for i, car in enumerate(self.game.displays['game_display'].leaderboard_list):
-        #     self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 60 * i,
-        #                                                      f'{i + 1}. {car.name}: {score}', font_height=40, text_color=(255, 255, 255),
-        #                                                      background_color=(0, 0, 0), center=True,
-        #                                                      append=True)
-        # for i in range(5):
-        #     self.texts[f'text_{i}'] = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 3 + 45 * i,
-        #                                                      f'', font_height=25, text_color=(255, 255, 255),
-        #                                                      background_color=(0, 0, 0), center=True,
-        #                                                      append=True)
-        # self.title = custom_text.Custom_text(self, self.game.width // 2, self.game.height // 7,
-        #                                     "Leaderboard", font_height=60, text_color=(255, 255, 255),
-        #                                     background_color=(0, 0, 0), center=True,
-        #                                     append=True)
-        # width = 500
-        # custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - width // 2, self.game.height / 10 * 7, width, 80,
-        #                      text='Back to level selector', border_radius=0, color=(26, 26, 26),
-        #                      text_color=(150, 150, 150),
-        #                      outline_color=(50, 50, 50), outline_width=2)
-
-    # def mainloop(self):
-        # if not self.saved:
-        #     self.save()
-        #     self.saved = True
-
-
-
-    # def save(self):
-    #     conn = sqlite3.connect(self.db_path)
-    #     cursor = conn.cursor()
-    #
-    #     for i, car in enumerate(self.game.currentLeaderboard):
-    #         if car.finished:
-    #             name = car.name if not car.isPlayer else 'Player'
-    #             full_time = car.full_time
-    #             fastest_lap = min(car.lap_times) if car.lap_times else 0
-    #             score = 0
-    #             course_to_play = self.game.displays['level_selector'].currently_selected
-    #             level = list(self.game.displays['level_selector'].levels.keys())[course_to_play]
-    #             cursor.execute('''INSERT INTO scores (name, level, full_time, fastest_lap, score)VALUES (?, ?, ?, ?, ?)''',
-    #                            (name, level, full_time, fastest_lap, score))
-    #
-    #
-    #     conn.commit()
-    #     conn.close()
-
-
-    # def render(self):
-    #     score = "No score"
-    #     for i, car in enumerate(self.game.currentLeaderboard):
-    #         # {car.full_time}
-    #         milliseconds_full = int((car.full_time % 1) * 1000)
-    #         seconds_full = round(car.full_time % 60)
-    #         milliseconds_lap = int((min(car.lap_times) % 1) * 1000) if car.lap_times else 0
-    #         seconds_lap = round(min(car.lap_times) % 60) if car.lap_times else 0
-    #         self.texts[f'text_{i}'].update_text(f'{i + 1}. {car.name}: {score}, Full time: {int(car.full_time // 60)}:{seconds_full:02}:{milliseconds_full:03}, Fastest lap time: {int(min(car.lap_times) // 60) if car.lap_times else 0}:{seconds_lap:02}:{milliseconds_lap:03}, Finished? {"Yes" if car.finished else "No"}')
-    #     for obj in self.objects:
-    #         obj.render()
-    #
-    # def events(self, event):
-    #     for obj in self.objects:
-    #         obj.events(event)
-    #     if event.type == pygame.KEYDOWN:
-    #         if event.key == pygame.K_ESCAPE:
-    #             self.game.displays['level_selector'].reload_maps()
-    #             self.game.change_display('level_selector')
-
 class leaderboard(basic_display):
     def __init__(self, game):
         basic_display.__init__(self, game)
         self.leaderboard_list = []
+        self.coin = 0
         custom_text.Custom_text(self, self.game.width/2, self.game.height/7, 'Placements', text_color=(255, 223, 0), font_height=60)
-        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - 460 // 2, 902,
+        custom_button.Button(self, 'back_to_level_selector', self.game.width / 2 - 460 // 2, 952,
                              460, 80,
                              text='continue', border_radius=0, color=(26, 26, 26), text_color=(150, 150, 150),
                              outline_color=(50, 50, 50), outline_width=2)
@@ -1955,6 +1772,7 @@ class leaderboard(basic_display):
         for t in self.text_obj:
             t.delete()
         self.text_obj = []
+
 
         self.text_obj.append(
             custom_text.Custom_text(self, self.game.width / 3 - 76.5, self.game.height / 4,
@@ -2035,8 +1853,10 @@ class leaderboard(basic_display):
 
 
 
+        self.text_obj.append(custom_text.Custom_text(self, 0, 0, f'Collected coins: {int(self.coin)}', text_color=(255, 223, 0), font_height=25))
+        self.text_obj[-1].update_position(960, 800)
 
-        self.text_obj.append(custom_text.Custom_text(self, 614, 800, "You've placed", text_color='white', center=False))
+        self.text_obj.append(custom_text.Custom_text(self, 614, 850, "You've placed", text_color='white', center=False))
         r = self.text_obj[-1].rect
         self.text_obj.append(
             custom_text.Custom_text(self, r.x + r.width + 20, r.y , f"{p_placement}", text_color=p_color, center=False))
@@ -2091,36 +1911,30 @@ class change_player_name(basic_display):
         basic_display.__init__(self, game)
         self.particle_system = self.game.menu_particle_system
 
-        # Button dimensions
         self.button_width_modifier = 45.5 / 256
         self.button_heigh_modifier = 10.4 / 144
         self.button_width = self.game.width * self.button_width_modifier
         self.button_height = self.game.height * self.button_heigh_modifier
 
-        # Title
         custom_text.Custom_text(self, self.game.width / 2, self.game.height / 5,
                                 'CHANGE PLAYER NAME', text_color='white',
                                 font_height=int(self.game.height * (19 / 216)))
 
-        # Get current player name from the game object
 
         self.name_input = self.game.player_name
         self.cursor_visible = True
         self.cursor_timer = 0
 
-        # Player name display
         self.name_display = custom_text.Custom_text(
             self, self.game.width / 2, self.game.height / 2,
                   self.name_input + '|', text_color='white', font_height=40
         )
 
-        # Instruction
         custom_text.Custom_text(
             self, self.game.width / 2, self.game.height / 2 + 60,
             'Type your name and press Enter', text_color=(150, 150, 150), font_height=25
         )
 
-        # Buttons
         custom_button.Button(
             self, 'save_player_name', self.game.width / 2 + 7.5,
                                       self.game.height - 150, self.button_width, self.button_height,
@@ -2137,8 +1951,6 @@ class change_player_name(basic_display):
 
     def mainloop(self):
         self.particle_system.update(self.game.delta_time)
-
-        # Update cursor blink
         self.cursor_timer += self.game.delta_time
         if self.cursor_timer >= 0.5:
             self.cursor_timer = 0
@@ -2150,7 +1962,6 @@ class change_player_name(basic_display):
                 self.name_display.update_text(self.name_input)
 
     def render(self):
-        # Background particles
         self.particle_system.add_particle(
             random.randint(0, self.game.width), random.uniform(0, self.game.height),
             random.uniform(-1, 1), random.randint(-1, 1), 0, 0, 0, 0, 10, 600,
@@ -2158,8 +1969,6 @@ class change_player_name(basic_display):
             random.randint(0, 255), 100, 'square'
         )
         self.particle_system.draw(self.game.screen)
-
-        # Render all UI elements
         for obj in self.objects:
             obj.render()
 
@@ -2184,16 +1993,10 @@ class change_player_name(basic_display):
 
     def save_player_name(self):
         if not self.name_input:
-            return  # Don't save empty names
-
-        # Update name in all relevant places
+            return
         try:
-            # Store the name for future game instances
             stored_name = self.name_input.capitalize()
-
-            # Update name in any active game display instances
             for display_name, display_instance in self.game.displays.items():
-                # Check if this is an actual game display instance
                 if hasattr(display_instance, 'p') and hasattr(display_instance.p, 'player_name'):
                     display_instance.p.player_name = stored_name
 

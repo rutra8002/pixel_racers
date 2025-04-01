@@ -5,7 +5,7 @@ class Hotbar:
     def __init__(self, display):
         self.display = display
         self.game = self.display.game
-        self.w, self.h = self.game.hotbar_dimentions # 216px if screen height == 1080px
+        self.w, self.h = self.game.hotbar_dimentions
 
         self.color = (56, 56, 56)
         self.outline_color = (126, 126, 126)
@@ -100,8 +100,11 @@ class Hotbar:
                 elif true_i == 2:
                     text = f"3rd"
                     color = (205, 127, 50)
+                elif true_i == 3:
+                    text = f"4th"
+                    color = (255, 255, 255)
                 else:
-                    text = f"{true_i + 1}th"
+                    text = f"5th"
                     color = (255, 255, 255)
 
 
@@ -110,7 +113,6 @@ class Hotbar:
                 break
 
     def update_coin_display(self):
-        # Find the player car
         player_car = None
         for car in self.display.cars:
             if car.isPlayer:
@@ -118,10 +120,8 @@ class Hotbar:
                 break
 
         if player_car:
-            # Get total coins from database
             total_coins = self.display.db_manager.get_coins()
 
-            # Create or update coin text
             if hasattr(self, 'coin_text'):
                 self.coin_text.update_text(f"Coins: {total_coins}")
             else:

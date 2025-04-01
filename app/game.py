@@ -1,6 +1,6 @@
 import json
 import platform
-import pygame, sys, threading, code, os, sqlite3
+import pygame, sys, threading, code, os
 from app import config, sounds, cheats
 from app.database import DatabaseManager
 from customObjects import custom_text, custom_images, custom_button
@@ -13,6 +13,10 @@ if platform.system() == "Windows":
 class Game:
     def __init__(self):
         pygame.init()
+
+        icon = self.get_scaled_icon("images/cars/jeffcar.png")
+        pygame.display.set_icon(icon)
+
 
         self.sound_manager = sounds.SoundManager()
         self.sound_manager.load_music('sounds/music/Neon Rush.wav')
@@ -74,8 +78,7 @@ class Game:
                             custom_text.Custom_text(self, 12, 45, f'Resolution: {self.width}x{self.height}', font=self.font, font_height=30, text_color='white', center=False),
                             custom_text.Custom_text(self, 12, 75, f'FPS cap: {self.fps}', font=self.font, font_height=30,  text_color='white', center=False),
                             custom_text.Custom_text(self, 12, 105, f'FPS: {self.clock.get_fps()}', font=self.font, font_height=30,  text_color='white', center=False),
-                            custom_text.Custom_text(self, 12, 135, f'Objects in memory: {self.current_display.objects_in_memory}', font=self.font, font_height=30,  text_color='white', center=False),
-                            custom_text.Custom_text(self, 12, 165, f'Current display: {type(self.current_display)}', font=self.font, font_height=30,  text_color='white', center=False)]
+                            custom_text.Custom_text(self, 12, 135, f'Current display: {type(self.current_display)}', font=self.font, font_height=30,  text_color='white', center=False)]
 
         for debug_item in self.debug_items:
             debug_item.hidden = True
@@ -101,22 +104,6 @@ class Game:
         self.console_active = False
         self.console_input = ""
         self.console_history = []
-        # db_path = 'scores.sqlite'
-        # if not os.path.exists(db_path):
-        #     conn = sqlite3.connect(db_path)
-        #     cursor = conn.cursor()
-        #     cursor.execute('''
-        #         CREATE TABLE scores (
-        #             id INTEGER PRIMARY KEY AUTOINCREMENT,
-        #             name TEXT NOT NULL,
-        #             level TEXT NOT NULL,
-        #             full_time REAL NOT NULL,
-        #             fastest_lap REAL NOT NULL,
-        #             score INTEGER NOT NULL
-        #         )
-        #     ''')
-        #     conn.commit()
-        #     conn.close()
 
         try:
             self.console_font = pygame.font.Font('fonts/JetBrainsMonoNLNerdFontMono-Regular.ttf', 20)
@@ -126,16 +113,28 @@ class Game:
 
         self.console_history_index = 0
 
-        # self.db = sqlite3.connect('scores.sqlite')
-        # self.cursor = self.db.cursor()
+    def get_scaled_icon(self, path, target_size=(32, 32)):
+        original = pygame.image.load(path)
+        orig_width, orig_height = original.get_size()
 
+        aspect_ratio = orig_width / orig_height
 
-    #     console_thread = threading.Thread(target=self.start_console, args=(custom_locals,))
-    #     console_thread.start()
-    #
-    # def start_console(self, locals):
-    #     console = code.InteractiveConsole(locals=locals)
-    #     console.interact()
+        if aspect_ratio > 1:
+            new_width = target_size[0]
+            new_height = int(new_width / aspect_ratio)
+        else:
+            new_height = target_size[1]
+            new_width = int(new_height * aspect_ratio)
+
+        icon = pygame.Surface(target_size, pygame.SRCALPHA)
+
+        scaled = pygame.transform.smoothscale(original, (new_width, new_height))
+
+        x_offset = (target_size[0] - new_width) // 2
+        y_offset = (target_size[1] - new_height) // 2
+        icon.blit(scaled, (x_offset, y_offset))
+
+        return icon
 
     def music(self):
         if isinstance(self.current_display, self.displays["game_display"]) and not self.sound_manager.is_playing_music():
@@ -336,8 +335,7 @@ class Game:
         if self.debug:
 
             self.debug_items[3].update_text(f'FPS: {self.clock.get_fps()}')
-            self.debug_items[4].update_text(f'Objects in memory: {self.current_display.objects_in_memory}')
-            self.debug_items[5].update_text(f'Current display: {type(self.current_display)}')
+            self.debug_items[4].update_text(f'Current display: {type(self.current_display)}')
 
         pygame.display.flip()
 
