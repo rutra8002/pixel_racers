@@ -57,7 +57,7 @@ class Car:
         self.lap_times = []
 
         self.strength = False # następne zderzenie z autem nie daje tobie knockbacku. Przy zderzeniu ze ścianą znika i nic nie robi
-        self.infiNitro = False
+        self.infiNitro = True
         self.player_name = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
         self.hits = 0
@@ -147,7 +147,7 @@ class Car:
 
         self.steering_speed = 9 * self.display.game.calibration
 
-        self.nitroAmount = 0
+        self.nitroAmount = 1
 
         self.bounce_sound_timer = 0
 
@@ -235,9 +235,15 @@ class Car:
             nitro_y = self.y - back_wheel_y_offset
             if self.nitroAmount > 0:
                 if self.nitrogen.active:
+                    self.nitrogen_color = random.choice(self.nitrogen_colors)
+                    self.nitrogen.red, self.nitrogen.green, self.nitrogen.blue = self.nitrogen_color[0], \
+                    self.nitrogen_color[1], self.nitrogen_color[2]
+
                     self.nitrogen.edit(nitro_x, nitro_y, self.velLeft, self.velUp)
                 else:
                     self.nitrogen.start()
+                    self.nitrogen_color = random.choice(self.nitrogen_colors)
+                    self.nitrogen.red,self.nitrogen.green,self.nitrogen.blue = self.nitrogen_color[0], self.nitrogen_color[1], self.nitrogen_color[2]
                     self.nitrogen.edit(nitro_x, nitro_y, self.velLeft, self.velUp)
         elif self.nitrogen.active:
             self.nitrogen.stop()
