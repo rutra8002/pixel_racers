@@ -1530,7 +1530,7 @@ class change_vehicle(basic_display):
             2: 100,
             3: 250,
             4: 500,
-            5: 1000,
+            5: 100000,
             6: 2000
         }
 
