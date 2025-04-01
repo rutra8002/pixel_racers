@@ -14,7 +14,7 @@ class Game:
     def __init__(self):
         pygame.init()
 
-        icon = self.get_scaled_icon("images/cars/jeffcar.png")
+        icon = self.get_scaled_icon("images/icon.png")
         pygame.display.set_icon(icon)
 
 
