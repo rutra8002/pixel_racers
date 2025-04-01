@@ -41,3 +41,14 @@ def test_asin():
 
 def test_atan():
     assert math.atan(0) == 0
+
+def test_pythagorean():
+    assert math.sqrt(3**2 + 4**2) == 5
+
+def test_zero_division():
+    try:
+        1 / 0
+    except ZeroDivisionError:
+        assert True
+    else:
+        assert False
