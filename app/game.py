@@ -113,6 +113,8 @@ class Game:
 
         self.console_history_index = 0
 
+        self.joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
+
     def get_scaled_icon(self, path, target_size=(32, 32)):
         original = pygame.image.load(path)
         orig_width, orig_height = original.get_size()
