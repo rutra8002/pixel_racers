@@ -47,6 +47,35 @@ class Player(Car):
                 self.q = False
             if event.key == pygame.K_e:
                 self.e = False
+        elif event.type == pygame.JOYAXISMOTION:
+            if event.axis == 0:  # Left stick horizontal
+                if event.value < -0.5:
+                    self.a = True
+                    self.d = False
+                elif event.value > 0.5:
+                    self.d = True
+                    self.a = False
+                else:
+                    self.a = False
+                    self.d = False
+            if event.axis == 4: # Left trigger
+                if event.value > -0.5:
+                    self.s = True
+                else:
+                    self.s = False
+            if event.axis == 5: # Right trigger
+                if event.value > -0.5:
+                    self.w = True
+                else:
+                    self.w = False
+        elif event.type == pygame.JOYBUTTONDOWN:
+            if event.button == 2: # square button
+                self.use_powerup()
+            if event.button == 0: # x button
+                self.boost = True
+        elif event.type == pygame.JOYBUTTONUP:
+            if event.button == 0:
+                self.boost = False
 
     def return_to_last_checkpoint(self):
         checkpoint_to_return = self.display.checkpoints[self.current_checkpoint]
