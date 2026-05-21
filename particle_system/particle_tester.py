@@ -4,7 +4,7 @@ try:
 except:
     raise ImportError("Could not import pygame_gui")
 import random
-from src.particle_system.particle_system import ParticleSystem
+from particle_system.particle_system import ParticleSystem
 
 class ParticleTester:
     def __init__(self):
